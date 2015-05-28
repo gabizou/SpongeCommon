@@ -31,7 +31,6 @@ import com.google.common.base.Optional;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.tileentity.BannerData;
 import org.spongepowered.api.data.type.BannerPatternShape;
 import org.spongepowered.api.data.type.DyeColor;
 import org.spongepowered.api.service.persistence.DataBuilder;

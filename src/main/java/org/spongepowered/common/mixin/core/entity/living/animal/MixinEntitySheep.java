@@ -28,7 +28,7 @@ import static org.spongepowered.api.data.DataQuery.of;
 
 import net.minecraft.entity.passive.EntitySheep;
 import org.spongepowered.api.data.DataContainer;
-import org.spongepowered.api.data.manipulator.DyeableData;
+import org.spongepowered.api.data.manipulator.DyeableComponent;
 import org.spongepowered.api.entity.living.animal.Sheep;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.asm.mixin.Implements;

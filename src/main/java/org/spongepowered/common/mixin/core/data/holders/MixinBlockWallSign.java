@@ -36,13 +36,13 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.data.DataManipulator;
+import org.spongepowered.api.data.Component;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
-import org.spongepowered.api.data.manipulator.block.DirectionalData;
+import org.spongepowered.api.data.manipulator.block.DirectionalComponent;
 import org.spongepowered.api.util.Direction;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.common.data.manipulator.block.SpongeDirectionalData;
+import org.spongepowered.common.data.component.block.SpongeDirectionalComponent;
 import org.spongepowered.common.interfaces.block.IMixinBlockDirectional;
 import org.spongepowered.common.mixin.core.block.MixinBlock;
 
@@ -56,7 +56,7 @@ public abstract class MixinBlockWallSign extends MixinBlock implements IMixinBlo
         final EnumFacing facing = (EnumFacing) blockState.getValue(BlockWallSign.FACING);
         final int directOrd = (((facing.getHorizontalIndex()) + 2) % 4) * 4;
         final Direction direction = Direction.values()[directOrd];
-        DirectionalData data = new SpongeDirectionalData();
+        DirectionalData data = new SpongeDirectionalComponent();
         data.setValue(direction);
         return data;
     }
@@ -80,13 +80,13 @@ public abstract class MixinBlockWallSign extends MixinBlock implements IMixinBlo
     }
 
     @Override
-    public Collection<DataManipulator<?>> getManipulators(World world, BlockPos blockPos) {
-        return Lists.<DataManipulator<?>>newArrayList(getDirectionalData(world.getBlockState(blockPos))); // TODO for now.
+    public Collection<Component<?>> getManipulators(World world, BlockPos blockPos) {
+        return Lists.<Component<?>>newArrayList(getDirectionalData(world.getBlockState(blockPos))); // TODO for now.
     }
 
     @Override
-    public ImmutableList<DataManipulator<?>> getManipulators(IBlockState blockState) {
-        return ImmutableList.<DataManipulator<?>>of(getDirectionalData(blockState)); // TODO for now.
+    public ImmutableList<Component<?>> getManipulators(IBlockState blockState) {
+        return ImmutableList.<Component<?>>of(getDirectionalData(blockState)); // TODO for now.
     }
 
 }

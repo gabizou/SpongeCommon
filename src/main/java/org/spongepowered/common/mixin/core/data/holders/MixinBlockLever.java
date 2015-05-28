@@ -31,14 +31,14 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 
 import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.data.DataManipulator;
+import org.spongepowered.api.data.Component;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
-import org.spongepowered.api.data.manipulator.block.AxisData;
-import org.spongepowered.api.data.manipulator.block.DirectionalData;
+import org.spongepowered.api.data.manipulator.block.AxisComponent;
+import org.spongepowered.api.data.manipulator.block.DirectionalComponent;
 import org.spongepowered.api.util.Direction;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.common.data.manipulator.block.SpongeDirectionalData;
+import org.spongepowered.common.data.component.block.SpongeDirectionalComponent;
 import org.spongepowered.common.interfaces.block.IMixinBlockAxisOriented;
 import org.spongepowered.common.interfaces.block.IMixinBlockDirectional;
 import org.spongepowered.common.interfaces.block.IMixinPoweredHolder;
@@ -52,9 +52,9 @@ public abstract class MixinBlockLever extends MixinBlock implements IMixinBlockD
     @Override
     public DirectionalData getDirectionalData(IBlockState blockState) {
         final BlockLever.EnumOrientation intDir = (BlockLever.EnumOrientation) (Object) blockState.getValue(BlockLever.FACING);
-        final DirectionalData directionalData = new SpongeDirectionalData();
+        final DirectionalData directionalData = new SpongeDirectionalComponent();
         directionalData.setValue(Direction.values()[((intDir.ordinal() - 1) + 8) % 16]);
-        return directionalData;
+        return directionalComponent;
     }
 
     @Override
@@ -96,13 +96,13 @@ public abstract class MixinBlockLever extends MixinBlock implements IMixinBlockD
     }
 
     @Override
-    public Collection<DataManipulator<?>> getManipulators(World world, BlockPos blockPos) {
+    public Collection<Component<?>> getManipulators(World world, BlockPos blockPos) {
         return getManipulators(world.getBlockState(blockPos));
     }
 
     @Override
-    public ImmutableList<DataManipulator<?>> getManipulators(IBlockState blockState) {
-        return ImmutableList.<DataManipulator<?>>of(getAxisData(blockState), getDirectionalData(blockState));
+    public ImmutableList<Component<?>> getManipulators(IBlockState blockState) {
+        return ImmutableList.<Component<?>>of(getAxisData(blockState), getDirectionalData(blockState));
     }
 
     @Override

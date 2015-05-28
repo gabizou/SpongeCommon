@@ -34,7 +34,7 @@ import net.minecraft.world.World;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
-import org.spongepowered.api.data.manipulator.block.LayeredData;
+import org.spongepowered.api.data.manipulator.block.LayeredComponent;
 
 /**
  * This interface provides the necessary information for {@link LayeredData} to be

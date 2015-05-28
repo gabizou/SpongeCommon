@@ -36,18 +36,18 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.item.EnchantmentData;
+import org.spongepowered.api.data.manipulator.item.EnchantmentComponent;
 import org.spongepowered.api.item.Enchantment;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.item.SpongeEnchantmentItemData;
+import org.spongepowered.common.data.component.item.SpongeEnchantmentItemComponent;
 
 import java.util.Map;
 
-public class SpongeEnchantmentProcessor implements SpongeDataProcessor<EnchantmentData> {
+public class SpongeEnchantmentProcessor implements SpongeDataProcessor<EnchantmentComponent> {
 
     @Override
-    public Optional<EnchantmentData> fillData(DataHolder dataHolder, EnchantmentData manipulator, DataPriority priority) {
+    public Optional<EnchantmentComponent> fillData(DataHolder dataHolder, EnchantmentData manipulator, DataPriority priority) {
         if (dataHolder instanceof ItemStack && ((ItemStack) dataHolder).isItemEnchanted()) {
             NBTTagList compound = ((ItemStack) dataHolder).getEnchantmentTagList();
             Map<Enchantment, Integer> enchantmentIntegerMap = Maps.newHashMap();
@@ -81,7 +81,7 @@ public class SpongeEnchantmentProcessor implements SpongeDataProcessor<Enchantme
                 }
             }
             manipulator.setUnsafe(enchantmentIntegerMap);
-            SpongeEnchantmentItemData old = new SpongeEnchantmentItemData();
+            SpongeEnchantmentItemComponent old = new SpongeEnchantmentItemComponent();
             old.setUnsafe(enchantmentIntegerMap);
 
             NBTTagList newList = new NBTTagList();
@@ -110,17 +110,17 @@ public class SpongeEnchantmentProcessor implements SpongeDataProcessor<Enchantme
     }
 
     @Override
-    public Optional<EnchantmentData> build(DataView container) throws InvalidDataException {
+    public Optional<EnchantmentComponent> build(DataView container) throws InvalidDataException {
         return null;
     }
 
     @Override
     public EnchantmentData create() {
-        return new SpongeEnchantmentItemData();
+        return new SpongeEnchantmentItemComponent();
     }
 
     @Override
-    public Optional<EnchantmentData> createFrom(DataHolder dataHolder) {
+    public Optional<EnchantmentComponent> createFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof ItemStack)) {
             return Optional.absent();
         }
@@ -129,7 +129,7 @@ public class SpongeEnchantmentProcessor implements SpongeDataProcessor<Enchantme
     }
 
     @Override
-    public Optional<EnchantmentData> getFrom(DataHolder dataHolder) {
+    public Optional<EnchantmentComponent> getFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof ItemStack)) {
             return Optional.absent();
         }

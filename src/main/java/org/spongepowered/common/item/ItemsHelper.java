@@ -29,11 +29,11 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
-import org.spongepowered.api.data.DataManipulator;
+import org.spongepowered.api.data.Component;
 import org.spongepowered.api.data.DataTransactionResult;
-import org.spongepowered.api.data.manipulator.SingleValueData;
-import org.spongepowered.api.data.manipulator.item.BlockItemData;
-import org.spongepowered.api.data.manipulator.item.DurabilityData;
+import org.spongepowered.api.data.manipulator.SingleValueComponent;
+import org.spongepowered.api.data.manipulator.item.BlockItemComponent;
+import org.spongepowered.api.data.manipulator.item.DurabilityComponent;
 import org.spongepowered.api.item.ItemBlock;
 import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -61,12 +61,12 @@ public final class ItemsHelper {
         }
 
         @Override
-        public Optional<Collection<DataManipulator<?>>> getRejectedData() {
+        public Optional<Collection<Component<?>>> getRejectedData() {
             return Optional.absent();
         }
 
         @Override
-        public Optional<Collection<DataManipulator<?>>> getReplacedData() {
+        public Optional<Collection<Component<?>>> getReplacedData() {
             return Optional.absent();
         }
     };
@@ -74,15 +74,15 @@ public final class ItemsHelper {
     private ItemsHelper() { // No subclassing for you!
     }
 
-    public static <T extends DataManipulator<T>> Optional<T> getClone(T DataManipulator, Class<T> clazz) {
+    public static <T extends Component<T>> Optional<T> getClone(T Component, Class<T> clazz) {
 
         return Optional.absent();
     }
 
-    public static Optional<Integer> getDamageValue(final ItemType type, final Set<DataManipulator<?>> DataManipulatorSet) {
+    public static Optional<Integer> getDamageValue(final ItemType type, final Set<Component<?>> ComponentSet) {
         if (type instanceof ItemBlock) {
             // If it's a block, well, we definitely should have some block state information we can use
-            for (DataManipulator<?> data : DataManipulatorSet) {
+            for (Component<?> data : ComponentSet) {
                 if (data instanceof BlockItemData) {
                     BlockItemData blockData = (BlockItemData) data;
                     return Optional.of(Block.getBlockFromItem((Item) type).damageDropped((BlockState.StateImplementation) blockData.getState()));
@@ -92,7 +92,7 @@ public final class ItemsHelper {
             // TODO we need a better way to represent identifiable damage values
 
         } else {
-            for (DataManipulator<?> data : DataManipulatorSet) {
+            for (Component<?> data : ComponentSet) {
                 // Otherwise, it's a durability number
                 if (data instanceof DurabilityData) {
                     return Optional.of(((DurabilityData) data).getDurability());
@@ -104,11 +104,11 @@ public final class ItemsHelper {
         return Optional.absent();
     }
 
-    public static DataTransactionResult validateData(ItemType type, DataManipulator<?> data) {
+    public static DataTransactionResult validateData(ItemType type, Component<?> data) {
         return SUCCESS_NO_REPLACEMENTS; // TODO actually implement
     }
 
-    public static DataTransactionResult setData(ItemStack stack, DataManipulator<?> data) {
+    public static DataTransactionResult setData(ItemStack stack, Component<?> data) {
 
         return SUCCESS_NO_REPLACEMENTS; // TODO
     }

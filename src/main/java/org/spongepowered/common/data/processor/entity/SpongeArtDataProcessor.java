@@ -25,10 +25,7 @@
 package org.spongepowered.common.data.processor.entity;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.spongepowered.common.data.DataTransactionBuilder.builder;
 import static org.spongepowered.common.data.DataTransactionBuilder.fail;
-import static org.spongepowered.common.data.DataTransactionBuilder.successNoData;
-import static org.spongepowered.common.data.DataTransactionBuilder.successReplaceData;
 import static org.spongepowered.common.data.util.DataUtil.checkDataExists;
 
 import com.google.common.base.Optional;
@@ -37,18 +34,17 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.entity.ArtData;
+import org.spongepowered.api.data.manipulator.entity.ArtComponent;
 import org.spongepowered.api.data.type.Art;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.Sponge;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.entity.SpongeArtData;
-import org.spongepowered.common.mixin.core.entity.hanging.art.MixinEnumArt;
+import org.spongepowered.common.data.component.entity.SpongeArtComponent;
 
-public class SpongeArtDataProcessor implements SpongeDataProcessor<ArtData>  {
+public class SpongeArtDataProcessor implements SpongeDataProcessor<ArtComponent>  {
 
     @Override
-    public Optional<ArtData> getFrom(DataHolder dataHolder) {
+    public Optional<ArtComponent> getFrom(DataHolder dataHolder) {
         if (!(checkNotNull(dataHolder) instanceof EntityPainting)) {
             return Optional.absent();
         }
@@ -56,7 +52,7 @@ public class SpongeArtDataProcessor implements SpongeDataProcessor<ArtData>  {
     }
 
     @Override
-    public Optional<ArtData> fillData(DataHolder dataHolder, ArtData manipulator, DataPriority priority) {
+    public Optional<ArtComponent> fillData(DataHolder dataHolder, ArtData manipulator, DataPriority priority) {
         if (!(checkNotNull(dataHolder) instanceof EntityPainting)) {
             return Optional.absent();
         }
@@ -75,7 +71,7 @@ public class SpongeArtDataProcessor implements SpongeDataProcessor<ArtData>  {
             return fail(manipulator);
         }
         switch (checkNotNull(priority)) {
-            case DATA_MANIPULATOR:
+            case COMPONENT:
             case POST_MERGE:
                 final ArtData oldData = getFrom(dataHolder).get();
                 ((EntityPainting) dataHolder).art = ((EntityPainting.EnumArt) (Object) manipulator.getArt());
@@ -91,9 +87,9 @@ public class SpongeArtDataProcessor implements SpongeDataProcessor<ArtData>  {
     }
 
     @Override
-    public Optional<ArtData> build(DataView container) throws InvalidDataException {
-        checkDataExists(container, SpongeArtData.ART);
-        final String artId = container.getString(SpongeArtData.ART).get();
+    public Optional<ArtComponent> build(DataView container) throws InvalidDataException {
+        checkDataExists(container, SpongeArtComponent.ART);
+        final String artId = container.getString(SpongeArtComponent.ART).get();
         Optional<Art> artOptional = Sponge.getGame().getRegistry().getType(Art.class, artId);
         if (!artOptional.isPresent()) {
             return Optional.absent();
@@ -103,11 +99,11 @@ public class SpongeArtDataProcessor implements SpongeDataProcessor<ArtData>  {
 
     @Override
     public ArtData create() {
-        return new SpongeArtData();
+        return new SpongeArtComponent();
     }
 
     @Override
-    public Optional<ArtData> createFrom(DataHolder dataHolder) {
+    public Optional<ArtComponent> createFrom(DataHolder dataHolder) {
         if (!(checkNotNull(dataHolder) instanceof EntityPainting)) {
             return Optional.absent();
         }

@@ -55,7 +55,6 @@ import net.minecraft.world.WorldProviderHell;
 import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.biome.BiomeGenBase;
-import ninja.leaping.configurate.objectmapping.serialize.TypeSerializer;
 import ninja.leaping.configurate.objectmapping.serialize.TypeSerializers;
 import org.spongepowered.api.CatalogType;
 import org.spongepowered.api.Game;
@@ -84,29 +83,31 @@ import org.spongepowered.api.block.tileentity.carrier.Dispenser;
 import org.spongepowered.api.block.tileentity.carrier.Dropper;
 import org.spongepowered.api.block.tileentity.carrier.Furnace;
 import org.spongepowered.api.block.tileentity.carrier.Hopper;
-import org.spongepowered.api.data.DataManipulatorRegistry;
+import org.spongepowered.api.data.ComponentRegistry;
 import org.spongepowered.api.data.ImmutableDataRegistry;
-import org.spongepowered.api.data.manipulator.DisplayNameData;
-import org.spongepowered.api.data.manipulator.PotionEffectData;
-import org.spongepowered.api.data.manipulator.RepresentedItemData;
-import org.spongepowered.api.data.manipulator.block.DirectionalData;
-import org.spongepowered.api.data.manipulator.block.LayeredData;
-import org.spongepowered.api.data.manipulator.block.PoweredData;
-import org.spongepowered.api.data.manipulator.entity.AgeableData;
-import org.spongepowered.api.data.manipulator.entity.AgentData;
-import org.spongepowered.api.data.manipulator.entity.CareerData;
-import org.spongepowered.api.data.manipulator.entity.FoodData;
-import org.spongepowered.api.data.manipulator.entity.HealthData;
-import org.spongepowered.api.data.manipulator.entity.InvulnerabilityData;
-import org.spongepowered.api.data.manipulator.entity.SkinData;
-import org.spongepowered.api.data.manipulator.entity.TradeOfferData;
-import org.spongepowered.api.data.manipulator.item.AuthorData;
-import org.spongepowered.api.data.manipulator.item.EnchantmentData;
-import org.spongepowered.api.data.manipulator.item.LoreData;
-import org.spongepowered.api.data.manipulator.item.PagedData;
-import org.spongepowered.api.data.manipulator.tileentity.BannerData;
-import org.spongepowered.api.data.manipulator.tileentity.BeaconData;
-import org.spongepowered.api.data.manipulator.tileentity.SignData;
+import org.spongepowered.api.data.manipulator.DisplayNameComponent;
+import org.spongepowered.api.data.manipulator.PotionEffectComponent;
+import org.spongepowered.api.data.manipulator.RepresentedItemComponent;
+import org.spongepowered.api.data.manipulator.RotationalComponent;
+import org.spongepowered.api.data.manipulator.SkullComponent;
+import org.spongepowered.api.data.manipulator.block.DirectionalComponent;
+import org.spongepowered.api.data.manipulator.block.LayeredComponent;
+import org.spongepowered.api.data.manipulator.block.PoweredComponent;
+import org.spongepowered.api.data.manipulator.entity.AgeableComponent;
+import org.spongepowered.api.data.manipulator.entity.AgentComponent;
+import org.spongepowered.api.data.manipulator.entity.CareerComponent;
+import org.spongepowered.api.data.manipulator.entity.FoodComponent;
+import org.spongepowered.api.data.manipulator.entity.HealthComponent;
+import org.spongepowered.api.data.manipulator.entity.InvulnerabilityComponent;
+import org.spongepowered.api.data.manipulator.entity.SkinComponent;
+import org.spongepowered.api.data.manipulator.entity.TradeOfferComponent;
+import org.spongepowered.api.data.manipulator.item.AuthorComponent;
+import org.spongepowered.api.data.manipulator.item.EnchantmentComponent;
+import org.spongepowered.api.data.manipulator.item.LoreComponent;
+import org.spongepowered.api.data.manipulator.item.PagedComponent;
+import org.spongepowered.api.data.manipulator.tileentity.BannerComponent;
+import org.spongepowered.api.data.manipulator.tileentity.BeaconComponent;
+import org.spongepowered.api.data.manipulator.tileentity.SignComponent;
 import org.spongepowered.api.data.type.Art;
 import org.spongepowered.api.data.type.Arts;
 import org.spongepowered.api.data.type.BannerPatternShape;
@@ -248,33 +249,37 @@ import org.spongepowered.common.data.builder.block.tileentity.SpongeMobSpawnerBu
 import org.spongepowered.common.data.builder.block.tileentity.SpongeNoteBuilder;
 import org.spongepowered.common.data.builder.block.tileentity.SpongeSignBuilder;
 import org.spongepowered.common.data.builder.block.tileentity.SpongeSkullBuilder;
-import org.spongepowered.common.data.manipulator.SpongeDisplayNameData;
-import org.spongepowered.common.data.manipulator.SpongePotionEffectData;
-import org.spongepowered.common.data.manipulator.SpongeRepresentedItemData;
-import org.spongepowered.common.data.manipulator.SpongeTradeOfferData;
-import org.spongepowered.common.data.manipulator.block.SpongeDirectionalData;
-import org.spongepowered.common.data.manipulator.block.SpongeLayeredData;
-import org.spongepowered.common.data.manipulator.block.SpongePoweredData;
-import org.spongepowered.common.data.manipulator.entity.SpongeAgeableData;
-import org.spongepowered.common.data.manipulator.entity.SpongeAgentData;
-import org.spongepowered.common.data.manipulator.entity.SpongeCareerData;
-import org.spongepowered.common.data.manipulator.entity.SpongeFoodData;
-import org.spongepowered.common.data.manipulator.entity.SpongeHealthData;
-import org.spongepowered.common.data.manipulator.entity.SpongeInvulnerabilityData;
-import org.spongepowered.common.data.manipulator.entity.SpongeSkinData;
-import org.spongepowered.common.data.manipulator.item.SpongeAuthorData;
-import org.spongepowered.common.data.manipulator.item.SpongeEnchantmentItemData;
-import org.spongepowered.common.data.manipulator.item.SpongeLoreData;
-import org.spongepowered.common.data.manipulator.item.SpongePagedData;
-import org.spongepowered.common.data.manipulator.tileentity.SpongeBannerData;
-import org.spongepowered.common.data.manipulator.tileentity.SpongeBeaconData;
-import org.spongepowered.common.data.manipulator.tileentity.SpongeSignData;
+import org.spongepowered.common.data.component.base.SpongeDisplayNameComponent;
+import org.spongepowered.common.data.component.base.SpongePotionEffectComponent;
+import org.spongepowered.common.data.component.base.SpongeRepresentedItemComponent;
+import org.spongepowered.common.data.component.base.SpongeRotationalComponent;
+import org.spongepowered.common.data.component.base.SpongeSkullComponent;
+import org.spongepowered.common.data.component.entity.SpongeTradeOfferComponent;
+import org.spongepowered.common.data.component.block.SpongeDirectionalComponent;
+import org.spongepowered.common.data.component.block.SpongeLayeredComponent;
+import org.spongepowered.common.data.component.block.SpongePoweredComponent;
+import org.spongepowered.common.data.component.entity.SpongeAgeableComponent;
+import org.spongepowered.common.data.component.entity.SpongeAgentComponent;
+import org.spongepowered.common.data.component.entity.SpongeCareerComponent;
+import org.spongepowered.common.data.component.entity.SpongeFoodComponent;
+import org.spongepowered.common.data.component.entity.SpongeHealthComponent;
+import org.spongepowered.common.data.component.entity.SpongeInvulnerabilityComponent;
+import org.spongepowered.common.data.component.entity.SpongeSkinComponent;
+import org.spongepowered.common.data.component.item.SpongeAuthorComponent;
+import org.spongepowered.common.data.component.item.SpongeEnchantmentItemComponent;
+import org.spongepowered.common.data.component.item.SpongeLoreComponent;
+import org.spongepowered.common.data.component.item.SpongePagedComponent;
+import org.spongepowered.common.data.component.tileentity.SpongeBannerComponent;
+import org.spongepowered.common.data.component.tileentity.SpongeBeaconComponent;
+import org.spongepowered.common.data.component.tileentity.SpongeSignComponent;
+import org.spongepowered.common.data.processor.SpongeRotationalDataProcessor;
+import org.spongepowered.common.data.processor.SpongeSkullDataProcessor;
 import org.spongepowered.common.data.processor.block.SpongeLayeredDataProcessor;
 import org.spongepowered.common.data.processor.item.SpongeAuthorProcessor;
 import org.spongepowered.common.data.type.SpongeCookedFish;
 import org.spongepowered.common.data.type.SpongeNotePitch;
 import org.spongepowered.common.data.type.SpongeSkullType;
-import org.spongepowered.common.data.processor.SpongeBannerDataProcessor;
+import org.spongepowered.common.data.processor.SpongeBannerComponentProcessor;
 import org.spongepowered.common.data.processor.SpongeBeaconDataProcessor;
 import org.spongepowered.common.data.processor.SpongeDisplayNameDataProcessor;
 import org.spongepowered.common.data.processor.SpongePotionDataProcessor;
@@ -782,7 +787,7 @@ public abstract class SpongeGameRegistry implements GameRegistry {
     }
 
     @Override
-    public DataManipulatorRegistry getManipulatorRegistry() {
+    public ComponentRegistry getComponentRegistry() {
         return SpongeManipulatorRegistry.getInstance();
     }
 
@@ -1412,72 +1417,72 @@ public abstract class SpongeGameRegistry implements GameRegistry {
         service.registerBuilder(Sign.class, new SpongeSignBuilder(game));
         service.registerBuilder(Skull.class, new SpongeSkullBuilder(game));
 
-        SpongeBannerDataProcessor bannerDataBuilder = new SpongeBannerDataProcessor();
+        SpongeBannerComponentProcessor bannerDataBuilder = new SpongeBannerComponentProcessor();
         service.registerBuilder(BannerData.class, bannerDataBuilder);
         dataRegistry.register(BannerData.class, bannerDataBuilder);
-        dataRegistry.register((Class<BannerData>) (Class) SpongeBannerData.class, bannerDataBuilder);
+        dataRegistry.register((Class<BannerComponent>) (Class) SpongeBannerComponent.class, bannerDataBuilder);
 
         SpongeSignDataProcessor signBuilder = new SpongeSignDataProcessor();
         service.registerBuilder(SignData.class, signBuilder);
         dataRegistry.register(SignData.class, signBuilder);
-        dataRegistry.registerDataProcessorAndImpl(SignData.class, SpongeSignData.class, signBuilder);
+        dataRegistry.registerDataProcessorAndImpl(SignData.class, SpongeSignComponent.class, signBuilder);
 
         SpongeBeaconDataProcessor beaconDataBuilder = new SpongeBeaconDataProcessor();
         service.registerBuilder(BeaconData.class, beaconDataBuilder);
         dataRegistry.register(BeaconData.class, beaconDataBuilder);
-        dataRegistry.registerDataProcessorAndImpl(BeaconData.class, SpongeBeaconData.class, beaconDataBuilder);
+        dataRegistry.registerDataProcessorAndImpl(BeaconData.class, SpongeBeaconComponent.class, beaconDataBuilder);
 
         SpongeTradeOfferProcessor tradeOfferProcessor = new SpongeTradeOfferProcessor();
         service.registerBuilder(TradeOfferData.class, tradeOfferProcessor);
         dataRegistry.register(TradeOfferData.class, tradeOfferProcessor);
-        dataRegistry.registerDataProcessorAndImpl(TradeOfferData.class, SpongeTradeOfferData.class, tradeOfferProcessor);
+        dataRegistry.registerDataProcessorAndImpl(TradeOfferData.class, SpongeTradeOfferComponent.class, tradeOfferProcessor);
 
         SpongeLoreProcessor loreProcessor = new SpongeLoreProcessor();
         service.registerBuilder(LoreData.class, loreProcessor);
         dataRegistry.register(LoreData.class, loreProcessor);
-        dataRegistry.registerDataProcessorAndImpl(LoreData.class, SpongeLoreData.class, loreProcessor);
+        dataRegistry.registerDataProcessorAndImpl(LoreData.class, SpongeLoreComponent.class, loreProcessor);
 
         SpongeEnchantmentProcessor enchantmentProcessor = new SpongeEnchantmentProcessor();
         service.registerBuilder(EnchantmentData.class, enchantmentProcessor);
         dataRegistry.register(EnchantmentData.class, enchantmentProcessor);
-        dataRegistry.registerDataProcessorAndImpl(EnchantmentData.class, SpongeEnchantmentItemData.class, enchantmentProcessor);
+        dataRegistry.registerDataProcessorAndImpl(EnchantmentData.class, SpongeEnchantmentItemComponent.class, enchantmentProcessor);
 
         SpongeDisplayNameDataProcessor displayNameDataBuilder = new SpongeDisplayNameDataProcessor();
         service.registerBuilder(DisplayNameData.class, displayNameDataBuilder);
         dataRegistry.register(DisplayNameData.class, displayNameDataBuilder);
-        dataRegistry.registerDataProcessorAndImpl(DisplayNameData.class, SpongeDisplayNameData.class, displayNameDataBuilder);
+        dataRegistry.registerDataProcessorAndImpl(DisplayNameData.class, SpongeDisplayNameComponent.class, displayNameDataBuilder);
 
         SpongeCareerDataProcessor careerDataProcessor = new SpongeCareerDataProcessor();
         service.registerBuilder(CareerData.class, careerDataProcessor);
         dataRegistry.register(CareerData.class, careerDataProcessor);
-        dataRegistry.registerDataProcessorAndImpl(CareerData.class, SpongeCareerData.class, careerDataProcessor);
+        dataRegistry.registerDataProcessorAndImpl(CareerData.class, SpongeCareerComponent.class, careerDataProcessor);
 
         SpongeDirectionalProcessor directionalProcessor = new SpongeDirectionalProcessor();
         service.registerBuilder(DirectionalData.class, directionalProcessor);
         dataRegistry.register(DirectionalData.class, directionalProcessor);
-        dataRegistry.registerDataProcessorAndImpl(DirectionalData.class, SpongeDirectionalData.class, directionalProcessor);
-        dataRegistry.registerBlockProcessorAndImpl(DirectionalData.class, SpongeDirectionalData.class, directionalProcessor);
+        dataRegistry.registerDataProcessorAndImpl(DirectionalData.class, SpongeDirectionalComponent.class, directionalProcessor);
+        dataRegistry.registerBlockProcessorAndImpl(DirectionalData.class, SpongeDirectionalComponent.class, directionalProcessor);
 
         SpongePoweredProcessor poweredProcessor = new SpongePoweredProcessor();
         service.registerBuilder(PoweredData.class, poweredProcessor);
         dataRegistry.register(PoweredData.class, poweredProcessor);
-        dataRegistry.registerDataProcessorAndImpl(PoweredData.class, SpongePoweredData.class, poweredProcessor);
-        dataRegistry.registerBlockProcessorAndImpl(PoweredData.class, SpongePoweredData.class, poweredProcessor);
+        dataRegistry.registerDataProcessorAndImpl(PoweredData.class, SpongePoweredComponent.class, poweredProcessor);
+        dataRegistry.registerBlockProcessorAndImpl(PoweredData.class, SpongePoweredComponent.class, poweredProcessor);
 
         SpongeInvulnerabilityProcessor invulnerabilityProcessor = new SpongeInvulnerabilityProcessor();
         service.registerBuilder(InvulnerabilityData.class, invulnerabilityProcessor);
         dataRegistry.register(InvulnerabilityData.class, invulnerabilityProcessor);
-        dataRegistry.registerDataProcessorAndImpl(InvulnerabilityData.class, SpongeInvulnerabilityData.class, invulnerabilityProcessor);
+        dataRegistry.registerDataProcessorAndImpl(InvulnerabilityData.class, SpongeInvulnerabilityComponent.class, invulnerabilityProcessor);
 
         SpongeRepresentedItemProcessor representedItemBuilder = new SpongeRepresentedItemProcessor();
         service.registerBuilder(RepresentedItemData.class, representedItemBuilder);
         dataRegistry.register(RepresentedItemData.class, representedItemBuilder);
-        dataRegistry.registerDataProcessorAndImpl(RepresentedItemData.class, SpongeRepresentedItemData.class, representedItemBuilder);
+        dataRegistry.registerDataProcessorAndImpl(RepresentedItemData.class, SpongeRepresentedItemComponent.class, representedItemBuilder);
 
         SpongePotionDataProcessor potionDataBuilder = new SpongePotionDataProcessor();
         service.registerBuilder(PotionEffectData.class, potionDataBuilder);
         dataRegistry.register(PotionEffectData.class, potionDataBuilder);
-        dataRegistry.registerDataProcessorAndImpl(PotionEffectData.class, SpongePotionEffectData.class, potionDataBuilder);
+        dataRegistry.registerDataProcessorAndImpl(PotionEffectData.class, SpongePotionEffectComponent.class, potionDataBuilder);
 
         SpongeTradeOfferBuilder tradeOfferBuilder = new SpongeTradeOfferBuilder();
         service.registerBuilder(TradeOffer.class, tradeOfferBuilder);
@@ -1485,43 +1490,55 @@ public abstract class SpongeGameRegistry implements GameRegistry {
         SpongeFoodDataProcessor foodDataProcessor = new SpongeFoodDataProcessor();
         service.registerBuilder(FoodData.class, foodDataProcessor);
         dataRegistry.register(FoodData.class, foodDataProcessor);
-        dataRegistry.registerDataProcessorAndImpl(FoodData.class, SpongeFoodData.class, foodDataProcessor);
+        dataRegistry.registerDataProcessorAndImpl(FoodData.class, SpongeFoodComponent.class, foodDataProcessor);
 
         SpongeHealthProcessor healthProcessor = new SpongeHealthProcessor();
         service.registerBuilder(HealthData.class, healthProcessor);
         dataRegistry.register(HealthData.class, healthProcessor);
-        dataRegistry.registerDataProcessorAndImpl(HealthData.class, SpongeHealthData.class, healthProcessor);
+        dataRegistry.registerDataProcessorAndImpl(HealthData.class, SpongeHealthComponent.class, healthProcessor);
 
         SpongePagesProcessor pagesProcessor = new SpongePagesProcessor();
         service.registerBuilder(PagedData.class, pagesProcessor);
         dataRegistry.register(PagedData.class, pagesProcessor);
-        dataRegistry.registerDataProcessorAndImpl(PagedData.class, SpongePagedData.class, pagesProcessor);
+        dataRegistry.registerDataProcessorAndImpl(PagedData.class, SpongePagedComponent.class, pagesProcessor);
 
         SpongeAuthorProcessor authorProcessor = new SpongeAuthorProcessor();
         service.registerBuilder(AuthorData.class, authorProcessor);
         dataRegistry.register(AuthorData.class, authorProcessor);
-        dataRegistry.registerDataProcessorAndImpl(AuthorData.class, SpongeAuthorData.class, authorProcessor);
+        dataRegistry.registerDataProcessorAndImpl(AuthorData.class, SpongeAuthorComponent.class, authorProcessor);
 
         SpongeAgeableDataProcessor ageableDataProcessor = new SpongeAgeableDataProcessor();
         service.registerBuilder(AgeableData.class, ageableDataProcessor);
         dataRegistry.register(AgeableData.class, ageableDataProcessor);
-        dataRegistry.registerDataProcessorAndImpl(AgeableData.class, SpongeAgeableData.class, ageableDataProcessor);
+        dataRegistry.registerDataProcessorAndImpl(AgeableData.class, SpongeAgeableComponent.class, ageableDataProcessor);
 
         SpongeAgentDataProcessor agentDataProcessor = new SpongeAgentDataProcessor();
         service.registerBuilder(AgentData.class, agentDataProcessor);
         dataRegistry.register(AgentData.class, agentDataProcessor);
-        dataRegistry.registerDataProcessorAndImpl(AgentData.class, SpongeAgentData.class, agentDataProcessor);
+        dataRegistry.registerDataProcessorAndImpl(AgentData.class, SpongeAgentComponent.class, agentDataProcessor);
 
         SpongeSkinDataProcessor skinDataProcessor = new SpongeSkinDataProcessor();
         service.registerBuilder(SkinData.class, skinDataProcessor);
         dataRegistry.register(SkinData.class, skinDataProcessor);
-        dataRegistry.registerDataProcessorAndImpl(SkinData.class, SpongeSkinData.class, skinDataProcessor);
+        dataRegistry.registerDataProcessorAndImpl(SkinData.class, SpongeSkinComponent.class, skinDataProcessor);
 
         SpongeLayeredDataProcessor layeredDataProcessor = new SpongeLayeredDataProcessor();
         service.registerBuilder(LayeredData.class, layeredDataProcessor);
         dataRegistry.register(LayeredData.class, layeredDataProcessor);
-        dataRegistry.registerDataProcessorAndImpl(LayeredData.class, SpongeLayeredData.class, layeredDataProcessor);
-        dataRegistry.registerBlockProcessorAndImpl(LayeredData.class, SpongeLayeredData.class, layeredDataProcessor);
+        dataRegistry.registerDataProcessorAndImpl(LayeredData.class, SpongeLayeredComponent.class, layeredDataProcessor);
+        dataRegistry.registerBlockProcessorAndImpl(LayeredData.class, SpongeLayeredComponent.class, layeredDataProcessor);
+
+        SpongeRotationalDataProcessor rotationalDataProcessor = new SpongeRotationalDataProcessor();
+        service.registerBuilder(RotationalData.class, rotationalDataProcessor);
+        dataRegistry.register(RotationalData.class, rotationalDataProcessor);
+        dataRegistry.registerDataProcessorAndImpl(RotationalData.class, SpongeRotationalComponent.class, rotationalDataProcessor);
+        dataRegistry.registerBlockProcessorAndImpl(RotationalData.class, SpongeRotationalComponent.class, rotationalDataProcessor);
+
+        SpongeSkullDataProcessor skullDataProcessor = new SpongeSkullDataProcessor();
+        service.registerBuilder(SkullData.class, skullDataProcessor);
+        dataRegistry.register(SkullData.class, skullDataProcessor);
+        dataRegistry.registerDataProcessorAndImpl(SkullData.class, SpongeSkullComponent.class, skullDataProcessor);
+        dataRegistry.registerBlockProcessorAndImpl(SkullData.class, SpongeSkullComponent.class, skullDataProcessor);
 
         // User
         // TODO someone needs to write a User implementation...

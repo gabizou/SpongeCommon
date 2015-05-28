@@ -26,8 +26,6 @@ package org.spongepowered.common.data.processor.entity;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.spongepowered.common.data.DataTransactionBuilder.fail;
-import static org.spongepowered.common.data.DataTransactionBuilder.successNoData;
-import static org.spongepowered.common.data.DataTransactionBuilder.successReplaceData;
 
 import com.google.common.base.Optional;
 import net.minecraft.entity.EntityLivingBase;
@@ -35,11 +33,11 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.entity.DamageableData;
+import org.spongepowered.api.data.manipulator.entity.DamageableComponent;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.entity.SpongeDamageableData;
+import org.spongepowered.common.data.component.entity.SpongeDamageableComponent;
 import org.spongepowered.common.data.util.DataUtil;
 import org.spongepowered.common.interfaces.entity.IMixinEntityLivingBase;
 
@@ -47,10 +45,10 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-public class SpongeDamageableDataProcessor implements SpongeDataProcessor<DamageableData> {
+public class SpongeDamageableDataProcessor implements SpongeDataProcessor<DamageableComponent> {
 
     @Override
-    public Optional<DamageableData> getFrom(DataHolder dataHolder) {
+    public Optional<DamageableComponent> getFrom(DataHolder dataHolder) {
         if (!(checkNotNull(dataHolder) instanceof EntityLivingBase)) {
             return Optional.absent();
         }
@@ -66,7 +64,7 @@ public class SpongeDamageableDataProcessor implements SpongeDataProcessor<Damage
     }
 
     @Override
-    public Optional<DamageableData> fillData(DataHolder dataHolder, DamageableData manipulator, DataPriority priority) {
+    public Optional<DamageableComponent> fillData(DataHolder dataHolder, DamageableData manipulator, DataPriority priority) {
         if (!(checkNotNull(dataHolder) instanceof EntityLivingBase)) {
             return Optional.absent();
         }
@@ -94,7 +92,7 @@ public class SpongeDamageableDataProcessor implements SpongeDataProcessor<Damage
             return fail(manipulator);
         }
         switch (checkNotNull(priority)) {
-            case DATA_MANIPULATOR:
+            case COMPONENT:
             case POST_MERGE:
                 final DamageableData old = getFrom(dataHolder).get();
                 ((EntityLivingBase) dataHolder).hurtResistantTime = manipulator.getInvulnerabilityTicks();
@@ -118,20 +116,20 @@ public class SpongeDamageableDataProcessor implements SpongeDataProcessor<Damage
     }
 
     @Override
-    public Optional<DamageableData> build(DataView container) throws InvalidDataException {
-        final double lastDamage = DataUtil.getData(container, SpongeDamageableData.LAST_DAMAGE, Double.TYPE);
-        final String lastAttacker = DataUtil.getData(container, SpongeDamageableData.LAST_ATTACKER, String.class);
+    public Optional<DamageableComponent> build(DataView container) throws InvalidDataException {
+        final double lastDamage = DataUtil.getData(container, SpongeDamageableComponent.LAST_DAMAGE, Double.TYPE);
+        final String lastAttacker = DataUtil.getData(container, SpongeDamageableComponent.LAST_ATTACKER, String.class);
         final UUID attackerUuid = UUID.fromString(lastAttacker); // We can't actually reconstruct this information
         return Optional.of(create().setLastDamage(lastDamage));
     }
 
     @Override
     public DamageableData create() {
-        return new SpongeDamageableData();
+        return new SpongeDamageableComponent();
     }
 
     @Override
-    public Optional<DamageableData> createFrom(DataHolder dataHolder) {
+    public Optional<DamageableComponent> createFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof EntityLivingBase)) {
             return Optional.absent();
         }

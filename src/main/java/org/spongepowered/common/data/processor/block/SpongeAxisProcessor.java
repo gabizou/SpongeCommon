@@ -35,16 +35,16 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.block.AxisData;
+import org.spongepowered.api.data.manipulator.block.AxisComponent;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.data.SpongeBlockProcessor;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.block.SpongeAxisData;
+import org.spongepowered.common.data.component.block.SpongeAxisComponent;
 
-public class SpongeAxisProcessor implements SpongeDataProcessor<AxisData>, SpongeBlockProcessor<AxisData> {
+public class SpongeAxisProcessor implements SpongeDataProcessor<AxisComponent>, SpongeBlockProcessor<AxisComponent> {
 
     @Override
-    public Optional<AxisData> fillData(DataHolder dataHolder, AxisData manipulator, DataPriority priority) {
+    public Optional<AxisComponent> fillData(DataHolder dataHolder, AxisData manipulator, DataPriority priority) {
         return Optional.absent();
     }
 
@@ -59,27 +59,27 @@ public class SpongeAxisProcessor implements SpongeDataProcessor<AxisData>, Spong
     }
 
     @Override
-    public Optional<AxisData> build(DataView container) throws InvalidDataException {
+    public Optional<AxisComponent> build(DataView container) throws InvalidDataException {
         return Optional.absent();
     }
 
     @Override
     public AxisData create() {
-        return new SpongeAxisData();
+        return new SpongeAxisComponent();
     }
 
     @Override
-    public Optional<AxisData> createFrom(DataHolder dataHolder) {
+    public Optional<AxisComponent> createFrom(DataHolder dataHolder) {
         return Optional.absent();
     }
 
     @Override
-    public Optional<AxisData> getFrom(DataHolder dataHolder) {
+    public Optional<AxisComponent> getFrom(DataHolder dataHolder) {
         return Optional.absent();
     }
 
     @Override
-    public Optional<AxisData> fromBlockPos(World world, BlockPos blockPos) {
+    public Optional<AxisComponent> fromBlockPos(World world, BlockPos blockPos) {
         return Optional.absent();
     }
 
@@ -99,7 +99,7 @@ public class SpongeAxisProcessor implements SpongeDataProcessor<AxisData>, Spong
     }
 
     @Override
-    public Optional<AxisData> createFrom(IBlockState blockState) {
+    public Optional<AxisComponent> createFrom(IBlockState blockState) {
 
         return Optional.absent();
     }

@@ -24,7 +24,7 @@
  */
 package org.spongepowered.common.mixin.core.entity.hanging;
 
-import org.spongepowered.api.data.manipulator.entity.ArtData;
+import org.spongepowered.api.data.manipulator.entity.ArtComponent;
 import org.spongepowered.api.entity.hanging.Painting;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.asm.mixin.Mixin;

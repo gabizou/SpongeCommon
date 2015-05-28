@@ -27,7 +27,7 @@ package org.spongepowered.common.mixin.core.entity.hanging;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
-import org.spongepowered.api.data.manipulator.block.DirectionalData;
+import org.spongepowered.api.data.manipulator.block.DirectionalComponent;
 import org.spongepowered.api.entity.hanging.Hanging;
 import org.spongepowered.api.util.Direction;
 import org.spongepowered.api.util.annotation.NonnullByDefault;

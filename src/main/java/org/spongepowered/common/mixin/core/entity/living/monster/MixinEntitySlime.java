@@ -25,7 +25,7 @@
 package org.spongepowered.common.mixin.core.entity.living.monster;
 
 import net.minecraft.entity.monster.EntitySlime;
-import org.spongepowered.api.data.manipulator.entity.SlimeData;
+import org.spongepowered.api.data.manipulator.entity.SlimeComponent;
 import org.spongepowered.api.entity.living.monster.Slime;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.common.mixin.core.entity.living.MixinEntityLiving;

@@ -26,7 +26,6 @@ package org.spongepowered.common.data.processor;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.spongepowered.common.data.DataTransactionBuilder.fail;
-import static org.spongepowered.common.data.DataTransactionBuilder.successNoData;
 import static org.spongepowered.common.item.ItemsHelper.getTagCompound;
 
 import com.google.common.base.Optional;
@@ -39,28 +38,28 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.DisplayNameData;
+import org.spongepowered.api.data.manipulator.DisplayNameComponent;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.api.text.Texts;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.SpongeDisplayNameData;
+import org.spongepowered.common.data.component.base.SpongeDisplayNameComponent;
 import org.spongepowered.common.text.SpongeTexts;
 
-public class SpongeDisplayNameDataProcessor implements SpongeDataProcessor<DisplayNameData> {
+public class SpongeDisplayNameDataProcessor implements SpongeDataProcessor<DisplayNameComponent> {
 
     @Override
-    public Optional<DisplayNameData> build(DataView container) throws InvalidDataException {
+    public Optional<DisplayNameComponent> build(DataView container) throws InvalidDataException {
         return null;
     }
 
     @Override
     public DisplayNameData create() {
-        return new SpongeDisplayNameData();
+        return new SpongeDisplayNameComponent();
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public Optional<DisplayNameData> createFrom(DataHolder dataHolder) {
+    public Optional<DisplayNameComponent> createFrom(DataHolder dataHolder) {
         if (dataHolder instanceof Entity) {
             if (((Entity) dataHolder).hasCustomName()) {
                 final DisplayNameData data = create();
@@ -82,7 +81,7 @@ public class SpongeDisplayNameDataProcessor implements SpongeDataProcessor<Displ
             final NBTTagCompound mainCompound = ((ItemStack) dataHolder).getSubCompound("display", false);
             if (mainCompound != null && mainCompound.hasKey("Name", 8)) {
                 final String displayString = mainCompound.getString("Name");
-                final DisplayNameData data = new SpongeDisplayNameData();
+                final DisplayNameData data = new SpongeDisplayNameComponent();
                 System.err.println("The retrieved displayname from an item stack was: " + displayString);
                 data.setDisplayName(Texts.fromLegacy(displayString));
                 data.setCustomNameVisible(true);
@@ -92,7 +91,7 @@ public class SpongeDisplayNameDataProcessor implements SpongeDataProcessor<Displ
             }
         } else if (dataHolder instanceof IWorldNameable) {
             if (((IWorldNameable) dataHolder).hasCustomName()) {
-                final DisplayNameData data = new SpongeDisplayNameData();
+                final DisplayNameData data = new SpongeDisplayNameComponent();
                 final String customName = ((IWorldNameable) dataHolder).getCommandSenderName();
                 data.setDisplayName(Texts.fromLegacy(customName));
                 data.setCustomNameVisible(true);
@@ -115,7 +114,7 @@ public class SpongeDisplayNameDataProcessor implements SpongeDataProcessor<Displ
     }
 
     @Override
-    public Optional<DisplayNameData> fillData(DataHolder dataHolder, DisplayNameData manipulator, DataPriority priority) {
+    public Optional<DisplayNameComponent> fillData(DataHolder dataHolder, DisplayNameData manipulator, DataPriority priority) {
         return Optional.absent(); // todo
     }
 
@@ -124,7 +123,7 @@ public class SpongeDisplayNameDataProcessor implements SpongeDataProcessor<Displ
     public DataTransactionResult setData(DataHolder dataHolder, DisplayNameData manipulator, DataPriority priority) {
         if (dataHolder instanceof ItemStack) {
             switch (checkNotNull(priority)) {
-                case DATA_MANIPULATOR:
+                case COMPONENT:
                     if (((ItemStack) dataHolder).getItem() == Items.written_book) {
                         getTagCompound((ItemStack) dataHolder).setString("title", Texts.toLegacy(manipulator.getDisplayName()));
                     } else {
@@ -146,7 +145,7 @@ public class SpongeDisplayNameDataProcessor implements SpongeDataProcessor<Displ
     }
 
     @Override
-    public Optional<DisplayNameData> getFrom(DataHolder dataHolder) {
+    public Optional<DisplayNameComponent> getFrom(DataHolder dataHolder) {
         return Optional.absent();
     }
 }

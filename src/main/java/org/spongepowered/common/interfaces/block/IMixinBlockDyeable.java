@@ -30,7 +30,7 @@ import net.minecraft.world.World;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
-import org.spongepowered.api.data.manipulator.DyeableData;
+import org.spongepowered.api.data.manipulator.DyeableComponent;
 
 public interface IMixinBlockDyeable extends IMixinBlock {
 

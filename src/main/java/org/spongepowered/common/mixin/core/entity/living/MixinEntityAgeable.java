@@ -28,7 +28,7 @@ import static org.spongepowered.api.data.DataQuery.of;
 
 import net.minecraft.entity.EntityAgeable;
 import org.spongepowered.api.data.DataContainer;
-import org.spongepowered.api.data.manipulator.entity.AgeableData;
+import org.spongepowered.api.data.manipulator.entity.AgeableComponent;
 import org.spongepowered.api.entity.living.Ageable;
 import org.spongepowered.asm.mixin.Mixin;
 

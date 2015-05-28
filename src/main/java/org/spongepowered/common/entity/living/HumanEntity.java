@@ -45,9 +45,9 @@ import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSettings;
 import org.spongepowered.api.data.DataTransactionResult;
-import org.spongepowered.api.data.manipulator.entity.SkinData;
+import org.spongepowered.api.data.manipulator.entity.SkinComponent;
 import org.spongepowered.common.data.DataTransactionBuilder;
-import org.spongepowered.common.data.manipulator.entity.SpongeSkinData;
+import org.spongepowered.common.data.component.entity.SpongeSkinComponent;
 import org.spongepowered.common.interfaces.IMixinEntity;
 
 import java.util.ArrayList;
@@ -166,15 +166,15 @@ public class HumanEntity extends EntityPlayer {
         return DataTransactionBuilder.successNoData();
     }
 
-    public Optional<SkinData> getSkinData() {
+    public Optional<SkinComponent> getSkinData() {
         if (this.skinUuid != null) {
-            return Optional.<SkinData>of(new SpongeSkinData(this.skinUuid));
+            return Optional.<SkinComponent>of(new SpongeSkinComponent(this.skinUuid));
         }
         return Optional.absent();
     }
 
     public SkinData createSkinData() {
-        return this.getSkinData().or(new SpongeSkinData(this.entityUniqueID));
+        return this.getSkinData().or(new SpongeSkinComponent(this.entityUniqueID));
     }
 
     public boolean removeSkin() {
@@ -189,7 +189,7 @@ public class HumanEntity extends EntityPlayer {
         return true;
     }
 
-    public Optional<SkinData> fillSkinData(SkinData manipulator) {
+    public Optional<SkinComponent> fillSkinData(SkinData manipulator) {
         if (this.skinUuid == null) {
             return Optional.absent();
         }

@@ -25,7 +25,7 @@
 package org.spongepowered.common.mixin.core.entity.living.monster;
 
 import net.minecraft.entity.monster.EntityEndermite;
-import org.spongepowered.api.data.manipulator.entity.ExpirableData;
+import org.spongepowered.api.data.manipulator.entity.ExpirableComponent;
 import org.spongepowered.api.entity.living.monster.Endermite;
 import org.spongepowered.asm.mixin.Mixin;
 

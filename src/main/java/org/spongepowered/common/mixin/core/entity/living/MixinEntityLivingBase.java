@@ -39,8 +39,8 @@ import net.minecraft.potion.Potion;
 import net.minecraft.util.CombatTracker;
 import net.minecraft.util.DamageSource;
 import org.spongepowered.api.data.DataContainer;
-import org.spongepowered.api.data.manipulator.entity.DamageableData;
-import org.spongepowered.api.data.manipulator.entity.HealthData;
+import org.spongepowered.api.data.manipulator.entity.DamageableComponent;
+import org.spongepowered.api.data.manipulator.entity.HealthComponent;
 import org.spongepowered.api.entity.living.Human;
 import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.potion.PotionEffect;
@@ -280,7 +280,7 @@ public abstract class MixinEntityLivingBase extends MixinEntity implements Livin
     @Override
     public DataContainer toContainer() {
         // todo actually store more data.
-        return super.toContainer().set(of("HealthData"), getHealthData()).set(of("DamageableData"), getMortalData());
+        return super.toContainer().set(of("HealthData"), getHealthData()).set(of("DamageableComponent"), getMortalData());
     }
 
 }

@@ -26,7 +26,6 @@ package org.spongepowered.common.data.processor.entity;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.spongepowered.common.data.DataTransactionBuilder.fail;
-import static org.spongepowered.common.data.DataTransactionBuilder.successNoData;
 
 import com.google.common.base.Optional;
 import net.minecraft.entity.projectile.EntityArrow;
@@ -34,24 +33,24 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.entity.CriticalHitData;
+import org.spongepowered.api.data.manipulator.entity.CriticalHitComponent;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.entity.SpongeCriticalHitData;
+import org.spongepowered.common.data.component.entity.SpongeCriticalHitComponent;
 import org.spongepowered.common.data.util.DataUtil;
 
-public class SpongeCriticalDataProcessor implements SpongeDataProcessor<CriticalHitData> {
+public class SpongeCriticalDataProcessor implements SpongeDataProcessor<CriticalHitComponent> {
 
     @Override
-    public Optional<CriticalHitData> getFrom(DataHolder dataHolder) {
+    public Optional<CriticalHitComponent> getFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof EntityArrow)) {
             return Optional.absent();
         }
-        return ((EntityArrow) dataHolder).getIsCritical() ? Optional.of(create()) : Optional.<CriticalHitData>absent();
+        return ((EntityArrow) dataHolder).getIsCritical() ? Optional.of(create()) : Optional.<CriticalHitComponent>absent();
     }
 
     @Override
-    public Optional<CriticalHitData> fillData(DataHolder dataHolder, CriticalHitData manipulator, DataPriority priority) {
+    public Optional<CriticalHitComponent> fillData(DataHolder dataHolder, CriticalHitData manipulator, DataPriority priority) {
         if (!(dataHolder instanceof EntityArrow)) {
             return Optional.absent();
         }
@@ -64,7 +63,7 @@ public class SpongeCriticalDataProcessor implements SpongeDataProcessor<Critical
             return fail(manipulator);
         }
         switch (checkNotNull(priority)) {
-            case DATA_MANIPULATOR:
+            case COMPONENT:
             case POST_MERGE:
                 ((EntityArrow) dataHolder).setIsCritical(true);
                 return successNoData();
@@ -83,18 +82,18 @@ public class SpongeCriticalDataProcessor implements SpongeDataProcessor<Critical
     }
 
     @Override
-    public Optional<CriticalHitData> build(DataView container) throws InvalidDataException {
-        final boolean isCritical = DataUtil.getData(container, SpongeCriticalHitData.CRITICAL, Boolean.TYPE);
-        return isCritical ? Optional.of(create()) : Optional.<CriticalHitData>absent();
+    public Optional<CriticalHitComponent> build(DataView container) throws InvalidDataException {
+        final boolean isCritical = DataUtil.getData(container, SpongeCriticalHitComponent.CRITICAL, Boolean.TYPE);
+        return isCritical ? Optional.of(create()) : Optional.<CriticalHitComponent>absent();
     }
 
     @Override
     public CriticalHitData create() {
-        return new SpongeCriticalHitData();
+        return new SpongeCriticalHitComponent();
     }
 
     @Override
-    public Optional<CriticalHitData> createFrom(DataHolder dataHolder) {
+    public Optional<CriticalHitComponent> createFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof EntityArrow)) {
             return Optional.absent();
         }

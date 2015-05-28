@@ -26,7 +26,6 @@ package org.spongepowered.common.data.processor.entity;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.spongepowered.common.data.DataTransactionBuilder.fail;
-import static org.spongepowered.common.data.DataTransactionBuilder.successNoData;
 import static org.spongepowered.common.data.util.DataUtil.checkDataExists;
 
 import com.google.common.base.Optional;
@@ -35,24 +34,24 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.entity.AgentData;
+import org.spongepowered.api.data.manipulator.entity.AgentComponent;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.entity.SpongeAgentData;
+import org.spongepowered.common.data.component.entity.SpongeAgentComponent;
 
-public class SpongeAgentDataProcessor implements SpongeDataProcessor<AgentData> {
+public class SpongeAgentDataProcessor implements SpongeDataProcessor<AgentComponent> {
 
     @Override
-    public Optional<AgentData> getFrom(DataHolder dataHolder) {
+    public Optional<AgentComponent> getFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof EntityLiving)) {
             return Optional.absent();
         }
         final boolean aiDisabled = ((EntityLiving) dataHolder).isAIDisabled();
-        return aiDisabled ?  Optional.<AgentData>absent() : Optional.of(create());
+        return aiDisabled ?  Optional.<AgentComponent>absent() : Optional.of(create());
     }
 
     @Override
-    public Optional<AgentData> fillData(DataHolder dataHolder, AgentData manipulator, DataPriority priority) {
+    public Optional<AgentComponent> fillData(DataHolder dataHolder, AgentData manipulator, DataPriority priority) {
         if (!(dataHolder instanceof EntityLiving)) {
             return Optional.absent();
         }
@@ -77,7 +76,7 @@ public class SpongeAgentDataProcessor implements SpongeDataProcessor<AgentData> 
             return fail(manipulator);
         }
         switch (checkNotNull(priority)) {
-            case DATA_MANIPULATOR:
+            case COMPONENT:
             case POST_MERGE:
                 ((EntityLiving) dataHolder).setNoAI(false);
                 return successNoData();
@@ -96,9 +95,9 @@ public class SpongeAgentDataProcessor implements SpongeDataProcessor<AgentData> 
     }
 
     @Override
-    public Optional<AgentData> build(DataView container) throws InvalidDataException {
-        checkDataExists(container, SpongeAgentData.AI_ENABLED);
-        final boolean aiEnabled = container.getBoolean(SpongeAgentData.AI_ENABLED).get();
+    public Optional<AgentComponent> build(DataView container) throws InvalidDataException {
+        checkDataExists(container, SpongeAgentComponent.AI_ENABLED);
+        final boolean aiEnabled = container.getBoolean(SpongeAgentComponent.AI_ENABLED).get();
         if (aiEnabled) {
             return Optional.of(create());
         }
@@ -107,11 +106,11 @@ public class SpongeAgentDataProcessor implements SpongeDataProcessor<AgentData> 
 
     @Override
     public AgentData create() {
-        return new SpongeAgentData();
+        return new SpongeAgentComponent();
     }
 
     @Override
-    public Optional<AgentData> createFrom(DataHolder dataHolder) {
+    public Optional<AgentComponent> createFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof EntityLiving)) {
             return Optional.absent();
         }

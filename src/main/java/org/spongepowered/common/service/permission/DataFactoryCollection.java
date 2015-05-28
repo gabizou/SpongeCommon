@@ -27,7 +27,7 @@ package org.spongepowered.common.service.permission;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import org.spongepowered.api.service.permission.MemorySubjectData;
+import org.spongepowered.api.service.permission.MemorySubjectComponent;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.permission.SubjectCollection;
 import org.spongepowered.api.service.permission.context.Context;
@@ -43,10 +43,10 @@ import java.util.concurrent.ConcurrentMap;
 public class DataFactoryCollection extends SpongeSubjectCollection {
     private final SpongePermissionService service;
     private final ConcurrentMap<String, SpongeSubject> subjects = new ConcurrentHashMap<String, SpongeSubject>();
-    private final Function<String, MemorySubjectData> dataFactory;
+    private final Function<String, MemorySubjectComponent> dataFactory;
     private final Function<String, CommandSource> commandSourceFunction;
 
-    protected DataFactoryCollection(String identifier, SpongePermissionService service, Function<String, MemorySubjectData> dataFactory,
+    protected DataFactoryCollection(String identifier, SpongePermissionService service, Function<String, MemorySubjectComponent> dataFactory,
             Function<String, CommandSource> commandSourceFunction) {
         super(identifier);
         this.service = service;

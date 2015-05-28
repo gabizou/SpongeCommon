@@ -27,7 +27,7 @@ package org.spongepowered.common.mixin.core.entity.projectile.fireball;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MovingObjectPosition;
-import org.spongepowered.api.data.manipulator.entity.DamagingData;
+import org.spongepowered.api.data.manipulator.entity.DamagingComponent;
 import org.spongepowered.api.entity.projectile.explosive.fireball.Fireball;
 import org.spongepowered.api.entity.projectile.source.ProjectileSource;
 import org.spongepowered.api.entity.projectile.source.UnknownProjectileSource;

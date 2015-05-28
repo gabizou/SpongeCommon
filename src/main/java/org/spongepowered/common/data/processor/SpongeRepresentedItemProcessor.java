@@ -26,7 +26,6 @@ package org.spongepowered.common.data.processor;
 
 import static org.spongepowered.common.data.DataTransactionBuilder.builder;
 import static org.spongepowered.common.data.DataTransactionBuilder.fail;
-import static org.spongepowered.common.data.DataTransactionBuilder.successReplaceData;
 import static org.spongepowered.common.data.util.DataUtil.checkDataExists;
 
 import com.google.common.base.Optional;
@@ -37,21 +36,20 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.RepresentedItemData;
+import org.spongepowered.api.data.manipulator.RepresentedItemComponent;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.api.service.persistence.SerializationService;
 import org.spongepowered.common.Sponge;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.SpongeRepresentedItemData;
+import org.spongepowered.common.data.component.base.SpongeRepresentedItemComponent;
 import org.spongepowered.common.item.SpongeItemStackBuilder;
-import org.spongepowered.common.service.persistence.SpongeSerializationService;
 
-public class SpongeRepresentedItemProcessor implements SpongeDataProcessor<RepresentedItemData> {
+public class SpongeRepresentedItemProcessor implements SpongeDataProcessor<RepresentedItemComponent> {
 
     @Override
-    public Optional<RepresentedItemData> fillData(DataHolder dataHolder, RepresentedItemData manipulator, DataPriority priority) {
+    public Optional<RepresentedItemComponent> fillData(DataHolder dataHolder, RepresentedItemData manipulator, DataPriority priority) {
         // todo
         return Optional.absent();
     }
@@ -87,20 +85,20 @@ public class SpongeRepresentedItemProcessor implements SpongeDataProcessor<Repre
     }
 
     @Override
-    public Optional<RepresentedItemData> build(DataView container) throws InvalidDataException {
-        checkDataExists(container, SpongeRepresentedItemData.ITEM);
-        final ItemStack itemStack = container.getSerializable(SpongeRepresentedItemData.ITEM, ItemStack.class, Sponge.getGame().getServiceManager()
+    public Optional<RepresentedItemComponent> build(DataView container) throws InvalidDataException {
+        checkDataExists(container, SpongeRepresentedItemComponent.ITEM);
+        final ItemStack itemStack = container.getSerializable(SpongeRepresentedItemComponent.ITEM, ItemStack.class, Sponge.getGame().getServiceManager()
                 .provide(SerializationService.class).get()).get();
         return Optional.of(create().setValue(itemStack));
     }
 
     @Override
     public RepresentedItemData create() {
-        return new SpongeRepresentedItemData();
+        return new SpongeRepresentedItemComponent();
     }
 
     @Override
-    public Optional<RepresentedItemData> createFrom(DataHolder dataHolder) {
+    public Optional<RepresentedItemComponent> createFrom(DataHolder dataHolder) {
         if (dataHolder instanceof EntityItem) {
             final ItemStack underlying = ((ItemStack) ((EntityItem) dataHolder).getEntityItem());
             if (underlying.getItem() == null) {
@@ -115,7 +113,7 @@ public class SpongeRepresentedItemProcessor implements SpongeDataProcessor<Repre
     }
 
     @Override
-    public Optional<RepresentedItemData> getFrom(DataHolder dataHolder) {
+    public Optional<RepresentedItemComponent> getFrom(DataHolder dataHolder) {
         if (dataHolder instanceof EntityItem) {
             return createFrom(dataHolder);
         } else if (dataHolder instanceof EntityItemFrame) {

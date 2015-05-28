@@ -27,28 +27,26 @@ package org.spongepowered.common.data.processor.entity;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.spongepowered.common.data.DataTransactionBuilder.fail;
-import static org.spongepowered.common.data.DataTransactionBuilder.successNoData;
 
 import com.google.common.base.Optional;
 import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
-import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.entity.SkinData;
+import org.spongepowered.api.data.manipulator.entity.SkinComponent;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.entity.SpongeSkinData;
+import org.spongepowered.common.data.component.entity.SpongeSkinComponent;
 import org.spongepowered.common.entity.living.HumanEntity;
 
 import java.util.UUID;
 
-public class SpongeSkinDataProcessor implements SpongeDataProcessor<SkinData> {
+public class SpongeSkinDataProcessor implements SpongeDataProcessor<SkinComponent> {
 
     @Override
-    public Optional<SkinData> build(DataView container) throws InvalidDataException {
-        if (container.contains(SpongeSkinData.SKIN_UUID)) {
-            final String uuidString = container.getString(SpongeSkinData.SKIN_UUID).get();
+    public Optional<SkinComponent> build(DataView container) throws InvalidDataException {
+        if (container.contains(SpongeSkinComponent.SKIN_UUID)) {
+            final String uuidString = container.getString(SpongeSkinComponent.SKIN_UUID).get();
             final UUID uuid = UUID.fromString(uuidString);
             return Optional.of(create().setValue(uuid));
         }
@@ -57,11 +55,11 @@ public class SpongeSkinDataProcessor implements SpongeDataProcessor<SkinData> {
 
     @Override
     public SkinData create() {
-        return new SpongeSkinData();
+        return new SpongeSkinComponent();
     }
 
     @Override
-    public Optional<SkinData> createFrom(DataHolder dataHolder) {
+    public Optional<SkinComponent> createFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof HumanEntity)) {
             return Optional.absent();
         }
@@ -69,7 +67,7 @@ public class SpongeSkinDataProcessor implements SpongeDataProcessor<SkinData> {
     }
 
     @Override
-    public Optional<SkinData> getFrom(DataHolder holder) {
+    public Optional<SkinComponent> getFrom(DataHolder holder) {
         if (!(holder instanceof HumanEntity)) {
             return Optional.absent();
         }
@@ -77,7 +75,7 @@ public class SpongeSkinDataProcessor implements SpongeDataProcessor<SkinData> {
     }
 
     @Override
-    public Optional<SkinData> fillData(DataHolder holder, SkinData manipulator, DataPriority priority) {
+    public Optional<SkinComponent> fillData(DataHolder holder, SkinData manipulator, DataPriority priority) {
         if (!(holder instanceof HumanEntity)) {
             return Optional.absent();
         }
@@ -94,7 +92,7 @@ public class SpongeSkinDataProcessor implements SpongeDataProcessor<SkinData> {
     public DataTransactionResult setData(DataHolder dataHolder, SkinData manipulator, DataPriority priority) {
         if (dataHolder instanceof HumanEntity) {
             switch (checkNotNull(priority)) {
-                case DATA_MANIPULATOR:
+                case COMPONENT:
                 case PRE_MERGE:
                     return ((HumanEntity) dataHolder).setSkinData(manipulator);
                 default:

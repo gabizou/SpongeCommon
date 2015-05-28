@@ -25,8 +25,8 @@
 package org.spongepowered.common.mixin.core.block;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.spongepowered.common.data.DataTransactionBuilder.successNoData;
-import static org.spongepowered.common.data.DataTransactionBuilder.successReplaceData;
+import static org.spongepowered.common.data.DataTransactionBuilder.successNoComponent;
+import static org.spongepowered.common.data.DataTransactionBuilder.successReplaceComponent;
 
 import net.minecraft.block.BlockCake;
 import net.minecraft.block.state.IBlockState;
@@ -35,9 +35,9 @@ import net.minecraft.world.World;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
-import org.spongepowered.api.data.manipulator.block.LayeredData;
+import org.spongepowered.api.data.manipulator.block.LayeredComponent;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.common.data.manipulator.block.SpongeLayeredData;
+import org.spongepowered.common.data.component.block.SpongeLayeredComponent;
 import org.spongepowered.common.interfaces.block.IMixinBlockLayerable;
 
 @Mixin(BlockCake.class)
@@ -46,14 +46,14 @@ public abstract class MixinBlockCake extends MixinBlock implements IMixinBlockLa
     @Override
     public LayeredData getLayerData(IBlockState blockState) {
         final int layer = (Integer) blockState.getValue(BlockCake.BITES);
-        return new SpongeLayeredData(6).setValue(layer);
+        return new SpongeLayeredComponent(6).setValue(layer);
     }
 
     @Override
     public DataTransactionResult setLayerData(LayeredData layeredData, World world, BlockPos blockPos, DataPriority priority) {
         final LayeredData data = getLayerData(checkNotNull(world).getBlockState(checkNotNull(blockPos)));
         switch (checkNotNull(priority)) {
-            case DATA_MANIPULATOR:
+            case COMPONENT:
             case POST_MERGE:
                 final IBlockState blockState = world.getBlockState(blockPos).withProperty(BlockCake.BITES, checkNotNull(layeredData).getValue());
                 world.setBlockState(blockPos, blockState);

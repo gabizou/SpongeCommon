@@ -26,7 +26,6 @@ package org.spongepowered.common.data.processor.block;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.spongepowered.common.data.DataTransactionBuilder.fail;
-import static org.spongepowered.common.data.util.DataUtil.getData;
 
 import com.google.common.base.Optional;
 import net.minecraft.block.state.IBlockState;
@@ -37,22 +36,22 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.block.LayeredData;
+import org.spongepowered.api.data.manipulator.block.LayeredComponent;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.data.SpongeBlockProcessor;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.block.SpongeLayeredData;
+import org.spongepowered.common.data.component.block.SpongeLayeredComponent;
 import org.spongepowered.common.interfaces.block.IMixinBlockLayerable;
 
-public class SpongeLayeredDataProcessor implements SpongeDataProcessor<LayeredData>, SpongeBlockProcessor<LayeredData> {
+public class SpongeLayeredDataProcessor implements SpongeDataProcessor<LayeredComponent>, SpongeBlockProcessor<LayeredComponent> {
 
     @Override
-    public Optional<LayeredData> getFrom(DataHolder dataHolder) {
+    public Optional<LayeredComponent> getFrom(DataHolder dataHolder) {
         return Optional.absent();
     }
 
     @Override
-    public Optional<LayeredData> fillData(DataHolder dataHolder, LayeredData manipulator, DataPriority priority) {
+    public Optional<LayeredComponent> fillData(DataHolder dataHolder, LayeredData manipulator, DataPriority priority) {
         return Optional.absent();
     }
 
@@ -67,27 +66,27 @@ public class SpongeLayeredDataProcessor implements SpongeDataProcessor<LayeredDa
     }
 
     @Override
-    public Optional<LayeredData> build(DataView container) throws InvalidDataException {
-        final int maxLayers = getData(container, SpongeLayeredData.MAX_LAYERS, Integer.TYPE);
-        final int layer = getData(container, SpongeLayeredData.LAYER, Integer.TYPE);
-        return Optional.of(new SpongeLayeredData(maxLayers).setValue(layer));
+    public Optional<LayeredComponent> build(DataView container) throws InvalidDataException {
+        final int maxLayers = getData(container, SpongeLayeredComponent.MAX_LAYERS, Integer.TYPE);
+        final int layer = getData(container, SpongeLayeredComponent.LAYER, Integer.TYPE);
+        return Optional.of(new SpongeLayeredComponent(maxLayers).setValue(layer));
     }
 
     @Override
     public LayeredData create() {
-        return new SpongeLayeredData(1);
+        return new SpongeLayeredComponent(1);
     }
 
     @Override
-    public Optional<LayeredData> createFrom(DataHolder dataHolder) {
+    public Optional<LayeredComponent> createFrom(DataHolder dataHolder) {
         return Optional.absent();
     }
 
     @Override
-    public Optional<LayeredData> fromBlockPos(World world, BlockPos blockPos) {
+    public Optional<LayeredComponent> fromBlockPos(World world, BlockPos blockPos) {
         final IBlockState blockState = checkNotNull(world).getBlockState(checkNotNull(blockPos));
         if (blockState.getBlock() instanceof IMixinBlockLayerable) {
-            ((IMixinBlockLayerable) blockState.getBlock()).getLayerData(blockState);
+            return Optional.of(((IMixinBlockLayerable) blockState.getBlock()).getLayerData(blockState));
         }
         return Optional.absent();
     }
@@ -96,7 +95,7 @@ public class SpongeLayeredDataProcessor implements SpongeDataProcessor<LayeredDa
     public DataTransactionResult setData(World world, BlockPos blockPos, LayeredData manipulator, DataPriority priority) {
         final IBlockState blockState = checkNotNull(world).getBlockState(checkNotNull(blockPos));
         if (blockState.getBlock() instanceof IMixinBlockLayerable) {
-            ((IMixinBlockLayerable) blockState.getBlock()).setLayerData(checkNotNull(manipulator), world, blockPos, checkNotNull(priority));
+            return ((IMixinBlockLayerable) blockState.getBlock()).setLayerData(checkNotNull(manipulator), world, blockPos, checkNotNull(priority));
         }
         return fail(manipulator);
     }
@@ -106,6 +105,7 @@ public class SpongeLayeredDataProcessor implements SpongeDataProcessor<LayeredDa
         final IBlockState blockState = checkNotNull(world).getBlockState(checkNotNull(blockPos));
         if (blockState.getBlock() instanceof IMixinBlockLayerable) {
             world.setBlockState(blockPos, (IBlockState) ((IMixinBlockLayerable) blockState.getBlock()).resetLayerData(((BlockState) blockState)));
+            return true;
         }
         return false;
     }
@@ -116,9 +116,9 @@ public class SpongeLayeredDataProcessor implements SpongeDataProcessor<LayeredDa
     }
 
     @Override
-    public Optional<LayeredData> createFrom(IBlockState blockState) {
+    public Optional<LayeredComponent> createFrom(IBlockState blockState) {
         if (checkNotNull(blockState).getBlock() instanceof IMixinBlockLayerable) {
-            ((IMixinBlockLayerable) blockState.getBlock()).getLayerData(blockState);
+            return Optional.of(((IMixinBlockLayerable) blockState.getBlock()).getLayerData(blockState));
         }
         return Optional.absent();
     }

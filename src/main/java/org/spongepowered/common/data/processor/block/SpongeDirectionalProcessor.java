@@ -35,18 +35,18 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.block.DirectionalData;
+import org.spongepowered.api.data.manipulator.block.DirectionalComponent;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.data.DataTransactionBuilder;
 import org.spongepowered.common.data.SpongeBlockProcessor;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.block.SpongeDirectionalData;
+import org.spongepowered.common.data.component.block.SpongeDirectionalComponent;
 import org.spongepowered.common.interfaces.block.IMixinBlockDirectional;
 
-public class SpongeDirectionalProcessor implements SpongeDataProcessor<DirectionalData>, SpongeBlockProcessor<DirectionalData> {
+public class SpongeDirectionalProcessor implements SpongeDataProcessor<DirectionalComponent>, SpongeBlockProcessor<DirectionalComponent> {
 
     @Override
-    public Optional<DirectionalData> fillData(DataHolder dataHolder, DirectionalData manipulator, DataPriority priority) {
+    public Optional<DirectionalComponent> fillData(DataHolder dataHolder, DirectionalData manipulator, DataPriority priority) {
         return Optional.absent();
     }
 
@@ -61,22 +61,22 @@ public class SpongeDirectionalProcessor implements SpongeDataProcessor<Direction
     }
 
     @Override
-    public Optional<DirectionalData> build(DataView container) throws InvalidDataException {
+    public Optional<DirectionalComponent> build(DataView container) throws InvalidDataException {
         return Optional.absent();
     }
 
     @Override
     public DirectionalData create() {
-        return new SpongeDirectionalData();
+        return new SpongeDirectionalComponent();
     }
 
     @Override
-    public Optional<DirectionalData> createFrom(DataHolder dataHolder) {
+    public Optional<DirectionalComponent> createFrom(DataHolder dataHolder) {
         return Optional.absent();
     }
 
     @Override
-    public Optional<DirectionalData> fromBlockPos(final World world, final BlockPos blockPos) {
+    public Optional<DirectionalComponent> fromBlockPos(final World world, final BlockPos blockPos) {
         IBlockState blockState = world.getBlockState(blockPos);
         if (blockState.getBlock() instanceof IMixinBlockDirectional) {
             return Optional.of(((IMixinBlockDirectional) blockState.getBlock()).getDirectionalData(blockState));
@@ -109,7 +109,7 @@ public class SpongeDirectionalProcessor implements SpongeDataProcessor<Direction
     }
 
     @Override
-    public Optional<DirectionalData> createFrom(IBlockState blockState) {
+    public Optional<DirectionalComponent> createFrom(IBlockState blockState) {
         if (blockState.getBlock() instanceof IMixinBlockDirectional) {
             ((IMixinBlockDirectional) blockState.getBlock()).getDirectionalData(blockState);
         }
@@ -117,7 +117,7 @@ public class SpongeDirectionalProcessor implements SpongeDataProcessor<Direction
     }
 
     @Override
-    public Optional<DirectionalData> getFrom(DataHolder dataHolder) {
+    public Optional<DirectionalComponent> getFrom(DataHolder dataHolder) {
         return Optional.absent();
     }
 }

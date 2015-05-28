@@ -26,9 +26,6 @@ package org.spongepowered.common.data.processor;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.spongepowered.common.data.DataTransactionBuilder.fail;
-import static org.spongepowered.common.data.DataTransactionBuilder.successNoData;
-import static org.spongepowered.common.data.DataTransactionBuilder.successReplaceData;
-import static org.spongepowered.common.data.util.DataUtil.getData;
 
 import com.google.common.base.Optional;
 import net.minecraft.block.state.IBlockState;
@@ -42,20 +39,20 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.DyeableData;
+import org.spongepowered.api.data.manipulator.DyeableComponent;
 import org.spongepowered.api.data.type.DyeColor;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.Sponge;
 import org.spongepowered.common.data.SpongeBlockProcessor;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.SpongeDyeableData;
+import org.spongepowered.common.data.component.base.SpongeDyeableComponent;
 import org.spongepowered.common.interfaces.block.IMixinBlockDyeable;
 import org.spongepowered.common.interfaces.item.IMixinItemDyeable;
 
-public class SpongeDyeableDataProcessor implements SpongeDataProcessor<DyeableData>, SpongeBlockProcessor<DyeableData> {
+public class SpongeDyeableDataProcessor implements SpongeDataProcessor<DyeableComponent>, SpongeBlockProcessor<DyeableComponent> {
 
     @Override
-    public Optional<DyeableData> getFrom(DataHolder dataHolder) {
+    public Optional<DyeableComponent> getFrom(DataHolder dataHolder) {
         if (dataHolder instanceof EntitySheep) {
             final EnumDyeColor color = ((EntitySheep) dataHolder).getFleeceColor();
             return Optional.of(create().setValue(((DyeColor) (Object) color)));
@@ -69,7 +66,7 @@ public class SpongeDyeableDataProcessor implements SpongeDataProcessor<DyeableDa
     }
 
     @Override
-    public Optional<DyeableData> fillData(DataHolder dataHolder, DyeableData manipulator, DataPriority priority) {
+    public Optional<DyeableComponent> fillData(DataHolder dataHolder, DyeableData manipulator, DataPriority priority) {
         if (dataHolder instanceof EntitySheep) {
             switch (checkNotNull(priority)) {
                 case DATA_HOLDER:
@@ -98,7 +95,7 @@ public class SpongeDyeableDataProcessor implements SpongeDataProcessor<DyeableDa
     public DataTransactionResult setData(DataHolder dataHolder, DyeableData manipulator, DataPriority priority) {
         if (dataHolder instanceof EntitySheep) {
             switch (checkNotNull(priority)) {
-                case DATA_MANIPULATOR:
+                case COMPONENT:
                 case POST_MERGE:
                     final DyeableData oldData = getFrom(dataHolder).get();
                     ((EntitySheep) dataHolder).setFleeceColor((EnumDyeColor) (Object) manipulator.getValue());
@@ -110,7 +107,7 @@ public class SpongeDyeableDataProcessor implements SpongeDataProcessor<DyeableDa
         if (dataHolder instanceof ItemStack) {
             if (((ItemStack) dataHolder).getItem() instanceof IMixinItemDyeable) {
                 switch (checkNotNull(priority)) {
-                    case DATA_MANIPULATOR:
+                    case COMPONENT:
                     case POST_MERGE:
                         final DyeableData oldData = getFrom(dataHolder).get();
                         ((IMixinItemDyeable) ((ItemStack) dataHolder).getItem()).setDyeableData(((ItemStack) dataHolder), manipulator.copy());
@@ -129,8 +126,8 @@ public class SpongeDyeableDataProcessor implements SpongeDataProcessor<DyeableDa
     }
 
     @Override
-    public Optional<DyeableData> build(DataView container) throws InvalidDataException {
-        final String dyeString = getData(container, SpongeDyeableData.DYE_COLOR, String.class);
+    public Optional<DyeableComponent> build(DataView container) throws InvalidDataException {
+        final String dyeString = getData(container, SpongeDyeableComponent.DYE_COLOR, String.class);
         final Optional<DyeColor> colorOptional = Sponge.getGame().getRegistry().getType(DyeColor.class, dyeString);
         if (colorOptional.isPresent()) {
             return Optional.of(create().setValue(colorOptional.get()));
@@ -140,11 +137,11 @@ public class SpongeDyeableDataProcessor implements SpongeDataProcessor<DyeableDa
 
     @Override
     public DyeableData create() {
-        return new SpongeDyeableData();
+        return new SpongeDyeableComponent();
     }
 
     @Override
-    public Optional<DyeableData> createFrom(DataHolder dataHolder) {
+    public Optional<DyeableComponent> createFrom(DataHolder dataHolder) {
         if (dataHolder instanceof EntitySheep) {
             return getFrom(dataHolder);
         }
@@ -155,7 +152,7 @@ public class SpongeDyeableDataProcessor implements SpongeDataProcessor<DyeableDa
     }
 
     @Override
-    public Optional<DyeableData> fromBlockPos(World world, BlockPos blockPos) {
+    public Optional<DyeableComponent> fromBlockPos(World world, BlockPos blockPos) {
         final IBlockState blockState = checkNotNull(world).getBlockState(checkNotNull(blockPos));
         if (blockState.getBlock() instanceof IMixinBlockDyeable) {
             return Optional.of(((IMixinBlockDyeable) blockState.getBlock()).getDyeableData(blockState));
@@ -183,7 +180,7 @@ public class SpongeDyeableDataProcessor implements SpongeDataProcessor<DyeableDa
     }
 
     @Override
-    public Optional<DyeableData> createFrom(IBlockState blockState) {
+    public Optional<DyeableComponent> createFrom(IBlockState blockState) {
         if (blockState.getBlock() instanceof IMixinBlockDyeable) {
             return Optional.of(((IMixinBlockDyeable) blockState.getBlock()).getDyeableData(blockState));
         }

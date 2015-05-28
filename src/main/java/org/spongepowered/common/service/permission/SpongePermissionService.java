@@ -28,15 +28,15 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.UserListOps;
-import org.spongepowered.api.service.permission.MemorySubjectData;
+import org.spongepowered.api.service.permission.MemorySubjectComponent;
 import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.permission.SubjectCollection;
 import org.spongepowered.api.service.permission.context.ContextCalculator;
 import org.spongepowered.api.util.command.CommandSource;
 import org.spongepowered.common.Sponge;
-import org.spongepowered.common.service.permission.base.FixedParentMemorySubjectData;
-import org.spongepowered.common.service.permission.base.GlobalMemorySubjectData;
+import org.spongepowered.common.service.permission.base.FixedParentMemorySubjectComponent;
+import org.spongepowered.common.service.permission.base.GlobalMemorySubjectComponent;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,20 +56,20 @@ public class SpongePermissionService implements PermissionService {
     };
 
     private final ConcurrentMap<String, SubjectCollection> subjects = new ConcurrentHashMap<String, SubjectCollection>();
-    private final MemorySubjectData defaultData;
+    private final MemorySubjectData defaultComponent;
 
     public SpongePermissionService() {
         this.subjects.put(SUBJECTS_USER, new UserCollection(this));
         this.subjects.put(SUBJECTS_GROUP, new OpLevelCollection(this));
 
-        this.subjects.put(SUBJECTS_COMMAND_BLOCK, new DataFactoryCollection(SUBJECTS_COMMAND_BLOCK, this, new Function<String, MemorySubjectData>() {
+        this.subjects.put(SUBJECTS_COMMAND_BLOCK, new DataFactoryCollection(SUBJECTS_COMMAND_BLOCK, this, new Function<String, MemorySubjectComponent>() {
             @Override
             public MemorySubjectData apply(String s) {
                 return new FixedParentMemorySubjectData(SpongePermissionService.this, getGroupForOpLevel(2));
             }
         }, NO_COMMAND_SOURCE));
 
-        this.subjects.put(SUBJECTS_SYSTEM, new DataFactoryCollection(SUBJECTS_SYSTEM, this, new Function<String, MemorySubjectData>() {
+        this.subjects.put(SUBJECTS_SYSTEM, new DataFactoryCollection(SUBJECTS_SYSTEM, this, new Function<String, MemorySubjectComponent>() {
             @Override
             public MemorySubjectData apply(String s) {
                 return new FixedParentMemorySubjectData(SpongePermissionService.this, getGroupForOpLevel(4));
@@ -113,7 +113,7 @@ public class SpongePermissionService implements PermissionService {
 
     @Override
     public MemorySubjectData getDefaultData() {
-        return this.defaultData;
+        return this.defaultComponent;
     }
 
     @Override
@@ -133,7 +133,7 @@ public class SpongePermissionService implements PermissionService {
     }
 
     private SubjectCollection newCollection(String identifier) {
-        return new DataFactoryCollection(identifier, this, new Function<String, MemorySubjectData>() {
+        return new DataFactoryCollection(identifier, this, new Function<String, MemorySubjectComponent>() {
             @Override
             public MemorySubjectData apply(String s) {
                 return new GlobalMemorySubjectData(SpongePermissionService.this);

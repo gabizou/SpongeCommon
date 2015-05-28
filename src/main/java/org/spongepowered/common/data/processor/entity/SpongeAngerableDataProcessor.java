@@ -34,16 +34,16 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.entity.AngerableData;
+import org.spongepowered.api.data.manipulator.entity.AngerableComponent;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.entity.SpongeAngerableData;
+import org.spongepowered.common.data.component.entity.SpongeAngerableComponent;
 import org.spongepowered.common.interfaces.entity.IMixinAnger;
 
-public class SpongeAngerableDataProcessor implements SpongeDataProcessor<AngerableData> {
+public class SpongeAngerableDataProcessor implements SpongeDataProcessor<AngerableComponent> {
 
     @Override
-    public Optional<AngerableData> getFrom(DataHolder dataHolder) {
+    public Optional<AngerableComponent> getFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof IMixinAnger)) {
             return Optional.absent();
         }
@@ -52,7 +52,7 @@ public class SpongeAngerableDataProcessor implements SpongeDataProcessor<Angerab
     }
 
     @Override
-    public Optional<AngerableData> fillData(DataHolder dataHolder, AngerableData manipulator, DataPriority priority) {
+    public Optional<AngerableComponent> fillData(DataHolder dataHolder, AngerableData manipulator, DataPriority priority) {
         if (!(checkNotNull(dataHolder) instanceof IMixinAnger)) {
             return Optional.absent();
         }
@@ -72,7 +72,7 @@ public class SpongeAngerableDataProcessor implements SpongeDataProcessor<Angerab
             return fail(manipulator);
         }
         switch (checkNotNull(priority)) {
-            case DATA_MANIPULATOR:
+            case COMPONENT:
             case POST_MERGE:
                 final int previous = ((IMixinAnger) dataHolder).getAngerLevel();
                 ((IMixinAnger) dataHolder).setAngerLevel(manipulator.getAngerLevel());
@@ -94,19 +94,19 @@ public class SpongeAngerableDataProcessor implements SpongeDataProcessor<Angerab
     }
 
     @Override
-    public Optional<AngerableData> build(DataView container) throws InvalidDataException {
-        checkDataExists(container, SpongeAngerableData.ANGER);
-        final int anger = container.getInt(SpongeAngerableData.ANGER).get();
+    public Optional<AngerableComponent> build(DataView container) throws InvalidDataException {
+        checkDataExists(container, SpongeAngerableComponent.ANGER);
+        final int anger = container.getInt(SpongeAngerableComponent.ANGER).get();
         return Optional.of(create().setAngerLevel(anger));
     }
 
     @Override
     public AngerableData create() {
-        return new SpongeAngerableData();
+        return new SpongeAngerableComponent();
     }
 
     @Override
-    public Optional<AngerableData> createFrom(DataHolder dataHolder) {
+    public Optional<AngerableComponent> createFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof IMixinAnger)) {
             return Optional.absent();
         }

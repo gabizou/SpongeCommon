@@ -40,9 +40,9 @@ import net.minecraft.util.FoodStats;
 import org.apache.commons.lang3.LocaleUtils;
 import org.spongepowered.api.GameProfile;
 import org.spongepowered.api.data.DataContainer;
-import org.spongepowered.api.data.manipulator.DisplayNameData;
-import org.spongepowered.api.data.manipulator.entity.GameModeData;
-import org.spongepowered.api.data.manipulator.entity.JoinData;
+import org.spongepowered.api.data.manipulator.DisplayNameComponent;
+import org.spongepowered.api.data.manipulator.entity.GameModeComponent;
+import org.spongepowered.api.data.manipulator.entity.JoinComponent;
 import org.spongepowered.api.effect.particle.ParticleEffect;
 import org.spongepowered.api.entity.player.Player;
 import org.spongepowered.api.network.PlayerConnection;
@@ -309,6 +309,6 @@ public abstract class MixinEntityPlayerMP extends MixinEntityPlayer implements P
 
     @Override
     public DataContainer toContainer() {
-        return super.toContainer().set(of("JoinData"), getJoinData());
+        return super.toContainer().set(of("JoinComponent"), getJoinData());
     }
 }

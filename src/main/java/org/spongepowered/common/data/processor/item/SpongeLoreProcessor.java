@@ -26,7 +26,6 @@ package org.spongepowered.common.data.processor.item;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.spongepowered.common.data.DataTransactionBuilder.fail;
-import static org.spongepowered.common.data.DataTransactionBuilder.successNoData;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
@@ -38,22 +37,22 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.item.LoreData;
+import org.spongepowered.api.data.manipulator.item.LoreComponent;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.Texts;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.item.SpongeLoreData;
+import org.spongepowered.common.data.component.item.SpongeLoreComponent;
 import org.spongepowered.common.interfaces.text.IMixinText;
 
 import java.util.List;
 import java.util.Locale;
 
-public class SpongeLoreProcessor implements SpongeDataProcessor<LoreData> {
+public class SpongeLoreProcessor implements SpongeDataProcessor<LoreComponent> {
 
     @SuppressWarnings("deprecation")
     @Override
-    public Optional<LoreData> fillData(DataHolder dataHolder, LoreData manipulator, DataPriority priority) {
+    public Optional<LoreComponent> fillData(DataHolder dataHolder, LoreData manipulator, DataPriority priority) {
         checkNotNull(dataHolder);
         checkNotNull(manipulator);
         if (dataHolder instanceof ItemStack) {
@@ -134,22 +133,22 @@ public class SpongeLoreProcessor implements SpongeDataProcessor<LoreData> {
     }
 
     @Override
-    public Optional<LoreData> build(DataView container) throws InvalidDataException {
+    public Optional<LoreComponent> build(DataView container) throws InvalidDataException {
         return Optional.absent();
     }
 
     @Override
     public LoreData create() {
-        return new SpongeLoreData();
+        return new SpongeLoreComponent();
     }
 
     @Override
-    public Optional<LoreData> createFrom(DataHolder dataHolder) {
+    public Optional<LoreComponent> createFrom(DataHolder dataHolder) {
         return Optional.absent();
     }
 
     @Override
-    public Optional<LoreData> getFrom(DataHolder dataHolder) {
+    public Optional<LoreComponent> getFrom(DataHolder dataHolder) {
         return Optional.absent();
     }
 }

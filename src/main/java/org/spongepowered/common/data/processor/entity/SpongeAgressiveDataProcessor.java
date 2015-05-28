@@ -26,7 +26,6 @@ package org.spongepowered.common.data.processor.entity;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.spongepowered.common.data.DataTransactionBuilder.fail;
-import static org.spongepowered.common.data.DataTransactionBuilder.successNoData;
 import static org.spongepowered.common.data.util.DataUtil.checkDataExists;
 
 import com.google.common.base.Optional;
@@ -34,32 +33,32 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.entity.AggressiveData;
+import org.spongepowered.api.data.manipulator.entity.AggressiveComponent;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.entity.SpongeAggressiveData;
+import org.spongepowered.common.data.component.entity.SpongeAggressiveComponent;
 import org.spongepowered.common.interfaces.entity.IMixinAggressive;
 
-public class SpongeAgressiveDataProcessor implements SpongeDataProcessor<AggressiveData> {
+public class SpongeAgressiveDataProcessor implements SpongeDataProcessor<AggressiveComponent> {
 
     @Override
-    public Optional<AggressiveData> getFrom(DataHolder dataHolder) {
+    public Optional<AggressiveComponent> getFrom(DataHolder dataHolder) {
         if (checkNotNull(dataHolder) instanceof IMixinAggressive) {
             final boolean isAngry = ((IMixinAggressive) dataHolder).isAngry();
-            return isAngry ? Optional.of(create()) : Optional.<AggressiveData>absent();
+            return isAngry ? Optional.of(create()) : Optional.<AggressiveComponent>absent();
         }
         return Optional.absent();
     }
 
     @Override
-    public Optional<AggressiveData> fillData(DataHolder dataHolder, AggressiveData manipulator, DataPriority priority) {
+    public Optional<AggressiveComponent> fillData(DataHolder dataHolder, AggressiveData manipulator, DataPriority priority) {
         checkNotNull(manipulator);
         if (dataHolder instanceof IMixinAggressive) {
             switch (checkNotNull(priority)) {
                 case DATA_HOLDER:
                 case PRE_MERGE:
                     final boolean isAngry = ((IMixinAggressive) dataHolder).isAngry();
-                    return isAngry ? Optional.of(manipulator) : Optional.<AggressiveData>absent();
+                    return isAngry ? Optional.of(manipulator) : Optional.<AggressiveComponent>absent();
                 default:
                     return Optional.of(manipulator);
             }
@@ -73,7 +72,7 @@ public class SpongeAgressiveDataProcessor implements SpongeDataProcessor<Aggress
         checkNotNull(manipulator);
         if (checkNotNull(dataHolder) instanceof IMixinAggressive) {
             switch (checkNotNull(priority)) {
-                case DATA_MANIPULATOR:
+                case COMPONENT:
                 case POST_MERGE:
                     ((IMixinAggressive) dataHolder).setAngry(true);
                     return successNoData(); // todo
@@ -94,9 +93,9 @@ public class SpongeAgressiveDataProcessor implements SpongeDataProcessor<Aggress
     }
 
     @Override
-    public Optional<AggressiveData> build(DataView container) throws InvalidDataException {
-        checkDataExists(container, SpongeAggressiveData.AGGRESSIVE);
-        final boolean aiEnabled = container.getBoolean(SpongeAggressiveData.AGGRESSIVE).get();
+    public Optional<AggressiveComponent> build(DataView container) throws InvalidDataException {
+        checkDataExists(container, SpongeAggressiveComponent.AGGRESSIVE);
+        final boolean aiEnabled = container.getBoolean(SpongeAggressiveComponent.AGGRESSIVE).get();
         if (aiEnabled) {
             return Optional.of(create());
         }
@@ -105,11 +104,11 @@ public class SpongeAgressiveDataProcessor implements SpongeDataProcessor<Aggress
 
     @Override
     public AggressiveData create() {
-        return new SpongeAggressiveData();
+        return new SpongeAggressiveComponent();
     }
 
     @Override
-    public Optional<AggressiveData> createFrom(DataHolder dataHolder) {
+    public Optional<AggressiveComponent> createFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof IMixinAggressive)) {
             return Optional.absent();
         }

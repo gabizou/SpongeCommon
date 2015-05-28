@@ -35,15 +35,15 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.entity.FoodData;
+import org.spongepowered.api.data.manipulator.entity.FoodComponent;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.entity.SpongeFoodData;
+import org.spongepowered.common.data.component.entity.SpongeFoodComponent;
 
-public class SpongeFoodDataProcessor implements SpongeDataProcessor<FoodData> {
+public class SpongeFoodDataProcessor implements SpongeDataProcessor<FoodComponent> {
 
     @Override
-    public Optional<FoodData> fillData(DataHolder dataHolder, FoodData manipulator, DataPriority priority) {
+    public Optional<FoodComponent> fillData(DataHolder dataHolder, FoodData manipulator, DataPriority priority) {
         if (!(dataHolder instanceof EntityPlayer)) {
             return Optional.absent();
         }
@@ -68,7 +68,7 @@ public class SpongeFoodDataProcessor implements SpongeDataProcessor<FoodData> {
             switch (checkNotNull(priority)) {
                 case DATA_HOLDER:
                     return builder().reject(manipulator).result(DataTransactionResult.Type.SUCCESS).build();
-                case DATA_MANIPULATOR:
+                case COMPONENT:
                     final FoodStats foodStats = ((EntityPlayer) dataHolder).getFoodStats();
                     final FoodData oldData = createFrom(dataHolder).get();
                     foodStats.setFoodLevel(((int) Math.floor(manipulator.getFoodLevel())));
@@ -95,17 +95,17 @@ public class SpongeFoodDataProcessor implements SpongeDataProcessor<FoodData> {
     }
 
     @Override
-    public Optional<FoodData> build(DataView container) throws InvalidDataException {
+    public Optional<FoodComponent> build(DataView container) throws InvalidDataException {
         return Optional.absent();
     }
 
     @Override
     public FoodData create() {
-        return new SpongeFoodData();
+        return new SpongeFoodComponent();
     }
 
     @Override
-    public Optional<FoodData> createFrom(DataHolder dataHolder) {
+    public Optional<FoodComponent> createFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof EntityPlayer)) {
             return Optional.absent();
         }
@@ -118,7 +118,7 @@ public class SpongeFoodDataProcessor implements SpongeDataProcessor<FoodData> {
     }
 
     @Override
-    public Optional<FoodData> getFrom(DataHolder dataHolder) {
+    public Optional<FoodComponent> getFrom(DataHolder dataHolder) {
         return createFrom(dataHolder);
     }
 }

@@ -27,13 +27,13 @@ package org.spongepowered.common.service.permission;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.spongepowered.api.service.permission.MemorySubjectData;
+import org.spongepowered.api.service.permission.MemorySubjectComponent;
 import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.permission.SubjectCollection;
 import org.spongepowered.api.service.permission.context.Context;
 import org.spongepowered.api.util.command.CommandSource;
-import org.spongepowered.common.service.permission.base.GlobalMemorySubjectData;
+import org.spongepowered.common.service.permission.base.GlobalMemorySubjectComponent;
 import org.spongepowered.common.service.permission.base.SpongeSubject;
 import org.spongepowered.common.service.permission.base.SpongeSubjectCollection;
 

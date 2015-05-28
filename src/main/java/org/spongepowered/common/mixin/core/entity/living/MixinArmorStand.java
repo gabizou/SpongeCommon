@@ -25,7 +25,7 @@
 package org.spongepowered.common.mixin.core.entity.living;
 
 import net.minecraft.entity.item.EntityArmorStand;
-import org.spongepowered.api.data.manipulator.entity.BodyPartRotationalData;
+import org.spongepowered.api.data.manipulator.entity.BodyPartRotationalComponent;
 import org.spongepowered.api.entity.living.ArmorStand;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

@@ -35,13 +35,13 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.data.DataManipulator;
+import org.spongepowered.api.data.Component;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
-import org.spongepowered.api.data.manipulator.block.DirectionalData;
+import org.spongepowered.api.data.manipulator.block.DirectionalComponent;
 import org.spongepowered.api.util.Direction;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.common.data.manipulator.block.SpongeDirectionalData;
+import org.spongepowered.common.data.component.block.SpongeDirectionalComponent;
 import org.spongepowered.common.interfaces.block.IMixinBlockDirectional;
 import org.spongepowered.common.mixin.core.block.MixinBlock;
 
@@ -53,9 +53,9 @@ public abstract class MixinBlockStandingSign extends MixinBlock implements IMixi
     @Override
     public DirectionalData getDirectionalData(IBlockState blockState) {
         final int intDir = (Integer) (Object) blockState.getValue(BlockStandingSign.ROTATION);
-        final DirectionalData directionalData = new SpongeDirectionalData();
+        final DirectionalData directionalData = new SpongeDirectionalComponent();
         directionalData.setValue(Direction.values()[(intDir + 8) % 16]);
-        return directionalData;
+        return directionalComponent;
     }
 
     @Override
@@ -79,13 +79,13 @@ public abstract class MixinBlockStandingSign extends MixinBlock implements IMixi
     }
 
     @Override
-    public Collection<DataManipulator<?>> getManipulators(World world, BlockPos blockPos) {
-        return Lists.<DataManipulator<?>>newArrayList(getDirectionalData(world.getBlockState(blockPos))); // TODO for now.
+    public Collection<Component<?>> getManipulators(World world, BlockPos blockPos) {
+        return Lists.<Component<?>>newArrayList(getDirectionalData(world.getBlockState(blockPos))); // TODO for now.
     }
 
     @Override
-    public ImmutableList<DataManipulator<?>> getManipulators(IBlockState blockState) {
-        return ImmutableList.<DataManipulator<?>>of(getDirectionalData(blockState)); // TODO for now.
+    public ImmutableList<Component<?>> getManipulators(IBlockState blockState) {
+        return ImmutableList.<Component<?>>of(getDirectionalData(blockState)); // TODO for now.
     }
 
 }

@@ -26,8 +26,6 @@ package org.spongepowered.common.data.processor.entity;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.spongepowered.common.data.DataTransactionBuilder.fail;
-import static org.spongepowered.common.data.DataTransactionBuilder.successNoData;
-import static org.spongepowered.common.data.DataTransactionBuilder.successReplaceData;
 
 import com.google.common.base.Optional;
 import net.minecraft.entity.EntityLivingBase;
@@ -35,16 +33,16 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.entity.BreathingData;
+import org.spongepowered.api.data.manipulator.entity.BreathingComponent;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.entity.SpongeBreathingData;
+import org.spongepowered.common.data.component.entity.SpongeBreathingComponent;
 import org.spongepowered.common.data.util.DataUtil;
 
-public class SpongeBreathingDataProcessor implements SpongeDataProcessor<BreathingData> {
+public class SpongeBreathingDataProcessor implements SpongeDataProcessor<BreathingComponent> {
 
     @Override
-    public Optional<BreathingData> getFrom(DataHolder dataHolder) {
+    public Optional<BreathingComponent> getFrom(DataHolder dataHolder) {
         if (!(checkNotNull(dataHolder) instanceof EntityLivingBase)) {
             return Optional.absent();
         }
@@ -54,7 +52,7 @@ public class SpongeBreathingDataProcessor implements SpongeDataProcessor<Breathi
     }
 
     @Override
-    public Optional<BreathingData> fillData(DataHolder dataHolder, BreathingData manipulator, DataPriority priority) {
+    public Optional<BreathingComponent> fillData(DataHolder dataHolder, BreathingData manipulator, DataPriority priority) {
         if (!(dataHolder instanceof EntityLivingBase)) {
             return Optional.absent();
         }
@@ -74,7 +72,7 @@ public class SpongeBreathingDataProcessor implements SpongeDataProcessor<Breathi
             return fail(manipulator);
         }
         switch (checkNotNull(priority)) {
-            case DATA_MANIPULATOR:
+            case COMPONENT:
             case POST_MERGE:
                 final BreathingData previous = getFrom(dataHolder).get();
                 ((EntityLivingBase) dataHolder).setAir(checkNotNull(manipulator).getRemainingAir());
@@ -90,18 +88,18 @@ public class SpongeBreathingDataProcessor implements SpongeDataProcessor<Breathi
     }
 
     @Override
-    public Optional<BreathingData> build(DataView container) throws InvalidDataException {
-        final int air = DataUtil.getData(container, SpongeBreathingData.REMAINING_AIR, Integer.class);
+    public Optional<BreathingComponent> build(DataView container) throws InvalidDataException {
+        final int air = DataUtil.getData(container, SpongeBreathingComponent.REMAINING_AIR, Integer.class);
         return Optional.of(create().setMaxAir(300).setMaxAir(air));
     }
 
     @Override
     public BreathingData create() {
-        return new SpongeBreathingData(300);
+        return new SpongeBreathingComponent(300);
     }
 
     @Override
-    public Optional<BreathingData> createFrom(DataHolder dataHolder) {
+    public Optional<BreathingComponent> createFrom(DataHolder dataHolder) {
         return getFrom(dataHolder);
     }
 }

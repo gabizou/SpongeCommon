@@ -35,7 +35,7 @@ import net.minecraft.util.BlockPos;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.service.command.CommandService;
 import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.service.permission.SubjectData;
+import org.spongepowered.api.service.permission.SubjectComponent;
 import org.spongepowered.api.text.Texts;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.util.Tristate;

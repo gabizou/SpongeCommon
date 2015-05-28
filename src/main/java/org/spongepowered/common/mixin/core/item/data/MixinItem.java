@@ -28,10 +28,10 @@ import com.google.common.collect.Lists;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import org.spongepowered.api.data.DataManipulator;
-import org.spongepowered.api.data.manipulator.DisplayNameData;
-import org.spongepowered.api.data.manipulator.item.EnchantmentData;
-import org.spongepowered.api.data.manipulator.item.LoreData;
+import org.spongepowered.api.data.Component;
+import org.spongepowered.api.data.manipulator.DisplayNameComponent;
+import org.spongepowered.api.data.manipulator.item.EnchantmentComponent;
+import org.spongepowered.api.data.manipulator.item.LoreComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.common.interfaces.item.IMixinItem;
 
@@ -41,8 +41,8 @@ import java.util.List;
 public abstract class MixinItem implements IMixinItem {
 
     @Override
-    public List<DataManipulator<?>> getManipulatorsFor(ItemStack itemStack) {
-        final List<DataManipulator<?>> list = Lists.newArrayList();
+    public List<Component<?>> getManipulatorsFor(ItemStack itemStack) {
+        final List<Component<?>> list = Lists.newArrayList();
         if (!itemStack.hasTagCompound()) {
             return list;
         }
@@ -61,7 +61,7 @@ public abstract class MixinItem implements IMixinItem {
         return list;
     }
 
-    protected final <T extends DataManipulator<T>> T getData(ItemStack itemStack, Class<T> manipulatorClass) {
+    protected final <T extends Component<T>> T getData(ItemStack itemStack, Class<T> manipulatorClass) {
         return ((org.spongepowered.api.item.inventory.ItemStack) itemStack).getData(manipulatorClass).get();
     }
 }

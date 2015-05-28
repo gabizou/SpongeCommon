@@ -25,7 +25,6 @@
 package org.spongepowered.common.data.processor;
 
 import com.google.common.base.Optional;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
@@ -34,14 +33,14 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.ColoredData;
+import org.spongepowered.api.data.manipulator.ColoredComponent;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.data.SpongeDataProcessor;
 
-public class SpongeColoredDataProcessor implements SpongeDataProcessor<ColoredData> {
+public class SpongeColoredDataProcessor implements SpongeDataProcessor<ColoredComponent> {
 
     @Override
-    public Optional<ColoredData> getFrom(DataHolder dataHolder) {
+    public Optional<ColoredComponent> getFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof ItemStack)) {
             return Optional.absent();
         }
@@ -62,7 +61,7 @@ public class SpongeColoredDataProcessor implements SpongeDataProcessor<ColoredDa
     }
 
     @Override
-    public Optional<ColoredData> fillData(DataHolder dataHolder, ColoredData manipulator, DataPriority priority) {
+    public Optional<ColoredComponent> fillData(DataHolder dataHolder, ColoredData manipulator, DataPriority priority) {
         return null;
     }
 
@@ -77,7 +76,7 @@ public class SpongeColoredDataProcessor implements SpongeDataProcessor<ColoredDa
     }
 
     @Override
-    public Optional<ColoredData> build(DataView container) throws InvalidDataException {
+    public Optional<ColoredComponent> build(DataView container) throws InvalidDataException {
         return null;
     }
 
@@ -87,7 +86,7 @@ public class SpongeColoredDataProcessor implements SpongeDataProcessor<ColoredDa
     }
 
     @Override
-    public Optional<ColoredData> createFrom(DataHolder dataHolder) {
+    public Optional<ColoredComponent> createFrom(DataHolder dataHolder) {
         return null;
     }
 }

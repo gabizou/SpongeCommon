@@ -28,7 +28,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.api.data.DataTransactionResult;
-import org.spongepowered.api.data.manipulator.block.AxisData;
+import org.spongepowered.api.data.manipulator.block.AxisComponent;
 
 public interface IMixinBlockAxisOriented extends IMixinBlock {
 

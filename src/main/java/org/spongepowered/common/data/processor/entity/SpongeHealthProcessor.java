@@ -37,18 +37,18 @@ import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataQuery;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.entity.HealthData;
+import org.spongepowered.api.data.manipulator.entity.HealthComponent;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.entity.SpongeHealthData;
+import org.spongepowered.common.data.component.entity.SpongeHealthComponent;
 
-public class SpongeHealthProcessor implements SpongeDataProcessor<HealthData> {
+public class SpongeHealthProcessor implements SpongeDataProcessor<HealthComponent> {
 
     private static final DataQuery HEALTH_QUERY = of("Health");
     private static final DataQuery MAX_HEALTH_QUERY = of("MaxHealth");
 
     @Override
-    public Optional<HealthData> fillData(DataHolder dataHolder, HealthData manipulator, DataPriority priority) {
+    public Optional<HealthComponent> fillData(DataHolder dataHolder, HealthData manipulator, DataPriority priority) {
         // todo for now, we only focus on health to and from entities.
         if (!(dataHolder instanceof EntityLivingBase)) {
             return Optional.absent();
@@ -73,7 +73,7 @@ public class SpongeHealthProcessor implements SpongeDataProcessor<HealthData> {
             case DATA_HOLDER:
             case PRE_MERGE:
                 return builder().reject(manipulator).result(DataTransactionResult.Type.SUCCESS).build();
-            case DATA_MANIPULATOR:
+            case COMPONENT:
             case POST_MERGE:
                 final float oldMaxHealth = ((EntityLivingBase) dataHolder).getMaxHealth();
                 final float oldHealth = ((EntityLivingBase) dataHolder).getHealth();
@@ -108,7 +108,7 @@ public class SpongeHealthProcessor implements SpongeDataProcessor<HealthData> {
     }
 
     @Override
-    public Optional<HealthData> build(DataView container) throws InvalidDataException {
+    public Optional<HealthComponent> build(DataView container) throws InvalidDataException {
         if (!checkNotNull(container).contains(HEALTH_QUERY) || !container.contains(MAX_HEALTH_QUERY)) {
             throw new InvalidDataException("Not enough data to construct a HealthData");
         }
@@ -119,11 +119,11 @@ public class SpongeHealthProcessor implements SpongeDataProcessor<HealthData> {
 
     @Override
     public HealthData create() {
-        return new SpongeHealthData();
+        return new SpongeHealthComponent();
     }
 
     @Override
-    public Optional<HealthData> createFrom(DataHolder dataHolder) {
+    public Optional<HealthComponent> createFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof EntityLivingBase)) {
             return Optional.absent();
         }
@@ -133,7 +133,7 @@ public class SpongeHealthProcessor implements SpongeDataProcessor<HealthData> {
     }
 
     @Override
-    public Optional<HealthData> getFrom(DataHolder dataHolder) {
+    public Optional<HealthComponent> getFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof EntityLivingBase)) {
             return Optional.absent();
         } else {

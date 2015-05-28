@@ -24,9 +24,9 @@
  */
 package org.spongepowered.common.service.permission.base;
 
-import org.spongepowered.api.service.permission.MemorySubjectData;
+import org.spongepowered.api.service.permission.MemorySubjectComponent;
 import org.spongepowered.api.service.permission.Subject;
-import org.spongepowered.api.service.permission.SubjectData;
+import org.spongepowered.api.service.permission.SubjectComponent;
 import org.spongepowered.api.service.permission.context.Context;
 import org.spongepowered.api.util.Tristate;
 import org.spongepowered.common.service.permission.SpongePermissionService;

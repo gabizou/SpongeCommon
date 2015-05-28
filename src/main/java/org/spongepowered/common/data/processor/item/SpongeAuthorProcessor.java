@@ -26,7 +26,6 @@ package org.spongepowered.common.data.processor.item;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.spongepowered.common.data.DataTransactionBuilder.fail;
-import static org.spongepowered.common.data.DataTransactionBuilder.successNoData;
 
 import com.google.common.base.Optional;
 import net.minecraft.init.Items;
@@ -36,16 +35,16 @@ import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataPriority;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.DataView;
-import org.spongepowered.api.data.manipulator.item.AuthorData;
+import org.spongepowered.api.data.manipulator.item.AuthorComponent;
 import org.spongepowered.api.service.persistence.InvalidDataException;
 import org.spongepowered.api.text.Texts;
 import org.spongepowered.common.data.SpongeDataProcessor;
-import org.spongepowered.common.data.manipulator.item.SpongeAuthorData;
+import org.spongepowered.common.data.component.item.SpongeAuthorComponent;
 
-public class SpongeAuthorProcessor implements SpongeDataProcessor<AuthorData> {
+public class SpongeAuthorProcessor implements SpongeDataProcessor<AuthorComponent> {
 
     @Override
-    public Optional<AuthorData> getFrom(DataHolder dataHolder) {
+    public Optional<AuthorComponent> getFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof ItemStack)) {
             return Optional.absent();
         }
@@ -63,14 +62,14 @@ public class SpongeAuthorProcessor implements SpongeDataProcessor<AuthorData> {
     }
 
     @Override
-    public Optional<AuthorData> fillData(DataHolder dataHolder, AuthorData manipulator, DataPriority priority) {
+    public Optional<AuthorComponent> fillData(DataHolder dataHolder, AuthorData manipulator, DataPriority priority) {
         if (dataHolder instanceof org.spongepowered.api.item.inventory.ItemStack) {
             if (((ItemStack) dataHolder).getItem() != Items.written_book) {
                 return Optional.absent();
             }
             switch (checkNotNull(priority)) {
                 case PRE_MERGE:
-                case DATA_MANIPULATOR:
+                case COMPONENT:
                     return Optional.of(manipulator);
                 default:
                     manipulator.setValue(Texts.of(((ItemStack) dataHolder).getTagCompound().getString("author")));
@@ -99,11 +98,11 @@ public class SpongeAuthorProcessor implements SpongeDataProcessor<AuthorData> {
     }
 
     @Override
-    public Optional<AuthorData> build(DataView container) throws InvalidDataException {
-        if (!checkNotNull(container).contains(SpongeAuthorData.AUTHOR)) {
+    public Optional<AuthorComponent> build(DataView container) throws InvalidDataException {
+        if (!checkNotNull(container).contains(SpongeAuthorComponent.AUTHOR)) {
             throw new InvalidDataException("Missing author to construct an AuthorData.");
         }
-        final String rawAuthor = container.getString(SpongeAuthorData.AUTHOR).get();
+        final String rawAuthor = container.getString(SpongeAuthorComponent.AUTHOR).get();
         final AuthorData data = create();
         data.setValue(Texts.of(rawAuthor));
         return Optional.of(data);
@@ -111,11 +110,11 @@ public class SpongeAuthorProcessor implements SpongeDataProcessor<AuthorData> {
 
     @Override
     public AuthorData create() {
-        return new SpongeAuthorData();
+        return new SpongeAuthorComponent();
     }
 
     @Override
-    public Optional<AuthorData> createFrom(DataHolder dataHolder) {
+    public Optional<AuthorComponent> createFrom(DataHolder dataHolder) {
         if (!(dataHolder instanceof ItemStack)) {
             return Optional.absent();
         }

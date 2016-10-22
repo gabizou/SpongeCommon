@@ -24,16 +24,15 @@
  */
 package org.spongepowered.common.data.manipulator.immutable.entity;
 
-import com.google.common.collect.ComparisonChain;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.key.Keys;
-import org.spongepowered.api.data.manipulator.immutable.common.AbstractImmutableData;
 import org.spongepowered.api.data.manipulator.immutable.entity.ImmutableZombieData;
 import org.spongepowered.api.data.manipulator.mutable.entity.ZombieData;
 import org.spongepowered.api.data.type.Profession;
 import org.spongepowered.api.data.type.ZombieType;
 import org.spongepowered.api.data.value.immutable.ImmutableOptionalValue;
 import org.spongepowered.api.data.value.immutable.ImmutableValue;
+import org.spongepowered.common.data.manipulator.immutable.common.AbstractImmutableData;
 import org.spongepowered.common.data.manipulator.mutable.entity.SpongeZombieData;
 import org.spongepowered.common.data.util.DataConstants;
 import org.spongepowered.common.data.value.immutable.ImmutableSpongeOptionalValue;
@@ -49,7 +48,7 @@ public class ImmutableSpongeZombieData extends AbstractImmutableData<ImmutableZo
     private final ImmutableOptionalValue<Profession> professionValue;
 
     public ImmutableSpongeZombieData(ZombieType type, Optional<Profession> profession) {
-        super();
+        super(null);
         this.type = type;
         this.profession = profession;
 

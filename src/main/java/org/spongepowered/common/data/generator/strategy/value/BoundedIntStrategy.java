@@ -6,11 +6,15 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.spongepowered.common.data.generator.CustomDataClassBuilder;
+import org.objectweb.asm.Type;
+import org.spongepowered.api.data.key.Key;
+import org.spongepowered.api.data.value.ValueFactory;
+import org.spongepowered.api.data.value.mutable.MutableBoundedValue;
 import org.spongepowered.common.data.generator.DataImpl;
 import org.spongepowered.common.data.generator.KeyContainer;
 import org.spongepowered.common.data.generator.key.BoundedKeyObject;
 import org.spongepowered.common.data.generator.strategy.ValueStrategy;
+import org.spongepowered.common.data.value.SpongeValueFactory;
 
 public class BoundedIntStrategy implements ValueStrategy {
 
@@ -20,43 +24,43 @@ public class BoundedIntStrategy implements ValueStrategy {
         final String thisDescriptor = data.manipulatorDescriptor;
         final BoundedKeyObject keyObject = (BoundedKeyObject) container.keyObject;
         final String baseFieldName = container.baseFieldName;
-        mv = cw.visitMethod(ACC_PUBLIC, methodName, "()Lorg/spongepowered/api/data/value/mutable/MutableBoundedValue;", null, null);
+        mv = cw.visitMethod(ACC_PUBLIC, methodName, "()" + Type.getInternalName(MutableBoundedValue.class), null, null);
         mv.visitCode();
         Label l0 = new Label();
         mv.visitLabel(l0);
-        mv.visitFieldInsn(GETSTATIC, className, container.staticFieldName, CustomDataClassBuilder.API_KEY_CLASS);
-        mv.visitMethodInsn(INVOKESTATIC, "org/spongepowered/common/data/value/SpongeValueFactory", "boundedBuilder",
-                "(Lorg/spongepowered/api/data/key/Key;)Lorg/spongepowered/api/data/value/ValueFactory$BoundedValueBuilder;", false);
+        mv.visitFieldInsn(GETSTATIC, className, container.staticFieldName, Type.getInternalName(Key.class));
+        mv.visitMethodInsn(INVOKESTATIC, Type.getInternalName(SpongeValueFactory.class), "boundedBuilder",
+                "(" + Type.getInternalName(Key.class) + ")" + Type.getInternalName(ValueFactory.BoundedValueBuilder.class), false);
         mv.visitInsn(ICONST_0);
         Label l1 = new Label();
         mv.visitLabel(l1);
         mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/spongepowered/api/data/value/ValueFactory$BoundedValueBuilder", "defaultValue",
-                "(Ljava/lang/Object;)Lorg/spongepowered/api/data/value/ValueFactory$BoundedValueBuilder;", true);
+        mv.visitMethodInsn(INVOKEINTERFACE, Type.getInternalName(ValueFactory.BoundedValueBuilder.class), "defaultValue",
+                "(" + Type.getInternalName(Object.class) + ")" + Type.getInternalName(ValueFactory.BoundedValueBuilder.class), true);
         mv.visitInsn(ICONST_0);
         Label l2 = new Label();
         mv.visitLabel(l2);
         mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/spongepowered/api/data/value/ValueFactory$BoundedValueBuilder", "minimum",
-                "(Ljava/lang/Object;)Lorg/spongepowered/api/data/value/ValueFactory$BoundedValueBuilder;", true);
-        mv.visitIntInsn(BIPUSH, 10);
+        mv.visitMethodInsn(INVOKEINTERFACE, Type.getInternalName(ValueFactory.BoundedValueBuilder.class), "minimum",
+                "(" + Type.getInternalName(Object.class) + ")" + Type.getInternalName(ValueFactory.BoundedValueBuilder.class), true);
+        mv.visitIntInsn(BIPUSH, 10); // Need to dynamically determine
         Label l3 = new Label();
         mv.visitLabel(l3);
         mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/spongepowered/api/data/value/ValueFactory$BoundedValueBuilder", "maximum",
-                "(Ljava/lang/Object;)Lorg/spongepowered/api/data/value/ValueFactory$BoundedValueBuilder;", true);
+        mv.visitMethodInsn(INVOKEINTERFACE, Type.getInternalName(ValueFactory.BoundedValueBuilder.class), "maximum",
+                "(" + Type.getInternalName(Object.class) + ")" + Type.getInternalName(ValueFactory.BoundedValueBuilder.class), true);
         mv.visitVarInsn(ALOAD, 0);
         mv.visitFieldInsn(GETFIELD, className, baseFieldName, "I");
         Label l4 = new Label();
         mv.visitLabel(l4);
         mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/spongepowered/api/data/value/ValueFactory$BoundedValueBuilder", "actualValue",
-                "(Ljava/lang/Object;)Lorg/spongepowered/api/data/value/ValueFactory$BoundedValueBuilder;", true);
+        mv.visitMethodInsn(INVOKEINTERFACE, Type.getInternalName(ValueFactory.BoundedValueBuilder.class), "actualValue",
+                "(" + Type.getInternalName(Object.class) + ")" + Type.getInternalName(ValueFactory.BoundedValueBuilder.class), true);
         Label l5 = new Label();
         mv.visitLabel(l5);
 
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/spongepowered/api/data/value/ValueFactory$BoundedValueBuilder", "build",
-                "()Lorg/spongepowered/api/data/value/mutable/MutableBoundedValue;", true);
+        mv.visitMethodInsn(INVOKEINTERFACE, Type.getInternalName(ValueFactory.BoundedValueBuilder.class), "build",
+                "()" + Type.getInternalName(MutableBoundedValue.class), true);
         Label l6 = new Label();
         mv.visitLabel(l6);
 
@@ -64,7 +68,7 @@ public class BoundedIntStrategy implements ValueStrategy {
         Label l7 = new Label();
         mv.visitLabel(l7);
         mv.visitLocalVariable("this", thisDescriptor, null, l0, l7, 0);
-        mv.visitMaxs(2, 1);
+        mv.visitMaxs(0, 0);
         mv.visitEnd();
         
     }

@@ -2,17 +2,15 @@ package org.spongepowered.common.data.generator;
 
 import static org.objectweb.asm.Opcodes.*;
 
-import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.spongepowered.api.data.key.Key;
 
 public class CustomDataClassBuilder {
-
-    public static final String API_KEY_CLASS = "Lorg/spongepowered/api/data/key/Key;";
 
     static final class Counter {
         private static int count;
@@ -32,17 +30,13 @@ public class CustomDataClassBuilder {
         FieldVisitor fv;
         MethodVisitor mv;
 
-        final String name = Type.getInternalName(data.dataInterface) + "_Impl";
-        data.manipulatorClassName = name;
+        final String name = data.manipulatorClassName;
 
         cw.visit(V1_8, ACC_PUBLIC + Opcodes.ACC_SUPER, name, null, "java/lang/Object",
                 new String[]{Type.getInternalName(data.dataInterface)});
 
         final String thisDescriptor = "L" + name + ";";
         data.manipulatorDescriptor = thisDescriptor;
-
-
-        cw.visitSource("DummyManipulatorImpl.java", null);
 
         // This is if the KeyContainer requires the bounded value builder, so do a for loop to validate possibly.
         cw.visitInnerClass("org/spongepowered/api/data/value/ValueFactory$BoundedValueBuilder", "org/spongepowered/api/data/value/ValueFactory",
@@ -54,7 +48,7 @@ public class CustomDataClassBuilder {
             container.staticFieldName = keyFieldName;
             {
                 // Set up the static field for the key
-                fv = cw.visitField(ACC_PRIVATE + ACC_FINAL + ACC_STATIC, keyFieldName, API_KEY_CLASS, null, null);
+                fv = cw.visitField(ACC_PRIVATE + ACC_FINAL + ACC_STATIC, keyFieldName, Type.getInternalName(Key.class), null, null);
                 fv.visitEnd();
             }
         }
@@ -96,7 +90,7 @@ public class CustomDataClassBuilder {
             Label l0 = new Label();
             mv.visitLabel(l0);
             mv.visitFieldInsn(GETSTATIC, name, "MY_INT_KEY$aabc000111",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             mv.visitMethodInsn(INVOKESTATIC, "org/spongepowered/common/data/value/SpongeValueFactory", "boundedBuilder",
                     "(Lorg/spongepowered/api/data/key/Key;)Lorg/spongepowered/api/data/value/ValueFactory$BoundedValueBuilder;", false);
             mv.visitInsn(ICONST_0);
@@ -150,7 +144,7 @@ public class CustomDataClassBuilder {
             mv.visitTypeInsn(NEW, "org/spongepowered/common/data/value/mutable/SpongeListValue");
             mv.visitInsn(DUP);
             mv.visitFieldInsn(GETSTATIC, name, "MY_ENCHANTMENT_KEY$aabbcc000011",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             mv.visitVarInsn(ALOAD, 0);
             mv.visitFieldInsn(GETFIELD, name, "myEnchantment$aabcls001",
                     "Ljava/util/List;");
@@ -276,7 +270,7 @@ public class CustomDataClassBuilder {
             mv.visitMethodInsn(INVOKEVIRTUAL, "org/spongepowered/api/data/MemoryDataContainer", "set",
                     "(Lorg/spongepowered/api/data/DataQuery;Ljava/lang/Object;)Lorg/spongepowered/api/data/DataContainer;", false);
             mv.visitFieldInsn(GETSTATIC, name, "MY_INT_KEY$aabc000111",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             Label l2 = new Label();
             mv.visitLabel(l2);
 
@@ -287,7 +281,7 @@ public class CustomDataClassBuilder {
             mv.visitMethodInsn(INVOKEINTERFACE, "org/spongepowered/api/data/DataContainer", "set",
                     "(Lorg/spongepowered/api/data/DataQuery;Ljava/lang/Object;)Lorg/spongepowered/api/data/DataContainer;", true);
             mv.visitFieldInsn(GETSTATIC, name, "MY_ENCHANTMENT_KEY$aabbcc000011",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             Label l3 = new Label();
             mv.visitLabel(l3);
 
@@ -318,7 +312,7 @@ public class CustomDataClassBuilder {
 
             mv.visitVarInsn(ALOAD, 1);
             mv.visitFieldInsn(GETSTATIC, name, "MY_INT_KEY$aabc000111",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             Label l1 = new Label();
             mv.visitJumpInsn(IF_ACMPNE, l1);
             Label l2 = new Label();
@@ -334,7 +328,7 @@ public class CustomDataClassBuilder {
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitFieldInsn(GETSTATIC, name, "MY_ENCHANTMENT_KEY$aabbcc000011",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             Label l3 = new Label();
             mv.visitJumpInsn(IF_ACMPNE, l3);
             Label l4 = new Label();
@@ -353,7 +347,7 @@ public class CustomDataClassBuilder {
             Label l5 = new Label();
             mv.visitLabel(l5);
             mv.visitLocalVariable("this", thisDescriptor, null, l0, l5, 0);
-            mv.visitLocalVariable("key", API_KEY_CLASS,
+            mv.visitLocalVariable("key", Type.getInternalName(Key.class),
                     "Lorg/spongepowered/api/data/key/Key<+Lorg/spongepowered/api/data/value/BaseValue<TE;>;>;", l0, l5, 1);
             mv.visitMaxs(2, 2);
             mv.visitEnd();
@@ -369,14 +363,14 @@ public class CustomDataClassBuilder {
 
             mv.visitVarInsn(ALOAD, 1);
             mv.visitFieldInsn(GETSTATIC, name, "MY_INT_KEY$aabc000111",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             Label l1 = new Label();
             mv.visitJumpInsn(IF_ACMPNE, l1);
             Label l2 = new Label();
             mv.visitLabel(l2);
 
             mv.visitFieldInsn(GETSTATIC, name, "MY_INT_KEY$aabc000111",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             mv.visitMethodInsn(INVOKESTATIC, "org/spongepowered/common/data/value/SpongeValueFactory", "boundedBuilder",
                     "(Lorg/spongepowered/api/data/key/Key;)Lorg/spongepowered/api/data/value/ValueFactory$BoundedValueBuilder;", false);
             mv.visitInsn(ICONST_0);
@@ -423,7 +417,7 @@ public class CustomDataClassBuilder {
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitFieldInsn(GETSTATIC, name, "MY_ENCHANTMENT_KEY$aabbcc000011",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             Label l9 = new Label();
             mv.visitJumpInsn(IF_ACMPNE, l9);
             Label l10 = new Label();
@@ -432,7 +426,7 @@ public class CustomDataClassBuilder {
             mv.visitTypeInsn(NEW, "org/spongepowered/common/data/value/mutable/SpongeListValue");
             mv.visitInsn(DUP);
             mv.visitFieldInsn(GETSTATIC, name, "MY_ENCHANTMENT_KEY$aabbcc000011",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             mv.visitVarInsn(ALOAD, 0);
             mv.visitFieldInsn(GETFIELD, name, "myEnchantment$aabcls001",
                     "Ljava/util/List;");
@@ -448,7 +442,7 @@ public class CustomDataClassBuilder {
             Label l11 = new Label();
             mv.visitLabel(l11);
             mv.visitLocalVariable("this", thisDescriptor, null, l0, l11, 0);
-            mv.visitLocalVariable("key", API_KEY_CLASS, "Lorg/spongepowered/api/data/key/Key<TV;>;", l0, l11, 1);
+            mv.visitLocalVariable("key", Type.getInternalName(Key.class), "Lorg/spongepowered/api/data/key/Key<TV;>;", l0, l11, 1);
             mv.visitMaxs(4, 2);
             mv.visitEnd();
         }
@@ -462,12 +456,12 @@ public class CustomDataClassBuilder {
 
             mv.visitVarInsn(ALOAD, 1);
             mv.visitFieldInsn(GETSTATIC, name, "MY_INT_KEY$aabc000111",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             Label l1 = new Label();
             mv.visitJumpInsn(IF_ACMPEQ, l1);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitFieldInsn(GETSTATIC, name, "MY_ENCHANTMENT_KEY$aabbcc000011",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             Label l2 = new Label();
             mv.visitJumpInsn(IF_ACMPNE, l2);
             mv.visitLabel(l1);
@@ -484,7 +478,7 @@ public class CustomDataClassBuilder {
             Label l4 = new Label();
             mv.visitLabel(l4);
             mv.visitLocalVariable("this", thisDescriptor, null, l0, l4, 0);
-            mv.visitLocalVariable("key", API_KEY_CLASS, "Lorg/spongepowered/api/data/key/Key<*>;", l0, l4, 1);
+            mv.visitLocalVariable("key", Type.getInternalName(Key.class), "Lorg/spongepowered/api/data/key/Key<*>;", l0, l4, 1);
             mv.visitMaxs(2, 2);
             mv.visitEnd();
         }
@@ -581,7 +575,7 @@ public class CustomDataClassBuilder {
 
             mv.visitVarInsn(ALOAD, 1);
             mv.visitFieldInsn(GETSTATIC, name, "MY_INT_KEY$aabc000111",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             mv.visitMethodInsn(INVOKEINTERFACE, "org/spongepowered/api/data/key/Key", "getQuery", "()Lorg/spongepowered/api/data/DataQuery;", true);
             mv.visitMethodInsn(INVOKEINTERFACE, "org/spongepowered/api/data/DataContainer", "contains", "(Lorg/spongepowered/api/data/DataQuery;)Z",
                     true);
@@ -593,7 +587,7 @@ public class CustomDataClassBuilder {
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitFieldInsn(GETSTATIC, name, "MY_INT_KEY$aabc000111",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             mv.visitMethodInsn(INVOKEINTERFACE, "org/spongepowered/api/data/key/Key", "getQuery", "()Lorg/spongepowered/api/data/DataQuery;", true);
             mv.visitMethodInsn(INVOKEINTERFACE, "org/spongepowered/api/data/DataContainer", "getInt",
                     "(Lorg/spongepowered/api/data/DataQuery;)Ljava/util/Optional;", true);
@@ -606,7 +600,7 @@ public class CustomDataClassBuilder {
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitFieldInsn(GETSTATIC, name, "MY_ENCHANTMENT_KEY$aabbcc000011",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             mv.visitMethodInsn(INVOKEINTERFACE, "org/spongepowered/api/data/key/Key", "getQuery", "()Lorg/spongepowered/api/data/DataQuery;", true);
             mv.visitMethodInsn(INVOKEINTERFACE, "org/spongepowered/api/data/DataContainer", "contains", "(Lorg/spongepowered/api/data/DataQuery;)Z",
                     true);
@@ -618,7 +612,7 @@ public class CustomDataClassBuilder {
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitFieldInsn(GETSTATIC, name, "MY_ENCHANTMENT_KEY$aabbcc000011",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             mv.visitMethodInsn(INVOKEINTERFACE, "org/spongepowered/api/data/key/Key", "getQuery", "()Lorg/spongepowered/api/data/DataQuery;", true);
             mv.visitLdcInsn(Type.getType("Lorg/spongepowered/api/data/meta/ItemEnchantment;"));
             mv.visitMethodInsn(INVOKEINTERFACE, "org/spongepowered/api/data/DataContainer", "getSerializableList",
@@ -652,7 +646,7 @@ public class CustomDataClassBuilder {
 
             mv.visitVarInsn(ALOAD, 1);
             mv.visitFieldInsn(GETSTATIC, name, "MY_INT_KEY$aabc000111",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             Label l1 = new Label();
             mv.visitJumpInsn(IF_ACMPNE, l1);
             Label l2 = new Label();
@@ -668,7 +662,7 @@ public class CustomDataClassBuilder {
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitFieldInsn(GETSTATIC, name, "MY_ENCHANTMENT_KEY$aabbcc000011",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             Label l3 = new Label();
             mv.visitJumpInsn(IF_ACMPNE, l3);
             Label l4 = new Label();
@@ -687,7 +681,7 @@ public class CustomDataClassBuilder {
             Label l5 = new Label();
             mv.visitLabel(l5);
             mv.visitLocalVariable("this", thisDescriptor, null, l0, l5, 0);
-            mv.visitLocalVariable("key", API_KEY_CLASS,
+            mv.visitLocalVariable("key", Type.getInternalName(Key.class),
                     "Lorg/spongepowered/api/data/key/Key<+Lorg/spongepowered/api/data/value/BaseValue<TE;>;>;", l0, l5, 1);
             mv.visitLocalVariable("value", "Ljava/lang/Object;", "TE;", l0, l5, 2);
             mv.visitMaxs(2, 3);
@@ -868,23 +862,23 @@ public class CustomDataClassBuilder {
             mv.visitLabel(l0);
 
             mv.visitFieldInsn(GETSTATIC, "org/spongepowered/api/data/manipulator/generator/testing/DummyCustomDataData", "MY_INT_KEY",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             mv.visitFieldInsn(PUTSTATIC, name, "MY_INT_KEY$aabc000111",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             Label l1 = new Label();
             mv.visitLabel(l1);
 
             mv.visitFieldInsn(GETSTATIC, "org/spongepowered/api/data/manipulator/generator/testing/DummyCustomDataData", "MY_ENCHANTMENT_KEY",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             mv.visitFieldInsn(PUTSTATIC, name, "MY_ENCHANTMENT_KEY$aabbcc000011",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             Label l2 = new Label();
             mv.visitLabel(l2);
 
             mv.visitFieldInsn(GETSTATIC, name, "MY_INT_KEY$aabc000111",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             mv.visitFieldInsn(GETSTATIC, name, "MY_ENCHANTMENT_KEY$aabbcc000011",
-                    API_KEY_CLASS);
+                    Type.getInternalName(Key.class));
             mv.visitMethodInsn(INVOKESTATIC, "com/google/common/collect/ImmutableSet", "of",
                     "(Ljava/lang/Object;Ljava/lang/Object;)Lcom/google/common/collect/ImmutableSet;", false);
             mv.visitFieldInsn(PUTSTATIC, name, "KEYS",

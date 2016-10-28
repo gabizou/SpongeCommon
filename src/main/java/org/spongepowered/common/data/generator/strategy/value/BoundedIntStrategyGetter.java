@@ -13,10 +13,10 @@ import org.spongepowered.api.data.value.mutable.MutableBoundedValue;
 import org.spongepowered.common.data.generator.DataImpl;
 import org.spongepowered.common.data.generator.KeyContainer;
 import org.spongepowered.common.data.generator.key.BoundedKeyObject;
-import org.spongepowered.common.data.generator.strategy.ValueStrategy;
+import org.spongepowered.common.data.generator.strategy.GetterValueStrategy;
 import org.spongepowered.common.data.value.SpongeValueFactory;
 
-public class BoundedIntStrategy implements ValueStrategy {
+public class BoundedIntStrategyGetter implements GetterValueStrategy {
 
     @Override
     public void visit(ClassWriter cw, FieldVisitor fv, MethodVisitor mv, DataImpl data, KeyContainer container, String methodName, String methodDescriptor) {

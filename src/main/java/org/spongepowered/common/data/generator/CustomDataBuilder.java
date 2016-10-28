@@ -12,12 +12,19 @@ import org.spongepowered.api.data.manipulator.ImmutableDataManipulator;
 import org.spongepowered.api.data.manipulator.generator.CustomDataProvider;
 import org.spongepowered.api.data.manipulator.generator.DataRegistration;
 import org.spongepowered.api.data.manipulator.generator.KeyValue;
+import org.spongepowered.api.data.value.BaseValue;
 import org.spongepowered.api.data.value.BoundedValue;
+import org.spongepowered.api.data.value.mutable.Value;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 
-public class CustomDataBuilder<T extends DataManipulator<T, I>, I extends ImmutableDataManipulator<I, T>> implements CustomDataProvider.TypeBuilder<T, I> {
+public final class CustomDataBuilder<T extends DataManipulator<T, I>, I extends ImmutableDataManipulator<I, T>> implements CustomDataProvider.TypeBuilder<T, I> {
+
+    private DataImpl data;
+    private List<ValueGroupDisambiguator> disambiguators = new ArrayList<>();
 
     public CustomDataBuilder(Class<T> manipulatorClass, Class<I> immutableClass) {
         final DataImpl data = new DataImpl();
@@ -25,11 +32,17 @@ public class CustomDataBuilder<T extends DataManipulator<T, I>, I extends Immuta
         data.immutableDataInterface = checkNotNull(immutableClass, "ImmutableDataManipulator class cannot be null!");
         data.manipulatorClassName = Type.getInternalName(data.dataInterface) + "_Impl";
 
+        // First pass is to resolve all Value getter methods
         for (Method method : manipulatorClass.getMethods()) {
             final KeyValue annotation = method.getAnnotation(KeyValue.class);
             if (annotation != null) {
                 final String value = annotation.value();
-
+                if (Value.class.isAssignableFrom(method.getReturnType())) {
+                    // We found a value returning method
+                    final ValueGroupDisambiguator valueGroupDisambiguator = new ValueGroupDisambiguator();
+                    valueGroupDisambiguator.matchedNameId = value;
+                    valueGroupDisambiguator.valueDescriptor = method.getName();
+                }
             }
         }
     }

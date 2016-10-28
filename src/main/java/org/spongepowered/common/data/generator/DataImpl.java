@@ -12,6 +12,7 @@ public class DataImpl {
     public String manipulatorClassName;
     public String manipulatorDescriptor;
     public String immutableClassName;
+    List<ValueGroupInfo> valueGroups;
     List<KeyContainer> containers;
     String name;
 

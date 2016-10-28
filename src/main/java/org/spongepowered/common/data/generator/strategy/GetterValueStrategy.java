@@ -6,7 +6,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.spongepowered.common.data.generator.DataImpl;
 import org.spongepowered.common.data.generator.KeyContainer;
 
-public interface ValueStrategy {
+public interface GetterValueStrategy {
 
     void visit(ClassWriter cw, FieldVisitor fv, MethodVisitor mv, DataImpl data, KeyContainer container, String methodName, String methodDescriptor);
 

@@ -1,7 +1,7 @@
 package org.spongepowered.common.data.generator;
 
-import org.spongepowered.common.data.generator.strategy.GetterValueStrategy;
-import org.spongepowered.common.data.generator.strategy.KeySerializationStrategy;
+import org.spongepowered.common.data.generator.strategy.KeySerialization;
+import org.spongepowered.common.data.generator.strategy.ValueStrategyFactory;
 
 import java.lang.reflect.Type;
 
@@ -15,16 +15,16 @@ public final class ValueGroupInfo {
     public String generatedId;
     @Nullable public String getterDescriptor;
     @Nullable public String setterDescriptor;
-    public final GetterValueStrategy resolvedValueStrategy;
-    public final KeySerializationStrategy keySerializationStrategy;
+    public final ValueStrategyFactory.StrategyType resolvedValueStrategy;
+    public final KeySerialization keySerialization;
 
     public ValueGroupInfo(String matchedNameId, Type resolvedType, String valueDescriptor,
-            GetterValueStrategy resolvedValueStrategy, KeySerializationStrategy keySerializationStrategy) {
+            ValueStrategyFactory.StrategyType resolvedValueStrategy, KeySerialization keySerialization) {
         this.matchedNameId = matchedNameId;
         this.resolvedType = resolvedType;
         this.valueDescriptor = valueDescriptor;
         this.resolvedValueStrategy = resolvedValueStrategy;
-        this.keySerializationStrategy = keySerializationStrategy;
+        this.keySerialization = keySerialization;
     }
 
 

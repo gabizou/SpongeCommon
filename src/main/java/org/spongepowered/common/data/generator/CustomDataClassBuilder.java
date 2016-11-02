@@ -68,17 +68,10 @@ public class CustomDataClassBuilder {
         {
             mv = cw.visitMethod(0, "<init>", "()V", null, null);
             mv.visitCode();
-            Label l0 = new Label();
-            mv.visitLabel(l0);
             mv.visitVarInsn(ALOAD, 0);
             mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
-            Label l1 = new Label();
-            mv.visitLabel(l1);
             mv.visitInsn(RETURN);
-            Label l2 = new Label();
-            mv.visitLabel(l2);
-            mv.visitLocalVariable("this", thisDescriptor, null, l0, l2, 0);
-            mv.visitMaxs(1, 1);
+            mv.visitMaxs(0, 0);
             mv.visitEnd();
         }
         // First method.... the myInt() that returns the API Value

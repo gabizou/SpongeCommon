@@ -1,7 +1,7 @@
 package org.spongepowered.common.data.generator.key;
 
-public class KeyObject {
+public class KeyObject<E> {
 
-    Object defaultValue;
+    public E defaultValue;
 
 }

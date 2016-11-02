@@ -1,8 +1,9 @@
 package org.spongepowered.common.data.generator.key;
 
-public class BoundedKeyObject extends KeyObject {
+public class BoundedKeyObject<E> extends KeyObject<E> {
 
-    Object minimum;
-    Object maximum;
+    public E minimum;
+    public E maximum;
+
 
 }

@@ -52,6 +52,7 @@ import org.spongepowered.api.data.persistence.DataBuilder;
 import org.spongepowered.api.data.persistence.DataContentUpdater;
 import org.spongepowered.api.data.persistence.DataTranslator;
 import org.spongepowered.api.data.value.BaseValue;
+import org.spongepowered.api.data.value.BoundedValue;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.config.DataSerializableTypeSerializer;
 import org.spongepowered.common.data.builder.manipulator.SpongeDataManipulatorBuilder;
@@ -75,6 +76,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -305,6 +307,12 @@ public final class SpongeDataManager implements DataManager {
         });
         registry.nbtProcessorMap.clear();
         registry.nbtProcessorTable = builder.build();
+
+        // Clear key registrations, since we don't offer lookups in any way, we don't really need to apply
+        // them for any other reason than validation. Since this also validates that all the sponge generated
+        // keys are registered and therefor restricted from plugin developers attempting to use them as well in their
+        // own custom data classes, we can remain sane about how keys are used for an N:1 relationship of keys to data manipulators.
+        registry.keyRegistration.clear();
 
     }
 
@@ -554,5 +562,17 @@ public final class SpongeDataManager implements DataManager {
 
     public static boolean areRegistrationsComplete() {
         return !allowRegistrations;
+    }
+
+    private final Map<Key<?>, Class<? extends DataManipulator<?, ?>>> keyRegistration = new HashMap<>();
+
+    public void validateKeyRegistration(Key<?> key, Class<? extends DataManipulator<?, ?>> dataInterface) {
+        final Class<? extends DataManipulator<?, ?>> aClass = this.keyRegistration.get(checkNotNull(key, "Key cannot be null!"));
+        if (aClass == null) {
+            this.keyRegistration.put(key, checkNotNull(dataInterface, "The DataManipulator class cannot be null!"));
+        } else {
+            throw new IllegalStateException(String.format("The Key %s is already registered to the DataManipulator Class: %s", key.getId(), aClass.getName()));
+        }
+
     }
 }

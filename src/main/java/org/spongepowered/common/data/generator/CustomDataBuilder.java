@@ -1,8 +1,10 @@
 package org.spongepowered.common.data.generator;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.objectweb.asm.Type;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.key.Key;
 import org.spongepowered.api.data.manipulator.DataManipulator;
@@ -12,6 +14,7 @@ import org.spongepowered.api.data.manipulator.generator.DataRegistration;
 import org.spongepowered.api.data.manipulator.generator.KeyValue;
 import org.spongepowered.api.data.value.BoundedValue;
 import org.spongepowered.api.data.value.mutable.Value;
+import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.common.data.SpongeDataManager;
 
 import java.lang.reflect.Method;
@@ -146,9 +149,17 @@ public final class CustomDataBuilder<T extends DataManipulator<T, I>, I extends 
 
     @Override
     public DataRegistration<T, I> build(Object pluginInstance, String id) throws IllegalArgumentException, IllegalStateException {
+        final PluginContainer container = Sponge.getPluginManager().fromInstance(checkNotNull(pluginInstance, "Plugin instance cannot be null!"))
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "The object: " + pluginInstance + " does not represent a plugin object or it doesn't have a PluginContainer!"));
+        checkArgument(checkNotNull(id, "Manipulator id cannot be null!").isEmpty(), "The string id for the manipulator class cannot be null!");
+        checkArgument(!id.contains(":"), "Manipulator id should not contain a \":\". Please re-read the javadocs!");
+        final String manipulatorId = pluginInstance + ":" + id;
+
         if (this.disambiguators.isEmpty()) {
-            throw new IllegalStateException()
+            throw new IllegalStateException("No discovered annotated value getters or setters in manipulator classes!");
         }
+
         return null;
     }
 }

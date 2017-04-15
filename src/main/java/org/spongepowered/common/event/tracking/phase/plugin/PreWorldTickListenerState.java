@@ -46,12 +46,12 @@ final class PreWorldTickListenerState extends ListenerPhaseState {
     }
 
     @Override
-    public void associateAdditionalBlockChangeCauses(PhaseContext context, Cause.Builder builder) {
+    public void associateAdditionalBlockChangeCauses(PhaseContext<?> context, Cause.Builder builder) {
         context.getCapturedPlayer().ifPresent(player -> builder.named(NamedCause.notifier(player)));
     }
 
     @Override
-    public void processPostTick(PhaseContext phaseContext) {
+    public void processPostTick(PhaseContext<?> phaseContext) {
         final IMixinWorldTickEvent worldTickEvent = phaseContext
                 .firstNamed(InternalNamedCauses.Tracker.TICK_EVENT, IMixinWorldTickEvent.class)
                 .orElseThrow(TrackingUtil.throwWithContext("Expected to be capturing a WorldTickEvent but we're not!!!", phaseContext));
@@ -64,7 +64,7 @@ final class PreWorldTickListenerState extends ListenerPhaseState {
     }
 
     @Override
-    public void associateNeighborBlockNotifier(PhaseContext context, @Nullable BlockPos sourcePos, Block block, BlockPos notifyPos,
+    public void associateNeighborBlockNotifier(PhaseContext<?> context, @Nullable BlockPos sourcePos, Block block, BlockPos notifyPos,
             WorldServer minecraftWorld, PlayerTracker.Type notifier) {
         context.getCapturedPlayer().ifPresent(player ->
                 ((IMixinChunk) minecraftWorld.getChunkFromBlockCoords(notifyPos))
@@ -73,7 +73,7 @@ final class PreWorldTickListenerState extends ListenerPhaseState {
     }
 
     @Override
-    public void capturePlayerUsingStackToBreakBlocks(PhaseContext context, EntityPlayerMP playerMP, @Nullable ItemStack stack) {
+    public void capturePlayerUsingStackToBreakBlocks(PhaseContext<?> context, EntityPlayerMP playerMP, @Nullable ItemStack stack) {
         context.getCapturedPlayerSupplier().addPlayer(playerMP);
     }
 

@@ -43,20 +43,20 @@ import javax.annotation.Nullable;
 public final class PluginPhase extends TrackingPhase {
 
     public static final class State {
-        public static final IPhaseState BLOCK_WORKER = new BlockWorkerPhaseState();
-        public static final IPhaseState CUSTOM_SPAWN = new PluginPhaseState();
-        public static final IPhaseState CUSTOM_EXPLOSION = new CustomExplosionState();
-        public static final IPhaseState SCHEDULED_TASK = new ScheduledTaskPhaseState();
+        public static final IPhaseState<?> BLOCK_WORKER = new BlockWorkerPhaseState();
+        public static final IPhaseState<?> CUSTOM_SPAWN = new PluginPhaseState();
+        public static final IPhaseState<?> CUSTOM_EXPLOSION = new CustomExplosionState();
+        public static final IPhaseState<?> SCHEDULED_TASK = new ScheduledTaskPhaseState();
 
         private State() {
         }
     }
 
     public static final class Listener {
-        public static final IPhaseState PRE_WORLD_TICK_LISTENER = new PreWorldTickListenerState();
-        public static final IPhaseState POST_WORLD_TICK_LISTENER = new PostWorldTickListenerState();
-        public static final IPhaseState PRE_SERVER_TICK_LISTENER = new PreServerTickListenerState();
-        public static final IPhaseState POST_SERVER_TICK_LISTENER = new PostServerTickListenerState();
+        public static final IPhaseState<?> PRE_WORLD_TICK_LISTENER = new PreWorldTickListenerState();
+        public static final IPhaseState<?> POST_WORLD_TICK_LISTENER = new PostWorldTickListenerState();
+        public static final IPhaseState<?> PRE_SERVER_TICK_LISTENER = new PreServerTickListenerState();
+        public static final IPhaseState<?> POST_SERVER_TICK_LISTENER = new PostServerTickListenerState();
 
         private Listener() {
         }
@@ -75,19 +75,14 @@ public final class PluginPhase extends TrackingPhase {
     }
 
     @Override
-    public void unwind(IPhaseState state, PhaseContext phaseContext) {
-        ((PluginPhaseState) state).processPostTick(phaseContext);
-    }
-
-    @Override
-    public void associateAdditionalCauses(IPhaseState state, PhaseContext context, Cause.Builder builder) {
+    public void associateAdditionalCauses(IPhaseState<?> state, PhaseContext<?> context, Cause.Builder builder) {
         if (state instanceof ListenerPhaseState) {
             ((ListenerPhaseState) state).associateAdditionalBlockChangeCauses(context, builder);
         }
     }
 
     @Override
-    public void addNotifierToBlockEvent(IPhaseState phaseState, PhaseContext context, IMixinWorldServer mixinWorld, BlockPos pos,
+    public void addNotifierToBlockEvent(IPhaseState<?> phaseState, PhaseContext<?> context, IMixinWorldServer mixinWorld, BlockPos pos,
             IMixinBlockEventData blockEvent) {
         if (phaseState instanceof ListenerPhaseState) {
             ((ListenerPhaseState) phaseState).associateBlockEventNotifier(context, mixinWorld, pos, blockEvent);
@@ -96,7 +91,7 @@ public final class PluginPhase extends TrackingPhase {
 
 
     @Override
-    public void associateNeighborStateNotifier(IPhaseState state, PhaseContext context, @Nullable BlockPos sourcePos, Block block, BlockPos notifyPos,
+    public void associateNeighborStateNotifier(IPhaseState<?> state, PhaseContext<?> context, @Nullable BlockPos sourcePos, Block block, BlockPos notifyPos,
             WorldServer minecraftWorld, PlayerTracker.Type notifier) {
         if (state instanceof ListenerPhaseState) {
             ((ListenerPhaseState) state).associateNeighborBlockNotifier(context, sourcePos, block, notifyPos, minecraftWorld, notifier);
@@ -104,7 +99,7 @@ public final class PluginPhase extends TrackingPhase {
     }
 
     @Override
-    public void capturePlayerUsingStackToBreakBlock(@Nullable ItemStack itemStack, EntityPlayerMP playerMP, IPhaseState state, PhaseContext context,
+    public void capturePlayerUsingStackToBreakBlock(@Nullable ItemStack itemStack, EntityPlayerMP playerMP, IPhaseState<?> state, PhaseContext<?> context,
             CauseTracker causeTracker) {
         if (state instanceof ListenerPhaseState) {
             ((ListenerPhaseState) state).capturePlayerUsingStackToBreakBlocks(context, playerMP, itemStack);
@@ -112,7 +107,7 @@ public final class PluginPhase extends TrackingPhase {
     }
 
     @Override
-    public boolean handlesOwnPhaseCompletion(IPhaseState state) {
+    public boolean handlesOwnPhaseCompletion(IPhaseState<?> state) {
         return state == State.BLOCK_WORKER;
     }
 }

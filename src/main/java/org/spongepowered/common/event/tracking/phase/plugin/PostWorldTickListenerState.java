@@ -44,17 +44,17 @@ final class PostWorldTickListenerState extends ListenerPhaseState {
     }
 
     @Override
-    public void associateAdditionalBlockChangeCauses(PhaseContext context, Cause.Builder builder) {
+    public void associateAdditionalBlockChangeCauses(PhaseContext<?> context, Cause.Builder builder) {
         context.getCapturedPlayer().ifPresent(player -> builder.named(NamedCause.notifier(player)));
     }
 
     @Override
-    public void processPostTick(PhaseContext phaseContext) {
+    public void processPostTick(PhaseContext<?> phaseContext) {
         phaseContext.getCapturedBlockSupplier().ifPresentAndNotEmpty(blocks -> TrackingUtil.processBlockCaptures(blocks, this, phaseContext));
     }
 
     @Override
-    public void associateNeighborBlockNotifier(PhaseContext context, @Nullable BlockPos sourcePos, Block block, BlockPos notifyPos,
+    public void associateNeighborBlockNotifier(PhaseContext<?> context, @Nullable BlockPos sourcePos, Block block, BlockPos notifyPos,
             WorldServer minecraftWorld, PlayerTracker.Type notifier) {
         context.getCapturedPlayer().ifPresent(player ->
                 ((IMixinChunk) minecraftWorld.getChunkFromBlockCoords(notifyPos))
@@ -63,7 +63,7 @@ final class PostWorldTickListenerState extends ListenerPhaseState {
     }
 
     @Override
-    public void capturePlayerUsingStackToBreakBlocks(PhaseContext context, EntityPlayerMP playerMP, @Nullable ItemStack stack) {
+    public void capturePlayerUsingStackToBreakBlocks(PhaseContext<?> context, EntityPlayerMP playerMP, @Nullable ItemStack stack) {
         context.getCapturedPlayerSupplier().addPlayer(playerMP);
     }
 }

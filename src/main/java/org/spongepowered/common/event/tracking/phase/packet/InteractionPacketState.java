@@ -43,7 +43,7 @@ final class InteractionPacketState extends BasicPacketState {
     }
 
     @Override
-    public void populateContext(EntityPlayerMP playerMP, Packet<?> packet, PhaseContext context) {
+    public void populateContext(EntityPlayerMP playerMP, Packet<?> packet, PhaseContext<?> context) {
         final ItemStack stack = ItemStackUtil.cloneDefensive(playerMP.getHeldItemMainhand());
         if (stack != null) {
             context.add(NamedCause.of(InternalNamedCauses.Packet.ITEM_USED, stack));
@@ -59,7 +59,7 @@ final class InteractionPacketState extends BasicPacketState {
     }
 
     @Override
-    public boolean canSwitchTo(IPhaseState state) {
+    public boolean canSwitchTo(IPhaseState<?> state) {
         return state == BlockPhase.State.BLOCK_DECAY || state == BlockPhase.State.BLOCK_DROP_ITEMS;
     }
 

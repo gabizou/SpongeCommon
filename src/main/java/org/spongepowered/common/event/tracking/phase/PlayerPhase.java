@@ -25,6 +25,7 @@
 package org.spongepowered.common.event.tracking.phase;
 
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.player.EntityPlayerMP;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.SpongeEventFactory;
@@ -46,11 +47,11 @@ import java.util.stream.Collectors;
 public class PlayerPhase extends TrackingPhase {
 
     public static final class State {
-        public static final IPhaseState PLAYER_LOGOUT = new PlayerPhaseState();
+        public static final PlayerPhaseState PLAYER_LOGOUT = new PlayerPhaseState();
     }
 
 
-    static final class PlayerPhaseState implements IPhaseState {
+    public static final class PlayerPhaseState implements IPhaseState<?> {
 
         PlayerPhaseState() {
         }
@@ -59,6 +60,39 @@ public class PlayerPhase extends TrackingPhase {
         public TrackingPhase getPhase() {
             return TrackingPhases.PLAYER;
         }
+
+        @Override
+        public ? start() {
+            return new PlayerContext();
+        }
+
+    }
+
+    public static final class PlayerContext extends PhaseContext<?> {
+
+        private EntityPlayerMP player;
+
+        public Player getPlayer() throws IllegalStateException {
+            if (this.player == null) {
+                throw new IllegalStateException("Expected to be capturing a player!");
+            }
+            return ((Player) this.player);
+        }
+
+        public PlayerContext player(EntityPlayerMP player) {
+            this.player = player;
+            super.source = player;
+            return this;
+        }
+
+        @Override
+        public PlayerContext player(Player player) {
+            this.player = (EntityPlayerMP) player;
+            super.source = player;
+            return this;
+        }
+
+
     }
 
     public static PlayerPhase getInstance() {
@@ -74,7 +108,7 @@ public class PlayerPhase extends TrackingPhase {
 
     @SuppressWarnings("unchecked")
 	@Override
-    public void unwind(IPhaseState state, PhaseContext phaseContext) {
+    public void unwind(IPhaseState<?> state, PlayerContext phaseContext) {
         // Since currently all we have is PLAYER_LOGOUT, don't care about states.
         final Player player = phaseContext.firstNamed(NamedCause.SOURCE, Player.class)
                 .orElseThrow(TrackingUtil.throwWithContext("Expected to be processing a player leaving, but we're not!", phaseContext));

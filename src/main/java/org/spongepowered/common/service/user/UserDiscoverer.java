@@ -24,9 +24,9 @@
  */
 package org.spongepowered.common.service.user;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Preconditions;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -60,7 +60,7 @@ import java.util.stream.Collectors;
 
 class UserDiscoverer {
 
-    private static final Cache<UUID, User> userCache = CacheBuilder.newBuilder()
+    private static final Cache<UUID, User> userCache = Caffeine.newBuilder()
             .expireAfterAccess(1, TimeUnit.DAYS)
             .build();
 

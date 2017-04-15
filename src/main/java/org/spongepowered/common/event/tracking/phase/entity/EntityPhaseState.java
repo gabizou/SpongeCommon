@@ -25,6 +25,7 @@
 package org.spongepowered.common.event.tracking.phase.entity;
 
 import org.spongepowered.api.event.entity.MoveEntityEvent;
+import org.spongepowered.common.event.tracking.DefaultPhaseContext;
 import org.spongepowered.common.event.tracking.IPhaseState;
 import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.phase.TrackingPhase;
@@ -32,11 +33,16 @@ import org.spongepowered.common.event.tracking.phase.TrackingPhases;
 
 import javax.annotation.Nullable;
 
-public abstract class EntityPhaseState implements IPhaseState {
+public abstract class EntityPhaseState implements IPhaseState<DefaultPhaseContext> {
 
     @Override
     public final TrackingPhase getPhase() {
         return TrackingPhases.ENTITY;
+    }
+
+    @Override
+    public DefaultPhaseContext start() {
+        return PhaseContext.start();
     }
 
     @Override
@@ -45,11 +51,11 @@ public abstract class EntityPhaseState implements IPhaseState {
     }
 
     @Nullable
-    public net.minecraft.entity.Entity returnTeleportResult(PhaseContext context, MoveEntityEvent.Teleport.Portal event) {
+    public net.minecraft.entity.Entity returnTeleportResult(PhaseContext<?> context, MoveEntityEvent.Teleport.Portal event) {
         return null;
     }
 
-    void unwind(PhaseContext context) {
+    void unwind(PhaseContext<?> context) {
 
     }
 }

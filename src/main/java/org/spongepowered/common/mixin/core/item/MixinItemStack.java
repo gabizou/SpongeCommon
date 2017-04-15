@@ -70,7 +70,6 @@ import org.spongepowered.common.event.tracking.PhaseData;
 import org.spongepowered.common.interfaces.data.IMixinCustomDataHolder;
 import org.spongepowered.common.interfaces.item.IMixinItem;
 import org.spongepowered.common.interfaces.item.IMixinItemStack;
-import org.spongepowered.common.interfaces.world.IMixinWorldServer;
 import org.spongepowered.common.item.inventory.SpongeItemStackSnapshot;
 import org.spongepowered.common.registry.type.ItemTypeRegistryModule;
 import org.spongepowered.common.text.translation.SpongeTranslation;
@@ -145,7 +144,7 @@ public abstract class MixinItemStack implements ItemStack, IMixinItemStack, IMix
         if (!worldIn.isRemote) {
             final CauseTracker causeTracker = CauseTracker.getInstance();
             final PhaseData peek = causeTracker.getCurrentPhaseData();
-            final IPhaseState state = peek.state;
+            final IPhaseState<?> state = peek.state;
             state.getPhase().capturePlayerUsingStackToBreakBlock(this, (EntityPlayerMP) playerIn, state, peek.context, causeTracker);
         }
     }

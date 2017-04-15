@@ -27,19 +27,20 @@ package org.spongepowered.common.event.tracking;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.common.event.InternalNamedCauses;
+import org.spongepowered.common.event.tracking.phase.general.GeneralPhaseContext;
 
 import java.util.Optional;
 
-final class UnwindingPhaseContext extends PhaseContext {
+public final class UnwindingPhaseContext extends GeneralPhaseContext<UnwindingPhaseContext> {
 
-    static PhaseContext unwind(IPhaseState state, PhaseContext context) {
+    static UnwindingPhaseContext unwind(IPhaseState<?> state, PhaseContext<?> context) {
         return new UnwindingPhaseContext(state, context);
     }
 
-    private PhaseContext unwindingContext;
-    private IPhaseState unwindingState;
+    private PhaseContext<?> unwindingContext;
+    private IPhaseState<?> unwindingState;
 
-    UnwindingPhaseContext(IPhaseState unwindingState, PhaseContext unwindingContext) {
+    UnwindingPhaseContext(IPhaseState<?> unwindingState, PhaseContext<?> unwindingContext) {
         add(NamedCause.of(InternalNamedCauses.Tracker.UNWINDING_CONTEXT, unwindingContext));
         add(NamedCause.of(InternalNamedCauses.Tracker.UNWINDING_STATE, unwindingState));
         this.unwindingContext = unwindingContext;

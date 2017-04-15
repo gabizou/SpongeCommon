@@ -29,14 +29,20 @@ import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.phase.TrackingPhase;
 import org.spongepowered.common.event.tracking.phase.TrackingPhases;
 
-public class PluginPhaseState implements IPhaseState {
+public class PluginPhaseState implements IPhaseState<?> {
 
     @Override
     public final TrackingPhase getPhase() {
         return TrackingPhases.PLUGIN;
     }
 
-    void processPostTick(PhaseContext phaseContext) {
+
+    @Override
+    public ? start() {
+        return PhaseContext.start();
+    }
+
+    void processPostTick(PhaseContext<?> phaseContext) {
     }
 
 }

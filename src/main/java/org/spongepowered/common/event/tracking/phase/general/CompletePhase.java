@@ -25,16 +25,26 @@
 package org.spongepowered.common.event.tracking.phase.general;
 
 import org.spongepowered.common.event.tracking.IPhaseState;
-import org.spongepowered.common.event.tracking.PhaseContext;
 
-final class CompletePhase extends GeneralState {
+final class CompletePhase extends GeneralState<GeneralState.DefaultGeneralContext> {
+
     @Override
-    public boolean canSwitchTo(IPhaseState state) {
+    public DefaultGeneralContext start() {
+        throw new IllegalStateException("Cannot start a CompletePhase!");
+    }
+
+    @Override
+    public boolean canSwitchTo(IPhaseState<?> state) {
         return true;
     }
 
     @Override
-    void unwind(PhaseContext context) {
+    public void unwind(DefaultGeneralContext context) {
 
+    }
+
+    @Override
+    public boolean requiresBlockCapturing() {
+        return false;
     }
 }

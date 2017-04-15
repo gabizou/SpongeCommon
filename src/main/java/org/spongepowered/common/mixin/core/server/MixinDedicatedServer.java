@@ -37,21 +37,16 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.event.SpongeCommonEventFactory;
 import org.spongepowered.common.event.tracking.CauseTracker;
 import org.spongepowered.common.event.tracking.IPhaseState;
-import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.PhaseData;
-import org.spongepowered.common.event.tracking.phase.plugin.PluginPhase;
 import org.spongepowered.common.interfaces.world.IMixinWorldServer;
-import org.spongepowered.common.world.WorldManager;
 
 import java.net.InetSocketAddress;
 import java.util.Optional;
-import java.util.concurrent.FutureTask;
 
 @Mixin(DedicatedServer.class)
 public abstract class MixinDedicatedServer extends MinecraftServer implements Server {
@@ -106,7 +101,7 @@ public abstract class MixinDedicatedServer extends MinecraftServer implements Se
         // Mods such as ComputerCraft and Thaumcraft check this method before attempting to set a blockstate.
         final CauseTracker causeTracker = CauseTracker.getInstance();
         final PhaseData peek = causeTracker.getCurrentPhaseData();
-        final IPhaseState phaseState = peek.state;
+        final IPhaseState<?> phaseState = peek.state;
         if (phaseState == null || !phaseState.isInteraction()) {
             if (SpongeCommonEventFactory.callChangeBlockEventPre((IMixinWorldServer) worldIn, pos, NamedCause.of(NamedCause.BLOCK_PROTECTED, worldIn), playerIn).isCancelled()) {
                 return true;

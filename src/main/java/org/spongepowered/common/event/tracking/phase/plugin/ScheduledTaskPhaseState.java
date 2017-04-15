@@ -37,12 +37,12 @@ import org.spongepowered.common.event.tracking.phase.generation.GenerationPhase;
 public class ScheduledTaskPhaseState extends PluginPhaseState {
 
     @Override
-    public boolean canSwitchTo(IPhaseState state) {
+    public boolean canSwitchTo(IPhaseState<?> state) {
         return state instanceof BlockPhaseState || state instanceof EntityPhaseState || state == GenerationPhase.State.TERRAIN_GENERATION;
     }
 
     @Override
-    public void processPostTick(PhaseContext phaseContext) {
+    public void processPostTick(PhaseContext<?> phaseContext) {
         phaseContext.getCapturedBlockSupplier().ifPresentAndNotEmpty(blocks -> {
             TrackingUtil.processBlockCaptures(blocks, this, phaseContext);
         });

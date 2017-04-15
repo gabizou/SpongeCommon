@@ -43,7 +43,7 @@ class WeatherTickPhaseState extends TickPhaseState {
     }
 
     @Override
-    public void processPostTick(PhaseContext phaseContext) {
+    public void processPostTick(TickContext phaseContext) {
         phaseContext.getCapturedEntitySupplier().ifPresentAndNotEmpty(entities -> {
             final Cause.Builder builder = Cause.source(SpawnCause.builder()
                     .type(InternalSpawnTypes.WEATHER)
@@ -61,12 +61,12 @@ class WeatherTickPhaseState extends TickPhaseState {
         });
     }
     @Override
-    public void associateAdditionalBlockChangeCauses(PhaseContext context, Cause.Builder builder) {
+    public void associateAdditionalBlockChangeCauses(TickContext context, Cause.Builder builder) {
 
     }
 
     @Override
-    public boolean spawnEntityOrCapture(PhaseContext context, Entity entity, int chunkX, int chunkZ) {
+    public boolean spawnEntityOrCapture(PhaseContext<?> context, Entity entity, int chunkX, int chunkZ) {
         final Cause.Builder builder = Cause.source(SpawnCause.builder()
                 .type(InternalSpawnTypes.WEATHER)
                 .build());

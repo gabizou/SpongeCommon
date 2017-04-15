@@ -26,9 +26,13 @@ package org.spongepowered.common.event.tracking.phase.entity;
 
 import com.flowpowered.math.vector.Vector3d;
 import net.minecraft.world.WorldServer;
+import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.event.entity.MoveEntityEvent;
+import org.spongepowered.common.event.InternalNamedCauses;
+import org.spongepowered.common.event.tracking.DefaultPhaseContext;
 import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.TrackingUtil;
+import org.spongepowered.common.interfaces.world.IMixinWorldServer;
 
 import javax.annotation.Nullable;
 
@@ -39,7 +43,7 @@ final class ChangingToDimensionState extends EntityPhaseState {
 
     @SuppressWarnings("unchecked")
     @Override
-    void unwind(PhaseContext context) {
+    void unwind(PhaseContext<?> context) {
 //                final MoveEntityEvent.Teleport.Portal portalEvent = context.firstNamed(InternalNamedCauses.Teleporting.TELEPORT_EVENT, MoveEntityEvent.Teleport.Portal.class)
 //                                .orElseThrow(PhaseUtil.throwWithContext("Expected to capture a portal event!", context));
 //
@@ -124,9 +128,17 @@ final class ChangingToDimensionState extends EntityPhaseState {
         return true;
     }
 
+    @Override
+    public boolean spawnEntityOrCapture(DefaultPhaseContext context, Entity entity, int chunkX, int chunkZ) {
+        final WorldServer worldServer = context.firstNamed(InternalNamedCauses.Teleporting.TARGET_WORLD, WorldServer.class)
+            .orElseThrow(TrackingUtil.throwWithContext("Expected to capture the target World for a teleport!", context));
+        ((IMixinWorldServer) worldServer).forceSpawnEntity(entity);
+        return true;
+    }
+
     @Nullable
     @Override
-    public net.minecraft.entity.Entity returnTeleportResult(PhaseContext context, MoveEntityEvent.Teleport.Portal event) {
+    public net.minecraft.entity.Entity returnTeleportResult(PhaseContext<?> context, MoveEntityEvent.Teleport.Portal event) {
         final net.minecraft.entity.Entity teleportingEntity = context.getSource(net.minecraft.entity.Entity.class)
                 .orElseThrow(TrackingUtil.throwWithContext("Expected to be teleporting an entity!", context));
         // The rest of this is to be handled in the phase.

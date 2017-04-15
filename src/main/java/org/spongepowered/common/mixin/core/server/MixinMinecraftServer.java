@@ -381,7 +381,7 @@ public abstract class MixinMinecraftServer implements Server, ConsoleSource, IMi
         chunkProviderServer.setForceChunkRequests(true);
         final CauseTracker causeTracker = CauseTracker.getInstance();
         if (CauseTracker.ENABLED) {
-            causeTracker.switchToPhase(GenerationPhase.State.TERRAIN_GENERATION, PhaseContext.start()
+            causeTracker.switchToPhase(GenerationPhase.State.TERRAIN_GENERATION, GenerationPhase.State.TERRAIN_GENERATION.start()
                     .add(NamedCause.source(worldServer))
                     .add(NamedCause.of(InternalNamedCauses.WorldGeneration.WORLD, worldServer))
                     .addCaptures()
@@ -774,7 +774,7 @@ public abstract class MixinMinecraftServer implements Server, ConsoleSource, IMi
 
     @Redirect(method = "callFromMainThread", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/Callable;call()Ljava/lang/Object;"))
     public Object onCall(Callable<?> callable) throws Exception {
-        CauseTracker.getInstance().switchToPhase(PluginPhase.State.SCHEDULED_TASK, PhaseContext.start()
+        CauseTracker.getInstance().switchToPhase(PluginPhase.State.SCHEDULED_TASK, PluginPhase.State.SCHEDULED_TASK.start()
             .add(NamedCause.source(callable))
             .addCaptures()
             .complete()

@@ -28,8 +28,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
@@ -85,6 +83,7 @@ import org.spongepowered.common.registry.type.world.PortalAgentRegistryModule;
 import org.spongepowered.common.registry.type.world.WorldGeneratorModifierRegistryModule;
 import org.spongepowered.common.util.FunctionalUtil;
 import org.spongepowered.common.util.SpongeHooks;
+import org.spongepowered.common.util.collection.Int2ObjectArrayBiMap;
 import org.spongepowered.common.util.persistence.JsonTranslator;
 import org.spongepowered.common.world.WorldManager;
 
@@ -147,7 +146,7 @@ public abstract class MixinWorldInfo implements WorldProperties, IMixinWorldInfo
     private boolean isMod, generateBonusChest, isValid = true;
     private NBTTagCompound spongeRootLevelNbt = new NBTTagCompound(), spongeNbt = new NBTTagCompound();
     private NBTTagList playerUniqueIdNbt = new NBTTagList();
-    private BiMap<Integer, UUID> playerUniqueIdMap = HashBiMap.create();
+    private Int2ObjectArrayBiMap<UUID> playerUniqueIdMap = new Int2ObjectArrayBiMap<>();
     private List<UUID> pendingUniqueIds = new ArrayList<>();
     private int trackedUniqueIdCount = 0;
     private SpongeConfig<WorldConfig> worldConfig;
@@ -739,12 +738,13 @@ public abstract class MixinWorldInfo implements WorldProperties, IMixinWorldInfo
 
     @Override
     public int getIndexForUniqueId(UUID uuid) {
-        if (this.playerUniqueIdMap.inverse().get(uuid) == null) {
+        final int key = this.playerUniqueIdMap.inverse().get(uuid);
+        if (key == -1) {
             this.playerUniqueIdMap.put(this.trackedUniqueIdCount, uuid);
             this.pendingUniqueIds.add(uuid);
             return this.trackedUniqueIdCount++;
         } else {
-            return this.playerUniqueIdMap.inverse().get(uuid);
+            return key;
         }
     }
 

@@ -280,10 +280,8 @@ public class SpongeCommandManager implements CommandManager {
         try {
             try {
                 if (CauseTracker.ENABLED && SpongeImpl.getServer().isCallingFromMinecraftThread()) {
-                    CauseTracker.getInstance().switchToPhase(GeneralPhase.State.COMMAND, PhaseContext.start()
+                    CauseTracker.getInstance().switchToPhase(GeneralPhase.State.COMMAND, GeneralPhase.State.COMMAND.start()
                         .add(NamedCause.source(source))
-                        // unused, to be removed and re-located when phase context is cleaned up
-                        //.add(NamedCause.of(InternalNamedCauses.General.COMMAND, commandUsed))
                         .addCaptures()
                         .addEntityDropCaptures()
                         .complete());

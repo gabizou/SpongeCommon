@@ -117,7 +117,7 @@ public abstract class MixinWorldEntitySpawner {
         IMixinWorldServer spongeWorld = ((IMixinWorldServer) worldServerIn);
         final Cause cause = Cause.of(NamedCause.source(worldServerIn));
         if (CauseTracker.ENABLED) {
-            CauseTracker.getInstance().switchToPhase(GenerationPhase.State.WORLD_SPAWNER_SPAWNING, PhaseContext.start()
+            CauseTracker.getInstance().switchToPhase(GenerationPhase.State.WORLD_SPAWNER_SPAWNING, GenerationPhase.State.WORLD_SPAWNER_SPAWNING.start()
                 .add(NamedCause.source(worldServerIn))
                 .add(NamedCause.of(InternalNamedCauses.WorldGeneration.WORLD, worldServerIn))
                 .addCaptures()
@@ -332,7 +332,7 @@ public abstract class MixinWorldEntitySpawner {
     @Inject(method = "performWorldGenSpawning", at = @At(value = "HEAD"))
     private static void onPerformWorldGenSpawningHead(World worldServer, Biome biome, int j, int k, int l, int m, Random rand, CallbackInfo ci) {
         if (CauseTracker.ENABLED) {
-            CauseTracker.getInstance().switchToPhase(GenerationPhase.State.WORLD_SPAWNER_SPAWNING, PhaseContext.start()
+            CauseTracker.getInstance().switchToPhase(GenerationPhase.State.WORLD_SPAWNER_SPAWNING, GenerationPhase.State.WORLD_SPAWNER_SPAWNING.start()
                 .addCaptures()
                 .add(NamedCause.of(InternalNamedCauses.WorldGeneration.WORLD, worldServer))
                 .add(NamedCause.source(worldServer))

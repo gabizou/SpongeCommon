@@ -54,7 +54,6 @@ import org.spongepowered.common.config.SpongeConfig;
 import org.spongepowered.common.event.InternalNamedCauses;
 import org.spongepowered.common.event.tracking.CauseTracker;
 import org.spongepowered.common.event.tracking.IPhaseState;
-import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.phase.TrackingPhases;
 import org.spongepowered.common.event.tracking.phase.entity.EntityPhase;
 import org.spongepowered.common.event.tracking.phase.generation.GenerationPhase;
@@ -187,7 +186,7 @@ public abstract class MixinChunkProviderServer implements WorldStorage, IMixinCh
     public void onProvideChunkStart(int x, int z, CallbackInfoReturnable<Chunk> cir) {
         if (CauseTracker.ENABLED) {
             final CauseTracker causeTracker = CauseTracker.getInstance();
-            causeTracker.switchToPhase(GenerationPhase.State.TERRAIN_GENERATION, PhaseContext.start()
+            causeTracker.switchToPhase(GenerationPhase.State.TERRAIN_GENERATION, GenerationPhase.State.TERRAIN_GENERATION.start()
                     .addCaptures()
                     .add(NamedCause.of(InternalNamedCauses.WorldGeneration.WORLD, this.worldObj))
                     .complete());
@@ -219,7 +218,7 @@ public abstract class MixinChunkProviderServer implements WorldStorage, IMixinCh
 
         if (CauseTracker.ENABLED) {
             final CauseTracker causeTracker = CauseTracker.getInstance();
-            final IPhaseState currentState = causeTracker.getCurrentState();
+            final IPhaseState<?> currentState = causeTracker.getCurrentState();
             // States that cannot deny chunks
             if (currentState == TickPhase.Tick.PLAYER
                     || currentState == TickPhase.Tick.DIMENSION

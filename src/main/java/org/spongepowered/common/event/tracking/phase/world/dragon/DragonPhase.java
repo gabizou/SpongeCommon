@@ -24,6 +24,7 @@
  */
 package org.spongepowered.common.event.tracking.phase.world.dragon;
 
+import net.minecraft.world.end.DragonSpawnManager;
 import org.spongepowered.common.event.tracking.IPhaseState;
 import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.phase.TrackingPhase;
@@ -42,7 +43,7 @@ public final class DragonPhase extends TrackingPhase {
 
     public static final class State {
 
-        public static final IPhaseState RESPAWN_DRAGON = new GeneralDragonPhaseState();
+        public static final IPhaseState<?> RESPAWN_DRAGON = new GeneralDragonPhaseState();
 
 
         private State() {
@@ -50,11 +51,24 @@ public final class DragonPhase extends TrackingPhase {
         }
     }
 
+    public static final class DragonContext extends PhaseContext<DragonContext> {
+
+        private DragonSpawnManager respawnState;
+
+        public DragonSpawnManager getRespawnState() throws IllegalStateException {
+            if (this.respawnState == null) {
+                throw new IllegalStateException("Expected to be capturing a DragonRespawnState!");
+            }
+            return this.respawnState;
+        }
+
+        public DragonContext respawnState(DragonSpawnManager manager) {
+            this.respawnState = manager;
+            return this;
+        }
+    }
+
     private DragonPhase() {
     }
 
-    @Override
-    public void unwind(IPhaseState state, PhaseContext phaseContext) {
-
-    }
 }

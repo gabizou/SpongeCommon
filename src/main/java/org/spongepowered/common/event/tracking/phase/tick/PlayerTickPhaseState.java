@@ -49,12 +49,12 @@ class PlayerTickPhaseState extends TickPhaseState {
     }
 
     @Override
-    public void associateBlockEventNotifier(PhaseContext context, BlockPos pos, IMixinBlockEventData blockEvent) {
+    public void associateBlockEventNotifier(TickContext context, BlockPos pos, IMixinBlockEventData blockEvent) {
         blockEvent.setSourceUser(context.getSource(Player.class).get());
     }
 
     @Override
-    public void processPostTick(PhaseContext phaseContext) {
+    public void processPostTick(TickContext phaseContext) {
         final Player player = phaseContext.getSource(Player.class)
                 .orElseThrow(TrackingUtil.throwWithContext("Not ticking on a Player!", phaseContext));
         phaseContext.getCapturedEntitySupplier().ifPresentAndNotEmpty(entities -> {
@@ -96,12 +96,12 @@ class PlayerTickPhaseState extends TickPhaseState {
     }
 
     @Override
-    public void associateAdditionalBlockChangeCauses(PhaseContext context, Cause.Builder builder) {
+    public void associateAdditionalBlockChangeCauses(TickContext context, Cause.Builder builder) {
         builder.named(NamedCause.OWNER, context.getSource(Player.class).get());
     }
 
     @Override
-    public void appendExplosionContext(PhaseContext explosionContext, PhaseContext context) {
+    public void appendExplosionContext(PhaseContext<?> explosionContext, PhaseContext<?> context) {
         final Player player = context.getSource(Player.class)
                 .orElseThrow(TrackingUtil.throwWithContext("Expected to be processing over a ticking TileEntity!", context));
         explosionContext.owner(player);
@@ -110,7 +110,7 @@ class PlayerTickPhaseState extends TickPhaseState {
     }
 
     @Override
-    public boolean spawnEntityOrCapture(PhaseContext context, Entity entity, int chunkX, int chunkZ) {
+    public boolean spawnEntityOrCapture(PhaseContext<?> context, Entity entity, int chunkX, int chunkZ) {
         final Player player = context.getSource(Player.class)
                 .orElseThrow(TrackingUtil.throwWithContext("Not ticking on a Player!", context));
         final Cause.Builder builder = Cause.source(EntitySpawnCause.builder()

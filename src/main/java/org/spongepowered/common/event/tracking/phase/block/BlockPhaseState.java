@@ -28,13 +28,13 @@ import org.spongepowered.common.event.tracking.IPhaseState;
 import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.phase.TrackingPhases;
 
-public class BlockPhaseState implements IPhaseState {
+public abstract class BlockPhaseState<B extends BlockPhaseState<B, P>, P extends PhaseContext<P>> implements IPhaseState<P> {
 
     BlockPhaseState() {
     }
 
     @Override
-    public boolean canSwitchTo(IPhaseState state) {
+    public boolean canSwitchTo(IPhaseState<?> state) {
         return false;
     }
 
@@ -43,7 +43,7 @@ public class BlockPhaseState implements IPhaseState {
         return TrackingPhases.BLOCK;
     }
 
-    void unwind(PhaseContext context) {
+    void unwind(P context) {
 
     }
 

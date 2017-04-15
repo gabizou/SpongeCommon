@@ -42,17 +42,22 @@ import org.spongepowered.common.registry.type.event.InternalSpawnTypes;
 
 import java.util.ArrayList;
 
-abstract class GeneralState implements IPhaseState {
+abstract class GeneralState<P extends GeneralPhaseContext<P>> implements IPhaseState<P> {
 
-    abstract void unwind(PhaseContext context);
+    public static final class DefaultGeneralContext extends GeneralPhaseContext<DefaultGeneralContext> {
+
+    }
 
     @Override
-    public final TrackingPhase getPhase() {
+    public abstract void unwind(P context);
+
+    @Override
+    public final GeneralPhase getPhase() {
         return TrackingPhases.GENERAL;
     }
 
     /**
-     * A duplicate of {@link TrackingPhase#spawnEntityOrCapture(IPhaseState, PhaseContext, Entity, int, int)}
+     * A duplicate of {@link IPhaseState#spawnEntityOrCapture(PhaseContext, Entity, int, int)}
      * such that the general states will not know what to do for entity spawns. Eventually, this is going to be centralized
      * so that it's not always delegated between the phases and phase states.
      *
@@ -67,7 +72,8 @@ abstract class GeneralState implements IPhaseState {
      * @param chunkZ
      * @return
      */
-    public boolean spawnEntityOrCapture(PhaseContext context, Entity entity, int chunkX, int chunkZ) {
+    @Override
+    public boolean spawnEntityOrCapture(P context, Entity entity, int chunkX, int chunkZ) {
         final User user = context.getNotifier().orElseGet(() -> context.getOwner().orElse(null));
         if (user != null) {
             entity.setCreator(user.getUniqueId());
@@ -86,7 +92,7 @@ abstract class GeneralState implements IPhaseState {
         return false;
     }
 
-    public Cause generateTeleportCause(PhaseContext context) {
+    public Cause generateTeleportCause(P context) {
         return Cause.of(NamedCause.source(TeleportCause.builder().type(TeleportTypes.UNKNOWN).build()));
     }
 }

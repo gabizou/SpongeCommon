@@ -50,7 +50,7 @@ final class InteractEntityPacketState extends BasicPacketState {
     }
 
     @Override
-    public void populateContext(EntityPlayerMP playerMP, Packet<?> packet, PhaseContext context) {
+    public void populateContext(EntityPlayerMP playerMP, Packet<?> packet, PhaseContext<?> context) {
         final CPacketUseEntity useEntityPacket = (CPacketUseEntity) packet;
         net.minecraft.entity.Entity entity = useEntityPacket.getEntityFromWorld(playerMP.worldObj);
         if (entity != null) {

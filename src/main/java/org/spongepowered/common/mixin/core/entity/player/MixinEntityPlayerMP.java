@@ -139,7 +139,6 @@ import org.spongepowered.common.event.InternalNamedCauses;
 import org.spongepowered.common.event.SpongeCommonEventFactory;
 import org.spongepowered.common.event.tracking.CauseTracker;
 import org.spongepowered.common.event.tracking.IPhaseState;
-import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.PhaseData;
 import org.spongepowered.common.event.tracking.phase.entity.EntityPhase;
 import org.spongepowered.common.interfaces.IMixinCommandSender;
@@ -251,11 +250,11 @@ public abstract class MixinEntityPlayerMP extends MixinEntityPlayer implements P
         if (!this.worldObj.isRemote) {
             causeTracker = CauseTracker.getInstance();
             final PhaseData peek = causeTracker.getCurrentPhaseData();
-            final IPhaseState state = peek.state;
+            final IPhaseState<?> state = peek.state;
             tracksEntityDeaths = CauseTracker.ENABLED && causeTracker.getCurrentState().tracksEntityDeaths();
             if (state != EntityPhase.State.DEATH && !state.tracksEntityDeaths()) {
                 if (!tracksEntityDeaths) {
-                    causeTracker.switchToPhase(EntityPhase.State.DEATH, PhaseContext.start()
+                    causeTracker.switchToPhase(EntityPhase.State.DEATH, EntityPhase.State.DEATH.start()
                             .add(NamedCause.source(this))
                             .add(NamedCause.of(InternalNamedCauses.General.DAMAGE_SOURCE, cause))
                             .addCaptures()

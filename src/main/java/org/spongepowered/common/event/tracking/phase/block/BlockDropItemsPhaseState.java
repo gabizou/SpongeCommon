@@ -51,14 +51,23 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-final class BlockDropItemsPhaseState extends BlockPhaseState {
+final class BlockDropItemsPhaseState extends BlockPhaseState<BlockDropItemsPhaseState, BlockDropItemsPhaseState.DropItemContext> {
 
     BlockDropItemsPhaseState() {
     }
 
+    @Override
+    public BlockDropItemsPhaseState.DropItemContext start() {
+        return new DropItemContext();
+    }
+
+    public final class DropItemContext extends PhaseContext<DropItemContext> {
+
+    }
+
     @SuppressWarnings("unchecked")
     @Override
-    void unwind(PhaseContext phaseContext) {
+    void unwind(DropItemContext phaseContext) {
         final BlockSnapshot blockSnapshot = phaseContext.getSource(BlockSnapshot.class)
                 .orElseThrow(TrackingUtil.throwWithContext("Could not find a block dropping items!", phaseContext));
         final Location<World> location = blockSnapshot.getLocation().get();

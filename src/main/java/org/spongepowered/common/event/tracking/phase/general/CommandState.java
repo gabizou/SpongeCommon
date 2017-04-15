@@ -60,10 +60,35 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-final class CommandState extends GeneralState {
+final class CommandState extends GeneralState<CommandState.CommandStateContext> {
 
     @Override
-    public boolean canSwitchTo(IPhaseState state) {
+    public CommandState.CommandStateContext start() {
+        return new CommandStateContext();
+    }
+
+    public static final class CommandStateContext extends PhaseContext<CommandStateContext> {
+
+        private CommandSource commandSource;
+
+        public CommandStateContext source(CommandSource commandSource) {
+            super.source = commandSource;
+            this.commandSource = commandSource;
+            return this;
+        }
+
+        public CommandSource getSource() {
+            if (this.source == null) {
+                throw new IllegalStateException("Expected to be capturing a Command Sender, but none found!");
+            }
+            return (CommandSource) this.source;
+        }
+
+
+    }
+
+    @Override
+    public boolean canSwitchTo(IPhaseState<?> state) {
         return state instanceof BlockPhaseState;
     }
 
@@ -73,9 +98,8 @@ final class CommandState extends GeneralState {
     }
 
     @Override
-    void unwind(PhaseContext phaseContext) {
-        final CommandSource sender = phaseContext.getSource(CommandSource.class)
-                .orElseThrow(TrackingUtil.throwWithContext("Expected to be capturing a Command Sender, but none found!", phaseContext));
+    void unwind(CommandStateContext phaseContext) {
+        final CommandSource sender = phaseContext.getSource();
         final World world;
         if (sender instanceof ICommandSender) {
             world = ((World) ((ICommandSender) sender).getEntityWorld());
@@ -163,12 +187,12 @@ final class CommandState extends GeneralState {
     }
 
     @Override
-    public boolean spawnEntityOrCapture(PhaseContext context, Entity entity, int chunkX, int chunkZ) {
+    public boolean spawnEntityOrCapture(CommandStateContext context, Entity entity, int chunkX, int chunkZ) {
         return context.getCapturedEntities().add(entity);
     }
 
     @Override
-    public Cause generateTeleportCause(PhaseContext context) {
+    public Cause generateTeleportCause(CommandStateContext context) {
         final Entity entity = context.getSource(Entity.class).orElse(null);
         if (entity != null) {
             return Cause

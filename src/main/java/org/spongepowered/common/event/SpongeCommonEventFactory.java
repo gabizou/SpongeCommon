@@ -39,7 +39,6 @@ import net.minecraft.entity.passive.EntityHorse;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerPlayer;
 import net.minecraft.inventory.IInventory;
@@ -58,14 +57,12 @@ import net.minecraft.world.IInteractionObject;
 import net.minecraft.world.WorldServer;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.data.type.HandTypes;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.Item;
 import org.spongepowered.api.entity.living.Living;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.entity.projectile.source.ProjectileSource;
 import org.spongepowered.api.event.SpongeEventFactory;
@@ -239,7 +236,7 @@ public class SpongeCommonEventFactory {
     public static ChangeBlockEvent.Pre callChangeBlockEventPre(IMixinWorldServer worldIn, ImmutableList<Location<World>> locations, NamedCause namedWorldCause, Object source) {
         final CauseTracker causeTracker = CauseTracker.getInstance();
         final PhaseData data = causeTracker.getCurrentPhaseData();
-        final IPhaseState phaseState = data.state;
+        final IPhaseState<?> phaseState = data.state;
         if (source == null) {
             source = data.context.getSource(LocatableBlock.class).orElse(null);
             if (source == null) {
@@ -278,7 +275,7 @@ public class SpongeCommonEventFactory {
             builder.owner(owner);
         }
         if (notifier != null) {
-            if (!(phaseState.getPhase().appendPreBlockProtectedCheck(builder, phaseState, data.context, causeTracker))) {
+            if (!(phaseState.appendPreBlockProtectedCheck(builder, data.context, causeTracker))) {
                 builder.notifier(notifier);
             }
         }
@@ -318,11 +315,11 @@ public class SpongeCommonEventFactory {
         return SpongeCommonEventFactory.callChangeBlockEventPre(world, ImmutableList.copyOf(locations), NamedCause.of(namedCause, world), locatable).isCancelled();
     }
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public static NotifyNeighborBlockEvent callNotifyNeighborEvent(World world, BlockPos sourcePos, EnumSet notifiedSides) {
         final CauseTracker causeTracker = CauseTracker.getInstance();
         final PhaseData peek = causeTracker.getCurrentPhaseData();
-        final PhaseContext context = peek.context;
+        final PhaseContext<?> context = peek.context;
         // Don't fire notify events during world gen or while restoring
         if (peek.state.getPhase().isWorldGeneration(peek.state) || peek.state == State.RESTORING_BLOCKS) {
             return null;
@@ -350,7 +347,7 @@ public class SpongeCommonEventFactory {
                 builder.named(NamedCause.notifier(user));
             } else {
                 final IMixinChunk mixinChunk = (IMixinChunk) ((WorldServer) world).getChunkFromBlockCoords(sourcePos);
-                peek.state.getPhase().populateCauseForNotifyNeighborEvent(peek.state, context, builder, causeTracker, mixinChunk, sourcePos);
+                ((IPhaseState) peek.state).populateCauseForNotifyNeighborEvent(context, builder, causeTracker, mixinChunk, sourcePos);
             }
         }
 

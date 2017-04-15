@@ -52,7 +52,6 @@ import org.spongepowered.api.data.manipulator.ImmutableDataManipulator;
 import org.spongepowered.api.data.merge.MergeFunction;
 import org.spongepowered.api.data.value.BaseValue;
 import org.spongepowered.api.data.value.immutable.ImmutableValue;
-import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.world.BlockChangeFlag;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
@@ -61,9 +60,7 @@ import org.spongepowered.common.data.persistence.NbtTranslator;
 import org.spongepowered.common.data.util.DataQueries;
 import org.spongepowered.common.data.util.DataUtil;
 import org.spongepowered.common.data.util.NbtDataUtil;
-import org.spongepowered.common.event.InternalNamedCauses;
 import org.spongepowered.common.event.tracking.IPhaseState;
-import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.phase.block.BlockPhase;
 import org.spongepowered.common.event.tracking.CauseTracker;
 import org.spongepowered.common.interfaces.block.IMixinBlock;
@@ -181,10 +178,10 @@ public class SpongeBlockSnapshot implements BlockSnapshot {
         WorldServer world = (WorldServer) SpongeImpl.getGame().getServer().getWorld(this.worldUniqueId).get();
         final IMixinWorldServer mixinWorldServer = (IMixinWorldServer) world;
         CauseTracker causeTracker = CauseTracker.getInstance();
-        final IPhaseState currentState = causeTracker.getCurrentState();
+        final IPhaseState<?> currentState = causeTracker.getCurrentState();
         if (!currentState.tracksBlockRestores()) {
             causeTracker.switchToPhase(BlockPhase.State.RESTORING_BLOCKS,
-                    PhaseContext.start()
+                BlockPhase.State.RESTORING_BLOCKS.start()
                             // unused, to be removed and re-located when phase context is cleaned up
                             //.add(NamedCause.of(InternalNamedCauses.General.RESTORING_BLOCK, this))
                             .complete());

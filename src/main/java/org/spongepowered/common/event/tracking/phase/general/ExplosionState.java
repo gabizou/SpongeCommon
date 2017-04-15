@@ -55,7 +55,6 @@ import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.TrackingUtil;
 import org.spongepowered.common.interfaces.world.IMixinExplosion;
 import org.spongepowered.common.interfaces.world.IMixinLocation;
-import org.spongepowered.common.mixin.core.world.MixinExplosion;
 import org.spongepowered.common.registry.type.event.InternalSpawnTypes;
 import org.spongepowered.common.util.VecHelper;
 import org.spongepowered.common.world.BlockChange;
@@ -65,9 +64,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-final class ExplosionState extends GeneralState {
+final class ExplosionState extends GeneralState<ExplosionState.ExplosionContext> {
+
+    public static final class ExplosionContext extends PhaseContext<ExplosionContext> {
+
+    }
+
     @Override
-    public boolean canSwitchTo(IPhaseState state) {
+    public ExplosionContext start() {
+        return new ExplosionContext();
+    }
+
+    @Override
+    public boolean canSwitchTo(IPhaseState<?> state) {
         return true;
     }
 
@@ -87,7 +96,7 @@ final class ExplosionState extends GeneralState {
     }
 
     @Override
-    void unwind(PhaseContext context) {
+    void unwind(ExplosionContext context) {
         final Optional<Explosion> explosion = context.getCaptureExplosion().getExplosion();
         if (!explosion.isPresent()) { // More than likely never will happen
             return;
@@ -147,7 +156,7 @@ final class ExplosionState extends GeneralState {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void processBlockCaptures(List<BlockSnapshot> snapshots, Explosion explosion, Cause cause, PhaseContext context) {
+    private void processBlockCaptures(List<BlockSnapshot> snapshots, Explosion explosion, Cause cause, PhaseContext<?> context) {
         if (snapshots.isEmpty()) {
             return;
         }
@@ -277,8 +286,7 @@ final class ExplosionState extends GeneralState {
     }
 
     @Override
-    public boolean shouldCaptureBlockChangeOrSkip(PhaseContext phaseContext,
-        BlockPos pos) {
+    public boolean shouldCaptureBlockChangeOrSkip(ExplosionContext phaseContext, BlockPos pos) {
         boolean match = false;
         final Vector3i blockPos = VecHelper.toVector3i(pos);
         for (final Iterator<BlockSnapshot> iterator = phaseContext.getCapturedBlocks().iterator(); iterator.hasNext(); ) {
@@ -291,7 +299,7 @@ final class ExplosionState extends GeneralState {
     }
 
     @Override
-    public boolean spawnEntityOrCapture(PhaseContext context, Entity entity, int chunkX, int chunkZ) {
+    public boolean spawnEntityOrCapture(ExplosionState.ExplosionContext context, Entity entity, int chunkX, int chunkZ) {
         final BlockPos blockPos = context.getBlockPosition()
                 .orElseThrow(TrackingUtil.throwWithContext("Expected to be capturing a block position during an explosion!", context));
         final Multimap<BlockPos, net.minecraft.entity.Entity> blockPosEntityMultimap = context.getBlockEntitySpawnSupplier().get();

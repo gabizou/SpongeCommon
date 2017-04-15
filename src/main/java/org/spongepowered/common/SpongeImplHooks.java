@@ -232,7 +232,7 @@ public final class SpongeImplHooks {
     @Nullable
     public static Object onUtilRunTask(FutureTask<?> task, Logger logger) {
         final CauseTracker causeTracker = CauseTracker.getInstance();
-        causeTracker.switchToPhase(PluginPhase.State.SCHEDULED_TASK, PhaseContext.start()
+        causeTracker.switchToPhase(PluginPhase.State.SCHEDULED_TASK, PluginPhase.State.SCHEDULED_TASK.start()
             .add(NamedCause.source(task))
             .addCaptures()
             .complete()

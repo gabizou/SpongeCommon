@@ -139,7 +139,7 @@ public class PacketUtil {
                 }
                 PhaseContext context = EMPTY_INVALID;
                 if (!TrackingPhases.PACKET.isPacketInvalid(packetIn, packetPlayer, packetState)) {
-                    context = PhaseContext.start()
+                    context = packetState.start()
                             .add(NamedCause.source(packetPlayer))
                             .add(NamedCause.of(InternalNamedCauses.Packet.PACKET_PLAYER, packetPlayer))
                             .add(NamedCause.of(InternalNamedCauses.Packet.CAPTURED_PACKET, packetIn))

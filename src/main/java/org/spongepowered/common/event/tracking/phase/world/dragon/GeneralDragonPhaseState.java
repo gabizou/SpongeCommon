@@ -29,11 +29,16 @@ import org.spongepowered.common.event.tracking.IPhaseState;
 import org.spongepowered.common.event.tracking.phase.TrackingPhase;
 import org.spongepowered.common.event.tracking.phase.TrackingPhases;
 
-public class GeneralDragonPhaseState implements IPhaseState {
+public class GeneralDragonPhaseState implements IPhaseState<?> {
 
     @Override
     public final TrackingPhase getPhase() {
         return TrackingPhases.DRAGON;
+    }
+
+    @Override
+    public ? start() {
+        return new DragonPhase.DragonContext();
     }
 
     @Override

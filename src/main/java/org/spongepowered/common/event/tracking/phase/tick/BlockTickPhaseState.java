@@ -64,19 +64,19 @@ class BlockTickPhaseState extends LocationBasedTickPhaseState {
     }
 
     @Override
-    LocatableBlock getLocatableBlockSourceFromContext(PhaseContext context) {
+    LocatableBlock getLocatableBlockSourceFromContext(PhaseContext<?> context) {
         return context.getSource(LocatableBlock.class)
                 .orElseThrow(TrackingUtil.throwWithContext("Expected to be ticking over at a location!", context));
     }
 
     @Override
-    Location<World> getLocationSourceFromContext(PhaseContext context) {
+    Location<World> getLocationSourceFromContext(PhaseContext<?> context) {
         return context.getSource(LocatableBlock.class)
                 .orElseThrow(TrackingUtil.throwWithContext("Expected to be ticking over at a location!", context)).getLocation();
     }
 
     @Override
-    public void processPostTick(PhaseContext context) {
+    public void unwind(PhaseContext<?> context) {
         final LocatableBlock locatableBlock = getLocatableBlockSourceFromContext(context);
         final Optional<User> owner = context.getOwner();
         final Optional<User> notifier = context.getNotifier();
@@ -108,12 +108,12 @@ class BlockTickPhaseState extends LocationBasedTickPhaseState {
     }
 
     @Override
-    public void associateAdditionalBlockChangeCauses(PhaseContext context, Cause.Builder builder) {
+    public void associateAdditionalBlockChangeCauses(PhaseContext<?> context, Cause.Builder builder) {
         builder.named(NamedCause.notifier(getLocatableBlockSourceFromContext(context)));
     }
 
     @Override
-    public void associateBlockEventNotifier(PhaseContext context, BlockPos pos, IMixinBlockEventData blockEvent) {
+    public void associateBlockEventNotifier(PhaseContext<?> context, BlockPos pos, IMixinBlockEventData blockEvent) {
         final LocatableBlock locatableBlock = getLocatableBlockSourceFromContext(context);
         blockEvent.setTickBlock(locatableBlock);
         final Location<World> location = locatableBlock.getLocation();
@@ -126,7 +126,7 @@ class BlockTickPhaseState extends LocationBasedTickPhaseState {
     }
 
     @Override
-    public void appendExplosionContext(PhaseContext explosionContext, PhaseContext context) {
+    public void appendExplosionContext(PhaseContext<?> explosionContext, PhaseContext<?> context) {
         context.getOwner().ifPresent(explosionContext::owner);
         context.getNotifier().ifPresent(explosionContext::notifier);
         final LocatableBlock locatableBlock = getLocatableBlockSourceFromContext(context);
@@ -134,7 +134,7 @@ class BlockTickPhaseState extends LocationBasedTickPhaseState {
     }
 
     @Override
-    public boolean spawnEntityOrCapture(PhaseContext context, Entity entity, int chunkX, int chunkZ) {
+    public boolean spawnEntityOrCapture(PhaseContext<?> context, Entity entity, int chunkX, int chunkZ) {
         final LocatableBlock locatableBlock = getLocatableBlockSourceFromContext(context);
         final Optional<User> owner = context.getOwner();
         final Optional<User> notifier = context.getNotifier();
@@ -189,7 +189,7 @@ class BlockTickPhaseState extends LocationBasedTickPhaseState {
     }
 
     @Override
-    public void postTrackBlock(BlockSnapshot snapshot, CauseTracker tracker, PhaseContext context) {
+    public void postTrackBlock(BlockSnapshot snapshot, CauseTracker tracker, ? context) {
         boolean processImmediately = context.firstNamed(InternalNamedCauses.Tracker.PROCESS_IMMEDIATELY, Boolean.class).get();
         if (processImmediately) {
             TrackingUtil.processBlockCaptures(context.getCapturedBlocks(), this, context);

@@ -33,7 +33,7 @@ import org.spongepowered.common.event.tracking.PhaseContext;
 final class CloseWindowState extends BasicPacketState {
 
     @Override
-    public void populateContext(EntityPlayerMP playerMP, Packet<?> packet, PhaseContext context) {
+    public void populateContext(EntityPlayerMP playerMP, Packet<?> packet, PhaseContext<?> context) {
         context
                 .add(NamedCause.of(InternalNamedCauses.Packet.OPEN_CONTAINER, playerMP.openContainer))
                 .addBlockCaptures()

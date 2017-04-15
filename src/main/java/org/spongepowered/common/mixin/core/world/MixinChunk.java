@@ -632,7 +632,7 @@ public abstract class MixinChunk implements Chunk, IMixinChunk, IMixinCachable {
             // cancelled.
             final CauseTracker causeTracker = CauseTracker.getInstance();
             final PhaseData peek = causeTracker.getCurrentPhaseData();
-            final boolean requiresCapturing = peek.state.getPhase().requiresBlockCapturing(peek.state);
+            final boolean requiresCapturing = peek.state.requiresBlockCapturing();
             if (!requiresCapturing || SpongeImplHooks.hasBlockTileEntity(newBlock, newState)) {
                 // The new block state is null if called directly from Chunk#setBlockState(BlockPos, IBlockState)
                 // If it is null, then directly call the onBlockAdded logic.
@@ -929,8 +929,8 @@ public abstract class MixinChunk implements Chunk, IMixinChunk, IMixinCachable {
     private void onChunkPopulate(IChunkGenerator generator, CallbackInfo callbackInfo) {
         if (CauseTracker.ENABLED && !this.worldObj.isRemote) {
             final CauseTracker causeTracker = CauseTracker.getInstance();
-            causeTracker.switchToPhase(GenerationPhase.State.TERRAIN_GENERATION, PhaseContext.start()
-                    .add(NamedCause.of(InternalNamedCauses.WorldGeneration.WORLD, this.world))
+            causeTracker.switchToPhase(GenerationPhase.State.TERRAIN_GENERATION, GenerationPhase.State.TERRAIN_GENERATION.start()
+                    .world(this.world)
                     .addCaptures()
                     .complete());
         }

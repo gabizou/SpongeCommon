@@ -68,11 +68,11 @@ import javax.annotation.Nullable;
  * {@link Cause} for an {@link Event} versus the context of which
  * a {@link IPhaseState} is being completed with.
  */
-public class PhaseContext {
+@SuppressWarnings("unchecked")
+public abstract class PhaseContext<T extends PhaseContext<T>> {
 
     private boolean isCompleted = false;
     private final ArrayList<NamedCause> contextObjects = new ArrayList<>(10);
-    @Nullable private Cause cause = null;
 
     @Nullable private CapturedBlocksSupplier blocksSupplier;
     @Nullable private BlockItemDropsSupplier blockItemDropsSupplier;
@@ -87,42 +87,42 @@ public class PhaseContext {
     @Nullable protected User owner;
     @Nullable protected User notifier;
 
-    private Object source;
+    protected Object source;
 
-    public static PhaseContext start() {
-        return new PhaseContext();
+    public static DefaultPhaseContext start() {
+        return new DefaultPhaseContext();
     }
 
-    public PhaseContext add(@Nullable NamedCause namedCause) {
+    public T add(@Nullable NamedCause namedCause) {
         if (namedCause == null) {
-            return this;
+            return (T) this;
         }
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         this.contextObjects.add(namedCause);
         if (namedCause.getName().equals(NamedCause.SOURCE)) {
             this.source = namedCause.getCauseObject();
         }
-        return this;
+        return (T) this;
     }
 
-    public PhaseContext owner(User owner) {
+    public T owner(User owner) {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         if (this.owner != null) {
             throw new IllegalStateException("Owner for this phase context is already set!");
         }
         this.owner = checkNotNull(owner, "Owner cannot be null!");
         this.contextObjects.add(NamedCause.owner(owner));
-        return this;
+        return (T) this;
     }
 
-    public PhaseContext notifier(User notifier) {
+    public T notifier(User notifier) {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         if (this.notifier != null) {
             throw new IllegalStateException("Notifier for this phase context is already set!");
         }
         this.notifier = checkNotNull(notifier, "Notifier cannot be null!");
         this.contextObjects.add(NamedCause.notifier(notifier));
-        return this;
+        return (T) this;
     }
 
     private void checkBlockSuppliers() {
@@ -133,128 +133,84 @@ public class PhaseContext {
         checkState(this.captureBlockPos == null, "CaptureBlockPos is already set!");
     }
 
-    public PhaseContext addBlockCaptures() {
+    public T addBlockCaptures() {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         this.checkBlockSuppliers();
 
-        CapturedBlocksSupplier blocksSupplier = new CapturedBlocksSupplier();
-        this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_BLOCKS, blocksSupplier));
-        this.blocksSupplier = blocksSupplier;
-        BlockItemEntityDropsSupplier blockItemEntityDropsSupplier = new BlockItemEntityDropsSupplier();
-        // unused, to be removed and re-located when phase context is cleaned up
-        //this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_BLOCK_ITEM_DROPS, blockItemEntityDropsSupplier));
-        this.blockItemEntityDropsSupplier = blockItemEntityDropsSupplier;
-        BlockItemDropsSupplier blockItemDropsSupplier = new BlockItemDropsSupplier();
-        // unused, to be removed and re-located when phase context is cleaned up
-        //this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_BLOCK_DROPS, blockItemDropsSupplier));
-        this.blockItemDropsSupplier = blockItemDropsSupplier;
-        CapturedBlockEntitySpawnSupplier capturedBlockEntitySpawnSupplier = new CapturedBlockEntitySpawnSupplier();
-        // unused, to be removed and re-located when phase context is cleaned up
-        //this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_BLOCK_ENTITY_SPAWNS, capturedBlockEntitySpawnSupplier));
-        this.blockEntitySpawnSupplier = capturedBlockEntitySpawnSupplier;
+        this.blocksSupplier = new CapturedBlocksSupplier();
+        this.blockItemEntityDropsSupplier = new BlockItemEntityDropsSupplier();
+        this.blockItemDropsSupplier = new BlockItemDropsSupplier();
+        this.blockEntitySpawnSupplier = new CapturedBlockEntitySpawnSupplier();
 
         CaptureBlockPos blockPos = new CaptureBlockPos();
         // unused, to be removed and re-located when phase context is cleaned up
         //this.contextObjects.add(NamedCause
         this.captureBlockPos = blockPos;
-        return this;
+        return (T) this;
     }
 
-    public PhaseContext addCaptures() {
+    public T addCaptures() {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         this.checkBlockSuppliers();
         checkState(this.capturedItemsSupplier == null, "CapturedItemsSupplier is already set!");
         checkState(this.capturedEntitiesSupplier == null, "CapturedEntitiesSupplier is already set!");
         checkState(this.capturedItemStackSupplier == null, "CapturedItemStackSupplier is already set!");
 
-        CapturedBlocksSupplier blocksSupplier = new CapturedBlocksSupplier();
-        this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_BLOCKS, blocksSupplier));
-        this.blocksSupplier = blocksSupplier;
-        BlockItemEntityDropsSupplier blockItemEntityDropsSupplier = new BlockItemEntityDropsSupplier();
-        // unused, to be removed and re-located when phase context is cleaned up
-        //this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_BLOCK_ITEM_DROPS, blockItemEntityDropsSupplier));
-        this.blockItemEntityDropsSupplier = blockItemEntityDropsSupplier;
-        BlockItemDropsSupplier blockItemDropsSupplier = new BlockItemDropsSupplier();
-        // unused, to be removed and re-located when phase context is cleaned up
-        //this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_BLOCK_DROPS, blockItemDropsSupplier));
-        this.blockItemDropsSupplier = blockItemDropsSupplier;
-        CapturedItemsSupplier capturedItemsSupplier = new CapturedItemsSupplier();
-        // unused, to be removed and re-located when phase context is cleaned up
-        //this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_ITEMS, capturedItemsSupplier));
-        this.capturedItemsSupplier = capturedItemsSupplier;
-        CapturedEntitiesSupplier capturedEntitiesSupplier = new CapturedEntitiesSupplier();
-        this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_ENTITIES, capturedEntitiesSupplier));
-        this.capturedEntitiesSupplier = capturedEntitiesSupplier;
-        CapturedItemStackSupplier capturedItemStackSupplier = new CapturedItemStackSupplier();
-        // unused, to be removed and re-located when phase context is cleaned up
-        //this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_ITEM_STACKS, capturedItemStackSupplier));
-        this.capturedItemStackSupplier = capturedItemStackSupplier;
+        this.blocksSupplier = new CapturedBlocksSupplier();
+        this.blockItemEntityDropsSupplier = new BlockItemEntityDropsSupplier();
+        this.blockItemDropsSupplier = new BlockItemDropsSupplier();
+        this.capturedItemsSupplier = new CapturedItemsSupplier();
+        this.capturedEntitiesSupplier = new CapturedEntitiesSupplier();
+        this.capturedItemStackSupplier = new CapturedItemStackSupplier();
 
-        CapturedBlockEntitySpawnSupplier capturedBlockEntitySpawnSupplier = new CapturedBlockEntitySpawnSupplier();
-        // unused, to be removed and re-located when phase context is cleaned up
-        //this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_BLOCK_ENTITY_SPAWNS, capturedBlockEntitySpawnSupplier));
-        this.blockEntitySpawnSupplier = capturedBlockEntitySpawnSupplier;
-        return this;
+        this.blockEntitySpawnSupplier = new CapturedBlockEntitySpawnSupplier();
+        return (T) this;
     }
 
-    public PhaseContext addEntityCaptures() {
+    public T addEntityCaptures() {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         checkState(this.capturedItemsSupplier == null, "CapturedItemsSupplier is already set!");
         checkState(this.capturedEntitiesSupplier == null, "CapturedEntitiesSupplier is already set!");
         checkState(this.capturedItemStackSupplier == null, "CapturedItemStackSupplier is already set!");
 
-        CapturedItemsSupplier capturedItemsSupplier = new CapturedItemsSupplier();
-        // unused, to be removed and re-located when phase context is cleaned up
-        //this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_ITEMS, capturedItemsSupplier));
-        this.capturedItemsSupplier = capturedItemsSupplier;
-        CapturedEntitiesSupplier capturedEntitiesSupplier = new CapturedEntitiesSupplier();
-        this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_ENTITIES, capturedEntitiesSupplier));
-        this.capturedEntitiesSupplier = capturedEntitiesSupplier;
-        CapturedItemStackSupplier capturedItemStackSupplier = new CapturedItemStackSupplier();
-        // unused, to be removed and re-located when phase context is cleaned up
-        //this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_ITEM_STACKS, capturedItemStackSupplier));
-        this.capturedItemStackSupplier = capturedItemStackSupplier;
-        return this;
+        this.capturedItemsSupplier = new CapturedItemsSupplier();
+        this.capturedEntitiesSupplier = new CapturedEntitiesSupplier();
+        this.capturedItemStackSupplier = new CapturedItemStackSupplier();
+        return (T) this;
     }
 
-    public PhaseContext addEntityDropCaptures() {
+    public T addEntityDropCaptures() {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         checkState(this.entityItemDropsSupplier == null, "EntityItemDropsSupplier is already set!");
         checkState(this.entityItemEntityDropsSupplier == null, "EntityItemEntityDropsSupplier is already set!");
 
-        EntityItemDropsSupplier entityItemDropsSupplier = new EntityItemDropsSupplier();
-        // unused, to be removed and re-located when phase context is cleaned up
-        //this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_ENTITY_STACK_DROPS, entityItemDropsSupplier));
-        this.entityItemDropsSupplier = entityItemDropsSupplier;
-        EntityItemEntityDropsSupplier entityItemEntityDropsSupplier = new EntityItemEntityDropsSupplier();
-        // unused, to be removed and re-located when phase context is cleaned up
-        //this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_ENTITY_ITEM_DROPS, entityItemEntityDropsSupplier));
-        this.entityItemEntityDropsSupplier = entityItemEntityDropsSupplier;
-        return this;
+        this.entityItemDropsSupplier = new EntityItemDropsSupplier();
+        this.entityItemEntityDropsSupplier = new EntityItemEntityDropsSupplier();
+        return (T) this;
     }
 
-    public PhaseContext player() {
+    public T player() {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_PLAYER, new CapturePlayer()));
-        return this;
+        return (T) this;
     }
 
-    public PhaseContext player(@Nullable Player player) {
+    public T player(@Nullable Player player) {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_PLAYER, new CapturePlayer(player)));
-        return this;
+        return (T) this;
     }
 
-    public PhaseContext explosion() {
+    public T explosion() {
         checkState(!this.isCompleted, "CAnnot add a new object to the context if it's already marked as completed!");
         this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_EXPLOSION, new CaptureExplosion()));
-        return this;
+        return (T) this;
     }
 
-    public PhaseContext explosion(@Nullable Explosion explosion) {
+    public T explosion(@Nullable Explosion explosion) {
         checkState(!this.isCompleted, "CAnnot add a new object to the context if it's already marked as completed!");
         this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_EXPLOSION, new CaptureExplosion(explosion)));
-        return this;
+        return (T) this;
     }
 
     public CaptureExplosion getCaptureExplosion() {
@@ -267,9 +223,9 @@ public class PhaseContext {
         return getCaptureExplosion().getExplosion();
     }
 
-    public PhaseContext complete() {
+    public T complete() {
         this.isCompleted = true;
-        return this;
+        return (T) this;
     }
 
     public boolean isComplete() {
@@ -338,9 +294,7 @@ public class PhaseContext {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public List<Entity> getCapturedEntities() throws IllegalStateException {
-        return firstNamed(InternalNamedCauses.Tracker.CAPTURED_ENTITIES, CapturedEntitiesSupplier.class)
-                .map(CapturedEntitiesSupplier::get)
-                .orElseThrow(TrackingUtil.throwWithContext("Intended to capture entity spawns!", this));
+        return getCapturedEntitySupplier().get();
     }
 
     @SuppressWarnings("unchecked")
@@ -369,9 +323,7 @@ public class PhaseContext {
 
     @SuppressWarnings("unchecked")
     public List<BlockSnapshot> getCapturedBlocks() throws IllegalStateException {
-        return firstNamed(InternalNamedCauses.Tracker.CAPTURED_BLOCKS, CapturedBlocksSupplier.class)
-                .map(CapturedBlocksSupplier::get)
-                .orElseThrow(TrackingUtil.throwWithContext("Intended to capture block changes, but there is no list available!", this));
+        return getCapturedBlockSupplier().get();
     }
 
     @SuppressWarnings("unchecked")
@@ -465,12 +417,12 @@ public class PhaseContext {
         this.contextObjects.forEach(consumer);
     }
 
-    PhaseContext() {
+    protected PhaseContext() {
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.isCompleted, this.contextObjects, this.cause);
+        return Objects.hash(this.isCompleted, this.contextObjects);
     }
 
     @Override
@@ -481,10 +433,9 @@ public class PhaseContext {
         if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        final PhaseContext other = (PhaseContext) obj;
+        final PhaseContext<?> other = (PhaseContext) obj;
         return Objects.equals(this.isCompleted, other.isCompleted)
-               && Objects.equals(this.contextObjects, other.contextObjects)
-               && Objects.equals(this.cause, other.cause);
+               && Objects.equals(this.contextObjects, other.contextObjects);
     }
 
     @Override
@@ -492,7 +443,6 @@ public class PhaseContext {
         return com.google.common.base.Objects.toStringHelper(this)
                 .add("isCompleted", this.isCompleted)
                 .add("contextObjects", this.contextObjects)
-                .add("cause", this.cause)
                 .toString();
     }
 

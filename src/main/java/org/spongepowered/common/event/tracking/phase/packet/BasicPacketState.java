@@ -24,15 +24,29 @@
  */
 package org.spongepowered.common.event.tracking.phase.packet;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.Packet;
 import net.minecraft.util.math.BlockPos;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
+import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.cause.NamedCause;
+import org.spongepowered.common.event.InternalNamedCauses;
+import org.spongepowered.common.event.tracking.CauseTracker;
 import org.spongepowered.common.event.tracking.IPhaseState;
 import org.spongepowered.common.event.tracking.PhaseContext;
+import org.spongepowered.common.event.tracking.TrackingUtil;
 import org.spongepowered.common.event.tracking.phase.TrackingPhase;
 import org.spongepowered.common.event.tracking.phase.TrackingPhases;
+import org.spongepowered.common.interfaces.IMixinChunk;
 import org.spongepowered.common.interfaces.block.IMixinBlockEventData;
 import org.spongepowered.common.interfaces.world.IMixinWorldServer;
 
-public class BasicPacketState implements IPhaseState, IPacketState {
+import java.util.Optional;
+
+public class BasicPacketState<P extends BasicPacketState<P>> implements IPhaseState<PacketContext>, IPacketState {
 
     BasicPacketState() {
 
@@ -44,11 +58,51 @@ public class BasicPacketState implements IPhaseState, IPacketState {
     }
 
     @Override
+    public P start() {
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void unwind(PacketContext context) {
+        if (this == PacketPhase.General.INVALID) { // Invalid doesn't capture any packets.
+            return;
+        }
+        final Packet<?> packetIn = context.firstNamed(InternalNamedCauses.Packet.CAPTURED_PACKET, Packet.class).get();
+        final EntityPlayerMP player = context.getSource(EntityPlayerMP.class).get();
+        final Class<? extends Packet<?>> packetInClass = (Class<? extends Packet<?>>) packetIn.getClass();
+
+        final PacketFunction unwindFunction = PacketPhase.getInstance().packetUnwindMap.get(packetInClass);
+        if (unwindFunction != null) {
+            unwindFunction.unwind(packetIn, this, player, context);
+        } else {
+            PacketFunction.UNKNOWN_PACKET.unwind(packetIn, this, player, context);
+        }
+    }
+
+    @Override
     public boolean matches(int packetState) {
         return false;
     }
 
-    public void associateBlockEventNotifier(PhaseContext context, IMixinWorldServer mixinWorldServer, BlockPos pos, IMixinBlockEventData blockEvent) {
+    public void associateBlockEventNotifier(PhaseContext<?> context, IMixinWorldServer mixinWorldServer, BlockPos pos, IMixinBlockEventData blockEvent) {
 
+    }
+
+    @Override
+    public boolean populateCauseForNotifyNeighborEvent(PacketContext context, Cause.Builder builder, CauseTracker causeTracker,
+        IMixinChunk mixinChunk, BlockPos pos) {
+        final Optional<User> notifier = context.firstNamed(NamedCause.NOTIFIER, User.class);
+        if (notifier.isPresent()) {
+            builder.named(NamedCause.notifier(notifier.get()));
+            return true;
+        } else {
+            mixinChunk.getBlockNotifier(pos).ifPresent(user -> builder.named(NamedCause.notifier(user)));
+            mixinChunk.getBlockOwner(pos).ifPresent(owner -> builder.named(NamedCause.owner(owner)));
+        }
+        final Player player = context.getSource(Player.class)
+            .orElseThrow(TrackingUtil.throwWithContext("Processing a Player PAcket, expecting a player, but had none!", context));
+        builder.named(NamedCause.notifier(player));
+        return true;
     }
 }

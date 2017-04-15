@@ -31,7 +31,7 @@ import org.spongepowered.common.event.tracking.PhaseContext;
 public class WakeUpPacketState extends BasicPacketState {
 
     @Override
-    public void populateContext(EntityPlayerMP playerMP, Packet<?> packet, PhaseContext context) {
+    public void populateContext(EntityPlayerMP playerMP, Packet<?> packet, PhaseContext<?> context) {
         context.addBlockCaptures();
     }
 

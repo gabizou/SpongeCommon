@@ -41,10 +41,9 @@ final class PopulatorGenerationPhaseState extends GeneralGenerationPhaseState {
     }
 
     @Override
-    Cause provideSpawnCause(PhaseContext context) {
-        final PopulatorType runningGenerator = context.firstNamed(InternalNamedCauses.WorldGeneration.CAPTURED_POPULATOR, PopulatorType.class)
-                .orElse(null);
-        final World world = context.firstNamed(InternalNamedCauses.WorldGeneration.WORLD, World.class).orElse(null);
+    Cause provideSpawnCause(GenerationContext context) {
+        final PopulatorType runningGenerator = context.getPopulatorTypeOrNull();
+        final World world = context.getWorld();
         final Cause.Builder causeBuilder = Cause.builder();
         Cause.source(InternalSpawnTypes.SpawnCauses.WORLD_SPAWNER_CAUSE).named("World", world);
         if (InternalPopulatorTypes.ANIMAL.equals(runningGenerator)) {

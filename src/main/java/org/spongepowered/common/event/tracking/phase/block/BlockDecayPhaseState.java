@@ -39,7 +39,6 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.entity.EntityUtil;
-import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.TrackingUtil;
 import org.spongepowered.common.interfaces.IMixinChunk;
 import org.spongepowered.common.interfaces.world.IMixinLocation;
@@ -50,19 +49,59 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-final class BlockDecayPhaseState extends BlockPhaseState {
+final class BlockDecayPhaseState extends BlockPhaseState<BlockDecayPhaseState, BlockDecayPhaseState.DecayContext> {
 
     BlockDecayPhaseState() {
     }
 
+    @Override
+    public DecayContext start() {
+        return new DecayContext();
+    }
+
+    public static final class DecayContext extends BlockContext<DecayContext> {
+
+        private LocatableBlock block;
+        private IMixinWorldServer worldServer;
+        private BlockPos position;
+
+        public DecayContext block(LocatableBlock block) {
+            this.block = block;
+            final Location<World> location = block.getLocation();
+            this.position = ((IMixinLocation) (Object) location).getBlockPos();
+            this.worldServer = (IMixinWorldServer) location.getExtent();
+            return this;
+        }
+
+        public LocatableBlock getBlock() throws IllegalStateException {
+            if (this.block == null) {
+                throw new IllegalStateException("Expected to be ticking over a location!");
+            }
+            return this.block;
+        }
+
+        public BlockPos getPosition() {
+            if (this.position == null) {
+                throw new IllegalStateException("Expected to be ticking over a location!");
+            }
+            return this.position;
+        }
+
+        public IMixinWorldServer getWorld() {
+            if (this.worldServer == null) {
+                throw new IllegalStateException("Expected to be ticking over a location!");
+            }
+            return this.worldServer;
+        }
+
+    }
+
     @SuppressWarnings("unchecked")
     @Override
-    void unwind(PhaseContext context) {
-        final LocatableBlock locatable = context.getSource(LocatableBlock.class)
-                .orElseThrow(TrackingUtil.throwWithContext("Expected to be ticking over at a location!", context));
-        final Location<World> worldLocation = locatable.getLocation();
-        final BlockPos blockPos = ((IMixinLocation) (Object) worldLocation).getBlockPos();
-        final IMixinWorldServer mixinWorld = ((IMixinWorldServer) worldLocation.getExtent());
+    void unwind(DecayContext context) {
+        final LocatableBlock locatable = context.getBlock();
+        final BlockPos blockPos = context.getPosition();
+        final IMixinWorldServer mixinWorld = context.getWorld();
         final IMixinChunk mixinChunk = (IMixinChunk) mixinWorld.asMinecraftWorld().getChunkFromBlockCoords(blockPos);
         final Optional<User> notifier = mixinChunk.getBlockNotifier(blockPos);
         final Optional<User> creator = mixinChunk.getBlockOwner(blockPos);

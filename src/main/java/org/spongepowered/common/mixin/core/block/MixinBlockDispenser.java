@@ -96,7 +96,7 @@ public abstract class MixinBlockDispenser extends MixinBlock {
         if (CauseTracker.ENABLED) {
             final IMixinWorldServer mixinWorldServer = (IMixinWorldServer) worldIn;
             final SpongeBlockSnapshot spongeBlockSnapshot = mixinWorldServer.createSpongeBlockSnapshot(state, state, pos, 3);
-            final PhaseContext phaseContext = PhaseContext.start()
+            final PhaseContext phaseContext = BlockPhase.State.DISPENSE.start()
                     .add(NamedCause.source(spongeBlockSnapshot))
                     .addBlockCaptures()
                     .addEntityCaptures()

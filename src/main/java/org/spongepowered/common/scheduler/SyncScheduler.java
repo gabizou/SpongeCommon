@@ -73,7 +73,7 @@ public class SyncScheduler extends SchedulerBase {
 
     @Override
     protected void executeTaskRunnable(ScheduledTask task, Runnable runnable) {
-        CauseTracker.getInstance().switchToPhase(PluginPhase.State.SCHEDULED_TASK, PhaseContext.start()
+        CauseTracker.getInstance().switchToPhase(PluginPhase.State.SCHEDULED_TASK, PluginPhase.State.SCHEDULED_TASK.start()
             .add(NamedCause.source(task))
             .addCaptures()
             .complete()

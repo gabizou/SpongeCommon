@@ -352,9 +352,9 @@ public class SpongeChunkGenerator implements WorldGenerator, IChunkGenerator {
                 timing.startTimingIfSync();
             }
             if (CauseTracker.ENABLED) {
-                causeTracker.switchToPhase(GenerationPhase.State.POPULATOR_RUNNING, PhaseContext.start()
-                        .add(NamedCause.of(InternalNamedCauses.WorldGeneration.WORLD, world))
-                        .add(NamedCause.of(InternalNamedCauses.WorldGeneration.CAPTURED_POPULATOR, type))
+                causeTracker.switchToPhase(GenerationPhase.State.POPULATOR_RUNNING, GenerationPhase.State.POPULATOR_RUNNING.start()
+                        .world(world)
+                        .populator(type)
                         .addEntityCaptures()
                         .complete());
             }
@@ -402,9 +402,9 @@ public class SpongeChunkGenerator implements WorldGenerator, IChunkGenerator {
                 if (populator instanceof StructureOceanMonument) {
                     final CauseTracker causeTracker = CauseTracker.getInstance();
                     if (CauseTracker.ENABLED) {
-                        causeTracker.switchToPhase(GenerationPhase.State.POPULATOR_RUNNING, PhaseContext.start()
-                                .add(NamedCause.of(InternalNamedCauses.WorldGeneration.WORLD, this.world))
-                                .add(NamedCause.of(InternalNamedCauses.WorldGeneration.CAPTURED_POPULATOR, populator.getType()))
+                        causeTracker.switchToPhase(GenerationPhase.State.POPULATOR_RUNNING, GenerationPhase.State.POPULATOR_RUNNING.start()
+                                .world(this.world)
+                                .populator(populator.getType())
                                 .addEntityCaptures()
                                 .complete());
                     }

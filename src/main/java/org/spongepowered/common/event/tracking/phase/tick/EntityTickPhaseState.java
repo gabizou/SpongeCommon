@@ -69,14 +69,18 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-class EntityTickPhaseState extends TickPhaseState {
+class EntityTickPhaseState extends TickPhaseState<EntityTickPhaseState.EntityTickContext> {
 
     EntityTickPhaseState() {
     }
 
+    public static final class EntityTickContext extends TickContext<EntityTickContext> {
+
+    }
+
     @SuppressWarnings("unchecked")
     @Override
-    public void unwind(PhaseContext<?> phaseContext) {
+    public void unwind(EntityTickContext phaseContext) {
         final Entity tickingEntity = phaseContext.getSource(Entity.class)
                 .orElseThrow(TrackingUtil.throwWithContext("Not ticking on an Entity!", phaseContext));
         final Optional<User> creator = phaseContext.getOwner();
@@ -334,7 +338,7 @@ class EntityTickPhaseState extends TickPhaseState {
     }
 
     @Override
-    public Cause generateTeleportCause(PhaseContext<?> context) {
+    public Cause generateTeleportCause(EntityTickContext context) {
         final Entity entity = context.getSource(Entity.class)
                 .orElseThrow(TrackingUtil.throwWithContext("Expected to be ticking an entity!", context));
         return Cause
@@ -344,6 +348,11 @@ class EntityTickPhaseState extends TickPhaseState {
                         .build()
                 )
                 .build();
+    }
+
+    @Override
+    public EntityTickContext start() {
+        return new EntityTickContext();
     }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
@@ -390,7 +399,7 @@ class EntityTickPhaseState extends TickPhaseState {
     }
 
     @Override
-    public boolean spawnEntityOrCapture(PhaseContext<?> context, Entity entity, int chunkX, int chunkZ) {
+    public boolean spawnEntityOrCapture(EntityTickContext context, Entity entity, int chunkX, int chunkZ) {
         final Entity tickingEntity = context.getSource(Entity.class)
                 .orElseThrow(TrackingUtil.throwWithContext("Not ticking on an Entity!", context));
         final Optional<User> creator = context.getOwner();

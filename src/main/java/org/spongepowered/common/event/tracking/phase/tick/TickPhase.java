@@ -52,7 +52,7 @@ public final class TickPhase extends TrackingPhase {
 
         public static final IPhaseState<?> ENTITY = new EntityTickPhaseState();
 
-        public static final IPhaseState<DimensionConte> DIMENSION = new DimensionTickPhaseState();
+        public static final IPhaseState<DimensionTickPhaseState.DimensionContext> DIMENSION = new DimensionTickPhaseState();
         public static final IPhaseState<?> TILE_ENTITY = new TileEntityTickPhaseState();
         public static final IPhaseState<?> BLOCK_EVENT = new BlockEventTickPhaseState();
         public static final IPhaseState<?> PLAYER = new PlayerTickPhaseState();
@@ -72,26 +72,6 @@ public final class TickPhase extends TrackingPhase {
 
     private static final class Holder {
         static final TickPhase INSTANCE = new TickPhase();
-    }
-
-    @Override
-    public boolean spawnEntityOrCapture(? phaseState, ? context, Entity entity, int chunkX, int chunkZ) {
-        return ((TickPhaseState) phaseState).spawnEntityOrCapture(context, entity, chunkX, chunkZ);
-    }
-
-    @Override
-    public void processPostEntitySpawns(? unwindingState, ? phaseContext,
-        ArrayList<Entity> entities) {
-        ((TickPhaseState) unwindingState).processPostSpawns(phaseContext, entities);
-
-    }
-
-    @Override
-    public boolean requiresBlockCapturing(? currentState) {
-        if (currentState == Tick.NO_CAPTURE_BLOCK) {
-            return false;
-        }
-        return true;
     }
 
     @Override

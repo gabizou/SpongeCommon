@@ -143,6 +143,29 @@ public final class CauseTracker {
         this.stack.push(state, phaseContext);
     }
 
+
+    public void switchToPhase(PhaseData phaseData) {
+        checkNotNull(phaseData.state, "State cannot be null!");
+        checkNotNull(phaseData.state.getPhase(), "Phase cannot be null!");
+        checkNotNull(phaseData.context, "PhaseContext cannot be null!");
+        checkArgument(phaseData.context.isComplete(), "PhaseContext must be complete!");
+
+        final IPhaseState<?> currentState = this.stack.peek().state;
+        if (this.isVerbose) {
+            if (this.stack.size() > 6 && !currentState.isExpectedForReEntrance()) {
+                // This printing is to detect possibilities of a phase not being cleared properly
+                // and resulting in a "runaway" phase state accumulation.
+                printRunawayPhase(phaseData.state, phaseData.context);
+            }
+            if (!currentState.canSwitchTo(phaseData.state) && phaseData.state != GeneralPhase.Post.UNWINDING && currentState == GeneralPhase.Post.UNWINDING) {
+                // This is to detect incompatible phase switches.
+                printPhaseIncompatibility(currentState, phaseData.state);
+            }
+        }
+
+        this.stack.push(phaseData.state, phaseData.context);
+    }
+
     /**
      * This method pushes a new phase onto the stack, runs phaseBody,
      * and calls completePhase afterwards.
@@ -545,6 +568,7 @@ public final class CauseTracker {
      * @param entity The entity
      * @return True if the entity spawn was successful
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public boolean spawnEntity(Entity entity) {
         checkNotNull(entity, "Entity cannot be null!");
 
@@ -621,7 +645,7 @@ public final class CauseTracker {
             // capture all entities until the phase is marked for completion.
             if (!isForced) {
                 try {
-                    return phaseState.spawnEntityOrCapture(context, entity, chunkX, chunkZ);
+                    return ((IPhaseState) phaseState).spawnEntityOrCapture(context, entity, chunkX, chunkZ);
                 } catch (Exception | NoClassDefFoundError e) {
                     // Just in case something really happened, we should print a nice exception for people to
                     // paste us

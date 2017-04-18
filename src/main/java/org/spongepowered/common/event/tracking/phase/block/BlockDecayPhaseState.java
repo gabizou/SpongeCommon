@@ -26,6 +26,8 @@ package org.spongepowered.common.event.tracking.phase.block;
 
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.WorldServer;
+import net.minecraft.world.WorldServerMulti;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.SpongeEventFactory;
@@ -39,6 +41,7 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.entity.EntityUtil;
+import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.TrackingUtil;
 import org.spongepowered.common.interfaces.IMixinChunk;
 import org.spongepowered.common.interfaces.world.IMixinLocation;
@@ -65,11 +68,14 @@ final class BlockDecayPhaseState extends BlockPhaseState<BlockDecayPhaseState, B
         private IMixinWorldServer worldServer;
         private BlockPos position;
 
+        protected DecayContext() {
+            super(BlockPhase.State.BLOCK_DECAY);
+        }
+
         public DecayContext block(LocatableBlock block) {
             this.block = block;
             final Location<World> location = block.getLocation();
             this.position = ((IMixinLocation) (Object) location).getBlockPos();
-            this.worldServer = (IMixinWorldServer) location.getExtent();
             return this;
         }
 
@@ -94,11 +100,15 @@ final class BlockDecayPhaseState extends BlockPhaseState<BlockDecayPhaseState, B
             return this.worldServer;
         }
 
+        public DecayContext world(WorldServer worldIn) {
+            this.worldServer = ((IMixinWorldServer) worldIn);
+            return this;
+        }
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    void unwind(DecayContext context) {
+    public void unwind(DecayContext context) {
         final LocatableBlock locatable = context.getBlock();
         final BlockPos blockPos = context.getPosition();
         final IMixinWorldServer mixinWorld = context.getWorld();

@@ -44,8 +44,17 @@ import org.spongepowered.common.registry.type.event.InternalSpawnTypes;
 
 import java.util.ArrayList;
 
-class DimensionTickPhaseState extends TickPhaseState {
+class DimensionTickPhaseState extends TickPhaseState<DimensionTickPhaseState.DimensionContext> {
     DimensionTickPhaseState() {
+    }
+
+    public static final class DimensionContext extends TickContext<DimensionContext> {
+
+    }
+
+    @Override
+    public DimensionContext start() {
+        return new DimensionContext();
     }
 
     @Override
@@ -54,7 +63,7 @@ class DimensionTickPhaseState extends TickPhaseState {
     }
 
     @Override
-    public void unwind(PhaseContext<?> phaseContext) {
+    public void unwind(DimensionContext phaseContext) {
         final World spongeWorld = phaseContext.firstNamed(InternalNamedCauses.WorldGeneration.WORLD, World.class)
             .orElseThrow(TrackingUtil.throwWithContext("Expected a world during dimension tick!", phaseContext));
         phaseContext.getCapturedBlockSupplier()
@@ -115,7 +124,7 @@ class DimensionTickPhaseState extends TickPhaseState {
 
      */
     @Override
-    public boolean spawnEntityOrCapture(PhaseContext<?> context, Entity entity, int chunkX, int chunkZ) {
+    public boolean spawnEntityOrCapture(DimensionContext context, Entity entity, int chunkX, int chunkZ) {
         final net.minecraft.entity.Entity minecraftEntity = (net.minecraft.entity.Entity) entity;
         final WorldServer minecraftWorld = (WorldServer) minecraftEntity.worldObj;
         final User user = context.getNotifier().orElseGet(() -> context.getOwner().orElse(null));

@@ -59,7 +59,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-final class CustomExplosionState extends PluginPhaseState {
+final class CustomExplosionState extends PluginPhaseState<CustomExplosionState.CustomExplosionContext> {
+
+    @Override
+    public CustomExplosionContext start() {
+        return new CustomExplosionContext();
+    }
+
+    public static final class CustomExplosionContext extends PluginPhaseContext<CustomExplosionContext> {
+
+        public CustomExplosionContext() {
+            super(PluginPhase.State.CUSTOM_EXPLOSION);
+        }
+    }
+
+
     @Override
     public boolean canSwitchTo(IPhaseState<?> state) {
         return true;
@@ -76,7 +90,7 @@ final class CustomExplosionState extends PluginPhaseState {
     }
 
     @Override
-    void processPostTick(PhaseContext<?> context) {
+    public void unwind(CustomExplosionContext context) {
         final Optional<Explosion> explosion = context.getCaptureExplosion().getExplosion();
         if (!explosion.isPresent()) { // More than likely never will happen
             return;
@@ -244,7 +258,7 @@ final class CustomExplosionState extends PluginPhaseState {
     }
 
     @Override
-    public boolean shouldCaptureBlockChangeOrSkip(? phaseContext, BlockPos pos) {
+    public boolean shouldCaptureBlockChangeOrSkip(CustomExplosionContext phaseContext, BlockPos pos) {
         final Vector3i blockPos = VecHelper.toVector3i(pos);
         for (final BlockSnapshot capturedSnapshot : phaseContext.getCapturedBlocks()) {
             if (capturedSnapshot.getPosition().equals(blockPos)) {

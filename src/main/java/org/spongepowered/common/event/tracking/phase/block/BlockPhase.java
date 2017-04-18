@@ -31,7 +31,7 @@ import org.spongepowered.common.event.tracking.phase.TrackingPhase;
 public final class BlockPhase extends TrackingPhase {
 
     public static final class State {
-        public static final IPhaseState<?> BLOCK_DECAY = new BlockDecayPhaseState();
+        public static final IPhaseState<BlockDecayPhaseState.DecayContext> BLOCK_DECAY = new BlockDecayPhaseState();
         public static final IPhaseState<?> RESTORING_BLOCKS = new RestoringBlockPhaseState();
         public static final IPhaseState<?> DISPENSE = new DispensePhaseState();
         public static final IPhaseState<?> BLOCK_DROP_ITEMS = new BlockDropItemsPhaseState();
@@ -51,18 +51,6 @@ public final class BlockPhase extends TrackingPhase {
     private static final class Holder {
         static final BlockPhase INSTANCE = new BlockPhase();
     }
-
-    @Override
-    public boolean requiresBlockCapturing(? currentState) {
-        return currentState != State.RESTORING_BLOCKS;
-    }
-
-    @Override
-    public boolean allowEntitySpawns(? currentState) {
-        return ((BlockPhaseState) currentState).allowsSpawns();
-    }
-
-
 
     @Override
     public boolean isRestoring(IPhaseState<?> state, PhaseContext<?> phaseContext, int updateFlag) {

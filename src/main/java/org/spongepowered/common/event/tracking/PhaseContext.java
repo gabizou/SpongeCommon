@@ -27,16 +27,12 @@ package org.spongepowered.common.event.tracking;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
 import org.spongepowered.api.block.BlockSnapshot;
-import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -44,9 +40,6 @@ import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.api.world.BlockChangeFlag;
-import org.spongepowered.api.world.LocatableBlock;
-import org.spongepowered.api.world.Location;
-import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.explosion.Explosion;
 import org.spongepowered.common.event.InternalNamedCauses;
 import org.spongepowered.common.interfaces.world.IMixinWorldServer;
@@ -69,7 +62,7 @@ import javax.annotation.Nullable;
  * a {@link IPhaseState} is being completed with.
  */
 @SuppressWarnings("unchecked")
-public abstract class PhaseContext<T extends PhaseContext<T>> {
+public abstract class PhaseContext<C extends PhaseContext<C>> {
 
     private boolean isCompleted = false;
     private final ArrayList<NamedCause> contextObjects = new ArrayList<>(10);
@@ -88,41 +81,42 @@ public abstract class PhaseContext<T extends PhaseContext<T>> {
     @Nullable protected User notifier;
 
     protected Object source;
+    private final IPhaseState<C> state;
 
     public static DefaultPhaseContext start() {
         return new DefaultPhaseContext();
     }
 
-    public T add(@Nullable NamedCause namedCause) {
+    public final C add(@Nullable NamedCause namedCause) {
         if (namedCause == null) {
-            return (T) this;
+            return (C) this;
         }
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         this.contextObjects.add(namedCause);
         if (namedCause.getName().equals(NamedCause.SOURCE)) {
             this.source = namedCause.getCauseObject();
         }
-        return (T) this;
+        return (C) this;
     }
 
-    public T owner(User owner) {
+    public C owner(User owner) {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         if (this.owner != null) {
             throw new IllegalStateException("Owner for this phase context is already set!");
         }
         this.owner = checkNotNull(owner, "Owner cannot be null!");
         this.contextObjects.add(NamedCause.owner(owner));
-        return (T) this;
+        return (C) this;
     }
 
-    public T notifier(User notifier) {
+    public C notifier(User notifier) {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         if (this.notifier != null) {
             throw new IllegalStateException("Notifier for this phase context is already set!");
         }
         this.notifier = checkNotNull(notifier, "Notifier cannot be null!");
         this.contextObjects.add(NamedCause.notifier(notifier));
-        return (T) this;
+        return (C) this;
     }
 
     private void checkBlockSuppliers() {
@@ -133,7 +127,7 @@ public abstract class PhaseContext<T extends PhaseContext<T>> {
         checkState(this.captureBlockPos == null, "CaptureBlockPos is already set!");
     }
 
-    public T addBlockCaptures() {
+    public C addBlockCaptures() {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         this.checkBlockSuppliers();
 
@@ -146,10 +140,10 @@ public abstract class PhaseContext<T extends PhaseContext<T>> {
         // unused, to be removed and re-located when phase context is cleaned up
         //this.contextObjects.add(NamedCause
         this.captureBlockPos = blockPos;
-        return (T) this;
+        return (C) this;
     }
 
-    public T addCaptures() {
+    public C addCaptures() {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         this.checkBlockSuppliers();
         checkState(this.capturedItemsSupplier == null, "CapturedItemsSupplier is already set!");
@@ -164,10 +158,10 @@ public abstract class PhaseContext<T extends PhaseContext<T>> {
         this.capturedItemStackSupplier = new CapturedItemStackSupplier();
 
         this.blockEntitySpawnSupplier = new CapturedBlockEntitySpawnSupplier();
-        return (T) this;
+        return (C) this;
     }
 
-    public T addEntityCaptures() {
+    public C addEntityCaptures() {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         checkState(this.capturedItemsSupplier == null, "CapturedItemsSupplier is already set!");
         checkState(this.capturedEntitiesSupplier == null, "CapturedEntitiesSupplier is already set!");
@@ -176,41 +170,41 @@ public abstract class PhaseContext<T extends PhaseContext<T>> {
         this.capturedItemsSupplier = new CapturedItemsSupplier();
         this.capturedEntitiesSupplier = new CapturedEntitiesSupplier();
         this.capturedItemStackSupplier = new CapturedItemStackSupplier();
-        return (T) this;
+        return (C) this;
     }
 
-    public T addEntityDropCaptures() {
+    public C addEntityDropCaptures() {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         checkState(this.entityItemDropsSupplier == null, "EntityItemDropsSupplier is already set!");
         checkState(this.entityItemEntityDropsSupplier == null, "EntityItemEntityDropsSupplier is already set!");
 
         this.entityItemDropsSupplier = new EntityItemDropsSupplier();
         this.entityItemEntityDropsSupplier = new EntityItemEntityDropsSupplier();
-        return (T) this;
+        return (C) this;
     }
 
-    public T player() {
+    public C player() {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_PLAYER, new CapturePlayer()));
-        return (T) this;
+        return (C) this;
     }
 
-    public T player(@Nullable Player player) {
+    public C player(@Nullable Player player) {
         checkState(!this.isCompleted, "Cannot add a new object to the context if it's already marked as completed!");
         this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_PLAYER, new CapturePlayer(player)));
-        return (T) this;
+        return (C) this;
     }
 
-    public T explosion() {
+    public C explosion() {
         checkState(!this.isCompleted, "CAnnot add a new object to the context if it's already marked as completed!");
         this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_EXPLOSION, new CaptureExplosion()));
-        return (T) this;
+        return (C) this;
     }
 
-    public T explosion(@Nullable Explosion explosion) {
+    public C explosion(@Nullable Explosion explosion) {
         checkState(!this.isCompleted, "CAnnot add a new object to the context if it's already marked as completed!");
         this.contextObjects.add(NamedCause.of(InternalNamedCauses.Tracker.CAPTURED_EXPLOSION, new CaptureExplosion(explosion)));
-        return (T) this;
+        return (C) this;
     }
 
     public CaptureExplosion getCaptureExplosion() {
@@ -223,9 +217,15 @@ public abstract class PhaseContext<T extends PhaseContext<T>> {
         return getCaptureExplosion().getExplosion();
     }
 
-    public T complete() {
+    public C complete() {
         this.isCompleted = true;
-        return (T) this;
+        return (C) this;
+    }
+
+    public PhaseData build() {
+        this.isCompleted = true;
+        checkNotNull(this.state, "Must have been built with a PhaseState!");
+        return new PhaseData(this, this.state);
     }
 
     public boolean isComplete() {
@@ -417,7 +417,8 @@ public abstract class PhaseContext<T extends PhaseContext<T>> {
         this.contextObjects.forEach(consumer);
     }
 
-    protected PhaseContext() {
+    protected PhaseContext(IPhaseState<C> phaseState) {
+        this.state = phaseState;
     }
 
     @Override

@@ -51,7 +51,7 @@ public class PlayerPhase extends TrackingPhase {
     }
 
 
-    public static final class PlayerPhaseState implements IPhaseState<?> {
+    public static final class PlayerPhaseState implements IPhaseState<PlayerContext> {
 
         PlayerPhaseState() {
         }
@@ -62,13 +62,67 @@ public class PlayerPhase extends TrackingPhase {
         }
 
         @Override
-        public ? start() {
+        public PlayerContext start() {
             return new PlayerContext();
+        }
+
+        @Override
+        public void unwind(PlayerContext phaseContext) {
+            // Since currently all we have is PLAYER_LOGOUT, don't care about states.
+            final Player player = phaseContext.firstNamed(NamedCause.SOURCE, Player.class)
+                .orElseThrow(TrackingUtil.throwWithContext("Expected to be processing a player leaving, but we're not!", phaseContext));
+            phaseContext.getCapturedItemsSupplier().ifPresentAndNotEmpty(items -> {
+                final Cause cause = Cause.source(
+                    EntitySpawnCause.builder()
+                        .entity(player)
+                        .type(InternalSpawnTypes.DISPENSE)
+                        .build())
+                    .build();
+                final ArrayList<Entity> entities = new ArrayList<>();
+                for (EntityItem item : items) {
+                    entities.add(EntityUtil.fromNative(item));
+                }
+                final DropItemEvent.Dispense
+                    dispense =
+                    SpongeEventFactory.createDropItemEventDispense(cause, entities, player.getWorld());
+                SpongeImpl.postEvent(dispense);
+                if (!dispense.isCancelled()) {
+                    for (Entity entity : dispense.getEntities()) {
+                        EntityUtil.getMixinWorld(entity).forceSpawnEntity(entity);
+                    }
+                }
+            });
+            phaseContext.getCapturedItemStackSupplier().ifPresentAndNotEmpty(items -> {
+                final List<EntityItem> drops = items.stream()
+                    .map(drop -> drop.create(EntityUtil.getMinecraftWorld(player)))
+                    .collect(Collectors.toList());
+                final Cause.Builder builder = Cause.source(
+                    EntitySpawnCause.builder()
+                        .entity(player)
+                        .type(InternalSpawnTypes.DROPPED_ITEM)
+                        .build()
+                );
+                final Cause cause = builder.build();
+                final List<Entity> entities = (List<Entity>) (List<?>) drops;
+                if (!entities.isEmpty()) {
+                    DropItemEvent.Custom event = SpongeEventFactory.createDropItemEventCustom(cause, entities, player.getWorld());
+                    SpongeImpl.postEvent(event);
+                    if (!event.isCancelled()) {
+                        for (Entity droppedItem : event.getEntities()) {
+                            EntityUtil.getMixinWorld(droppedItem).forceSpawnEntity(droppedItem);
+                        }
+                    }
+                }
+            });
+
+            phaseContext.getCapturedBlockSupplier()
+                .ifPresentAndNotEmpty(blocks -> TrackingUtil.processBlockCaptures(blocks, this, phaseContext));
+
         }
 
     }
 
-    public static final class PlayerContext extends PhaseContext<?> {
+    public static final class PlayerContext extends PhaseContext<PlayerContext> {
 
         private EntityPlayerMP player;
 
@@ -105,61 +159,5 @@ public class PlayerPhase extends TrackingPhase {
     private static final class Holder {
         static final PlayerPhase INSTANCE = new PlayerPhase();
     }
-
-    @SuppressWarnings("unchecked")
-	@Override
-    public void unwind(IPhaseState<?> state, PlayerContext phaseContext) {
-        // Since currently all we have is PLAYER_LOGOUT, don't care about states.
-        final Player player = phaseContext.firstNamed(NamedCause.SOURCE, Player.class)
-                .orElseThrow(TrackingUtil.throwWithContext("Expected to be processing a player leaving, but we're not!", phaseContext));
-        phaseContext.getCapturedItemsSupplier().ifPresentAndNotEmpty(items -> {
-            final Cause cause = Cause.source(
-                    EntitySpawnCause.builder()
-                            .entity(player)
-                            .type(InternalSpawnTypes.DISPENSE)
-                            .build())
-                    .build();
-            final ArrayList<Entity> entities = new ArrayList<>();
-            for (EntityItem item : items) {
-                entities.add(EntityUtil.fromNative(item));
-            }
-            final DropItemEvent.Dispense
-                    dispense =
-                    SpongeEventFactory.createDropItemEventDispense(cause, entities, player.getWorld());
-            SpongeImpl.postEvent(dispense);
-            if (!dispense.isCancelled()) {
-                for (Entity entity : dispense.getEntities()) {
-                    EntityUtil.getMixinWorld(entity).forceSpawnEntity(entity);
-                }
-            }
-        });
-        phaseContext.getCapturedItemStackSupplier().ifPresentAndNotEmpty(items -> {
-            final List<EntityItem> drops = items.stream()
-                    .map(drop -> drop.create(EntityUtil.getMinecraftWorld(player)))
-                    .collect(Collectors.toList());
-            final Cause.Builder builder = Cause.source(
-                    EntitySpawnCause.builder()
-                            .entity(player)
-                            .type(InternalSpawnTypes.DROPPED_ITEM)
-                            .build()
-            );
-            final Cause cause = builder.build();
-            final List<Entity> entities = (List<Entity>) (List<?>) drops;
-            if (!entities.isEmpty()) {
-                DropItemEvent.Custom event = SpongeEventFactory.createDropItemEventCustom(cause, entities, player.getWorld());
-                SpongeImpl.postEvent(event);
-                if (!event.isCancelled()) {
-                    for (Entity droppedItem : event.getEntities()) {
-                        EntityUtil.getMixinWorld(droppedItem).forceSpawnEntity(droppedItem);
-                    }
-                }
-            }
-        });
-
-        phaseContext.getCapturedBlockSupplier()
-                .ifPresentAndNotEmpty(blocks -> TrackingUtil.processBlockCaptures(blocks, state, phaseContext));
-
-    }
-
 
 }

@@ -53,7 +53,7 @@ import java.util.ArrayList;
 
 import javax.annotation.Nullable;
 
-abstract class TickPhaseState implements IPhaseState<DefaultPhaseContext> {
+abstract class TickPhaseState<T extends TickContext<T>> implements IPhaseState<T> {
 
     TickPhaseState() {
     }
@@ -74,7 +74,7 @@ abstract class TickPhaseState implements IPhaseState<DefaultPhaseContext> {
     }
 
     @Override
-    public void unwind(DefaultPhaseContext phaseContext) { }
+    public void unwind(T phaseContext) { }
 
     public abstract void associateAdditionalBlockChangeCauses(PhaseContext<?> context, Cause.Builder builder);
 
@@ -88,12 +88,12 @@ abstract class TickPhaseState implements IPhaseState<DefaultPhaseContext> {
     }
 
     @Override
-    public Cause generateTeleportCause(DefaultPhaseContext context) {
+    public Cause generateTeleportCause(T context) {
         return Cause.of(NamedCause.source(TeleportCause.builder().type(TeleportTypes.UNKNOWN).build()));
     }
 
     @Override
-    public void appendNotifierPreBlockTick(IMixinWorldServer mixinWorld, BlockPos pos, DefaultPhaseContext context, PhaseContext<?> newContext) {
+    public void appendNotifierPreBlockTick(IMixinWorldServer mixinWorld, BlockPos pos, T context, PhaseContext<?> newContext) {
 
     }
 
@@ -114,5 +114,5 @@ abstract class TickPhaseState implements IPhaseState<DefaultPhaseContext> {
     }
 
     @Override
-    public abstract boolean spawnEntityOrCapture(DefaultPhaseContext context, Entity entity, int chunkX, int chunkZ);
+    public abstract boolean spawnEntityOrCapture(T context, Entity entity, int chunkX, int chunkZ);
 }

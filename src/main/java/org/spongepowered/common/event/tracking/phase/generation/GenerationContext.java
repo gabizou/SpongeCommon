@@ -5,6 +5,7 @@ import net.minecraft.world.WorldServerMulti;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.gen.Populator;
 import org.spongepowered.api.world.gen.PopulatorType;
+import org.spongepowered.common.event.tracking.IPhaseState;
 import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.interfaces.world.IMixinWorldServer;
 
@@ -15,6 +16,10 @@ public class GenerationContext extends PhaseContext<GenerationContext> {
 
     private World world;
     private PopulatorType populatorType;
+
+    protected GenerationContext(IPhaseState<GenerationContext> state) {
+        super(state);
+    }
 
     public GenerationContext world(World world) {
         this.world = world;

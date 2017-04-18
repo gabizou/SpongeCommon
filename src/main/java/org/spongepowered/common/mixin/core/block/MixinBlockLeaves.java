@@ -31,6 +31,7 @@ import net.minecraft.block.BlockOldLeaf;
 import net.minecraft.block.BlockPlanks;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.WorldServer;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.key.Key;
 import org.spongepowered.api.data.key.Keys;
@@ -77,7 +78,6 @@ public abstract class MixinBlockLeaves extends MixinBlock {
 
     @Redirect(method = "updateTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;I)Z"))
     public boolean onUpdateDecayState(net.minecraft.world.World worldIn, BlockPos pos, IBlockState state, int flags) {
-        IMixinWorldServer spongeWorld = (IMixinWorldServer) worldIn;
         final CauseTracker causeTracker = CauseTracker.getInstance();
         final boolean isBlockAlready = CauseTracker.ENABLED && causeTracker.getCurrentState().getPhase() != TrackingPhases.BLOCK;
         final IPhaseState<?> currentState = causeTracker.getCurrentPhaseData().state;
@@ -87,10 +87,11 @@ public abstract class MixinBlockLeaves extends MixinBlock {
                     .location(new Location<World>((World) worldIn, pos.getX(), pos.getY(), pos.getZ()))
                     .state((BlockState) state)
                     .build();
-            causeTracker.switchToPhase(BlockPhase.State.BLOCK_DECAY, BlockPhase.State.BLOCK_DECAY.start()
-                    .add(NamedCause.source(locatable))
+            causeTracker.switchToPhase(BlockPhase.State.BLOCK_DECAY.start()
+                    .block(locatable)
+                    .world((WorldServer) worldIn)
                     .addCaptures()
-                    .complete());
+                    .build());
         }
         boolean result = worldIn.setBlockState(pos, state, flags);
         if (isBlockAlready && !isWorldGen) {

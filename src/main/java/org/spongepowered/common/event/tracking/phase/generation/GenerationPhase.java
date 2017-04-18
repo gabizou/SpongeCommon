@@ -50,13 +50,13 @@ public final class GenerationPhase extends TrackingPhase {
 
     public static final class State {
 
-        public static final IPhaseState<?> CHUNK_LOADING = new GeneralGenerationPhaseState("CHUNK_LOADING").bake();
+        public static final IPhaseState<GenerationContext> CHUNK_LOADING = new GeneralGenerationPhaseState("CHUNK_LOADING").bake();
 
-        public static final IPhaseState<?> WORLD_SPAWNER_SPAWNING = new GeneralGenerationPhaseState("WORLD_SPAWNER_SPAWNING").bake();
+        public static final IPhaseState<GenerationContext> WORLD_SPAWNER_SPAWNING = new GeneralGenerationPhaseState("WORLD_SPAWNER_SPAWNING").bake();
 
-        public static final IPhaseState<?> POPULATOR_RUNNING = new PopulatorGenerationPhaseState("POPULATOR_RUNNING");
+        public static final IPhaseState<GenerationContext> POPULATOR_RUNNING = new PopulatorGenerationPhaseState("POPULATOR_RUNNING");
 
-        public static final IPhaseState<?> TERRAIN_GENERATION = new GeneralGenerationPhaseState("TERRAIN_GENERATION");
+        public static final IPhaseState<GenerationContext> TERRAIN_GENERATION = new GeneralGenerationPhaseState("TERRAIN_GENERATION");
 
         static {
             ((GeneralGenerationPhaseState) POPULATOR_RUNNING)
@@ -90,11 +90,6 @@ public final class GenerationPhase extends TrackingPhase {
     }
 
     @Override
-    public boolean requiresBlockCapturing(GeneralGenerationPhaseState currentState) {
-        return false;
-    }
-
-    @Override
     public boolean ignoresBlockEvent(IPhaseState<?> phaseState) {
         return true;
     }
@@ -103,14 +98,6 @@ public final class GenerationPhase extends TrackingPhase {
     public boolean ignoresBlockUpdateTick(PhaseData phaseData) {
         return phaseData.state != GenerationPhase.State.WORLD_SPAWNER_SPAWNING;
     }
-
-
-    @Override
-    public boolean spawnEntityOrCapture(GeneralGenerationPhaseState phaseState, GenerationContext context, Entity entity, int chunkX,
-            int chunkZ) {
-        return context.getCapturedEntities().add(entity);
-    }
-
 
     @Override
     public boolean isWorldGeneration(IPhaseState<?> state) {

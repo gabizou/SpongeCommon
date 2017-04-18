@@ -43,10 +43,10 @@ import javax.annotation.Nullable;
 public final class PluginPhase extends TrackingPhase {
 
     public static final class State {
-        public static final IPhaseState<?> BLOCK_WORKER = new BlockWorkerPhaseState();
-        public static final IPhaseState<?> CUSTOM_SPAWN = new PluginPhaseState();
-        public static final IPhaseState<?> CUSTOM_EXPLOSION = new CustomExplosionState();
-        public static final IPhaseState<?> SCHEDULED_TASK = new ScheduledTaskPhaseState();
+        public static final IPhaseState<BlockWorkerPhaseState.BlockWorkerContext> BLOCK_WORKER = new BlockWorkerPhaseState();
+        public static final IPhaseState<CustomSpawnState.Context> CUSTOM_SPAWN = new CustomSpawnState();
+        public static final IPhaseState<CustomExplosionState.CustomExplosionContext> CUSTOM_EXPLOSION = new CustomExplosionState();
+        public static final IPhaseState<ScheduledTaskPhaseState.ScheduledContext> SCHEDULED_TASK = new ScheduledTaskPhaseState();
 
         private State() {
         }

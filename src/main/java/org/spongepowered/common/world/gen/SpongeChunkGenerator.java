@@ -352,11 +352,11 @@ public class SpongeChunkGenerator implements WorldGenerator, IChunkGenerator {
                 timing.startTimingIfSync();
             }
             if (CauseTracker.ENABLED) {
-                causeTracker.switchToPhase(GenerationPhase.State.POPULATOR_RUNNING, GenerationPhase.State.POPULATOR_RUNNING.start()
+                causeTracker.switchToPhase(GenerationPhase.State.POPULATOR_RUNNING.start()
                         .world(world)
                         .populator(type)
                         .addEntityCaptures()
-                        .complete());
+                        .build());
             }
             if (populator instanceof IFlaggedPopulator) {
                 ((IFlaggedPopulator) populator).populate(spongeWorld, volume, this.rand, biomeBuffer, flags);

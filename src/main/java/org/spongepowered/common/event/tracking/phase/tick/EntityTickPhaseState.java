@@ -54,8 +54,10 @@ import org.spongepowered.api.event.item.inventory.DropItemEvent;
 import org.spongepowered.api.world.World;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.entity.EntityUtil;
+import org.spongepowered.common.event.tracking.IPhaseState;
 import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.TrackingUtil;
+import org.spongepowered.common.event.tracking.phase.general.ExplosionContext;
 import org.spongepowered.common.interfaces.world.IMixinLocation;
 import org.spongepowered.common.registry.type.event.InternalSpawnTypes;
 import org.spongepowered.common.util.VecHelper;
@@ -76,6 +78,9 @@ class EntityTickPhaseState extends TickPhaseState<EntityTickPhaseState.EntityTic
 
     public static final class EntityTickContext extends TickContext<EntityTickContext> {
 
+        EntityTickContext() {
+            super(TickPhase.Tick.ENTITY);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -358,7 +363,7 @@ class EntityTickPhaseState extends TickPhaseState<EntityTickPhaseState.EntityTic
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Override
     public void handleBlockChangeWithUser(@Nullable BlockChange blockChange, Transaction<BlockSnapshot> transaction,
-        PhaseContext<?> context) {
+        EntityTickContext context) {
         if (blockChange == BlockChange.BREAK) {
             final Entity tickingEntity = context.getSource(Entity.class).get();
             final BlockPos blockPos = VecHelper.toBlockPos(transaction.getOriginal().getPosition());
@@ -376,7 +381,7 @@ class EntityTickPhaseState extends TickPhaseState<EntityTickPhaseState.EntityTic
 
 
     @Override
-    public void associateAdditionalBlockChangeCauses(PhaseContext<?> context, Cause.Builder builder) {
+    public void associateAdditionalBlockChangeCauses(EntityTickContext context, Cause.Builder builder) {
         final Entity tickingEntity = context.getSource(Entity.class)
                 .orElseThrow(TrackingUtil.throwWithContext("Not ticking on an Entity!", context));
         builder.named(NamedCause.owner(tickingEntity));
@@ -385,12 +390,12 @@ class EntityTickPhaseState extends TickPhaseState<EntityTickPhaseState.EntityTic
 
 
     @Override
-    public void processPostSpawns(PhaseContext<?> phaseContext, ArrayList<Entity> entities) {
+    public void processPostSpawns(EntityTickContext phaseContext, ArrayList<Entity> entities) {
         super.processPostSpawns(phaseContext, entities);
     }
 
     @Override
-    public void appendExplosionContext(PhaseContext<?> explosionContext, PhaseContext<?> context) {
+    public void appendContextPreExplosion(ExplosionContext explosionContext, EntityTickContext context) {
         context.getOwner().ifPresent(explosionContext::owner);
         context.getNotifier().ifPresent(explosionContext::notifier);
         final Entity tickingEntity = context.getSource(Entity.class)

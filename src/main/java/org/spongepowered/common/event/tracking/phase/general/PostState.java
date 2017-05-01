@@ -24,8 +24,12 @@
  */
 package org.spongepowered.common.event.tracking.phase.general;
 
+import net.minecraft.block.Block;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.WorldServer;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.common.entity.PlayerTracker;
 import org.spongepowered.common.event.InternalNamedCauses;
 import org.spongepowered.common.event.tracking.IPhaseState;
 import org.spongepowered.common.event.tracking.PhaseContext;
@@ -64,13 +68,14 @@ final class PostState extends GeneralState<UnwindingPhaseContext> {
         this.postDispatch(unwindingState, unwindingContext, context);
     }
 
-    public void appendContextPreExplosion(PhaseContext<?> phaseContext, PhaseData currentPhaseData) {
-        final PhaseContext<?> unwinding = currentPhaseData.context.first(PhaseContext.class)
-                .orElseThrow(TrackingUtil.throwWithContext("Expected to be unwinding with a PhaseContext, but couldn't!", currentPhaseData.context));
-        final IPhaseState<?> phaseState = currentPhaseData.context.first(IPhaseState.class)
-                .orElseThrow(TrackingUtil.throwWithContext("Expected to be unwinding with an IPhaseState, but couldn't!", currentPhaseData.context));
-        final PhaseData phaseData = new PhaseData(unwinding, phaseState);
-        phaseState.getPhase().appendContextPreExplosion(phaseContext, phaseData);
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
+    public void appendContextPreExplosion(ExplosionContext phaseContext, UnwindingPhaseContext context) {
+        final PhaseContext<?> unwinding = context.first(PhaseContext.class)
+                .orElseThrow(TrackingUtil.throwWithContext("Expected to be unwinding with a PhaseContext, but couldn't!", context));
+        final IPhaseState<?> phaseState = context.first(IPhaseState.class)
+                .orElseThrow(TrackingUtil.throwWithContext("Expected to be unwinding with an IPhaseState, but couldn't!", context));
+        ((IPhaseState) phaseState).appendContextPreExplosion(phaseContext, unwinding);
 
     }
 
@@ -126,5 +131,17 @@ final class PostState extends GeneralState<UnwindingPhaseContext> {
             unwindingState.getPhase().processPostItemSpawns(unwindingState, items);
         }
 
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    @Override
+    public void associateNeighborStateNotifier(UnwindingPhaseContext context, BlockPos sourcePos, Block block, BlockPos notifyPos,
+        WorldServer mixinWorld, PlayerTracker.Type notifier) {
+        final IPhaseState unwindingState = context.firstNamed(InternalNamedCauses.Tracker.UNWINDING_STATE, IPhaseState.class)
+            .orElseThrow(TrackingUtil.throwWithContext("Intended to be unwinding a phase but no phase unwinding found!", context));
+        final PhaseContext<?> unwindingContext = context.firstNamed(InternalNamedCauses.Tracker.UNWINDING_CONTEXT, PhaseContext.class)
+            .orElseThrow(TrackingUtil.throwWithContext("Intended to be unwinding a phase with a context, but no context found!", context));
+        unwindingState
+            .associateNeighborStateNotifier(unwindingContext, sourcePos, block, notifyPos, mixinWorld, notifier);
     }
 }

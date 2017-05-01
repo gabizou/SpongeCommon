@@ -35,7 +35,7 @@ import org.spongepowered.common.item.inventory.util.ItemStackUtil;
 
 import javax.annotation.Nullable;
 
-final class AttackEntityPacketState extends BasicPacketState {
+final class AttackEntityPacketState extends BasicPacketState<BasicPacketContext> {
 
     @Override
     public boolean isPacketIgnored(Packet<?> packetIn, EntityPlayerMP packetPlayer) {
@@ -64,5 +64,10 @@ final class AttackEntityPacketState extends BasicPacketState {
     @Override
     public boolean tracksEntitySpecificDrops() {
         return true;
+    }
+
+    @Override
+    public BasicPacketContext start() {
+        return new BasicPacketContext(this);
     }
 }

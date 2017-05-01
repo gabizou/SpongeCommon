@@ -33,7 +33,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.data.Transaction;
-import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.cause.Cause;
@@ -71,7 +70,7 @@ public final class GeneralPhase extends TrackingPhase {
 
     public static final class State {
         public static final IPhaseState<CommandState.CommandStateContext> COMMAND = new CommandState();
-        public static final IPhaseState<ExplosionState.ExplosionContext> EXPLOSION = new ExplosionState();
+        public static final IPhaseState<ExplosionContext> EXPLOSION = new ExplosionState();
         public static final IPhaseState<?> COMPLETE = new CompletePhase();
         public static final IPhaseState<?> MARKER_CROSS_WORLD = new MarkerCrossWorld();
 
@@ -239,7 +238,7 @@ public final class GeneralPhase extends TrackingPhase {
 
             proxyBlockAccess.proceed();
 
-            unwindingState.handleBlockChangeWithUser(oldBlockSnapshot.blockChange, transaction, unwindingPhaseContext);
+            ((IPhaseState) unwindingState).handleBlockChangeWithUser(oldBlockSnapshot.blockChange, transaction, unwindingPhaseContext);
 
             if (((updateFlag & 2) != 0)) {
                 // Since notifyBlockUpdate is basically to tell clients that the block position has changed,
@@ -294,35 +293,8 @@ public final class GeneralPhase extends TrackingPhase {
     }
 
     @Override
-    public void associateNeighborStateNotifier(IPhaseState<?> state, PhaseContext<?> context, @Nullable BlockPos sourcePos, Block block, BlockPos notifyPos,
-            WorldServer minecraftWorld, PlayerTracker.Type notifier) {
-        if (state == Post.UNWINDING) {
-            final IPhaseState<?> unwindingState = context.firstNamed(InternalNamedCauses.Tracker.UNWINDING_STATE, IPhaseState.class)
-                    .orElseThrow(TrackingUtil.throwWithContext("Intended to be unwinding a phase but no phase unwinding found!", context));
-            final PhaseContext<?> unwindingContext = context.firstNamed(InternalNamedCauses.Tracker.UNWINDING_CONTEXT, PhaseContext.class)
-                    .orElseThrow(TrackingUtil.throwWithContext("Intended to be unwinding a phase with a context, but no context found!", context));
-            unwindingState.getPhase()
-                    .associateNeighborStateNotifier(unwindingState, unwindingContext, sourcePos, block, notifyPos, minecraftWorld, notifier);
-        } else if (state == State.COMMAND) {
-            context.getSource(Player.class)
-                    .ifPresent(player -> ((IMixinChunk) minecraftWorld.getChunkFromBlockCoords(notifyPos))
-                            .setBlockNotifier(notifyPos, player.getUniqueId()));
-
-        }
-    }
-
-    @Override
     public boolean ignoresScheduledUpdates(IPhaseState<?> phaseState) {
         return phaseState == Post.UNWINDING;
-    }
-
-    @Override
-    public void appendContextPreExplosion(PhaseContext<?> phaseContext, PhaseData currentPhaseData) {
-        if (currentPhaseData.state == Post.UNWINDING) {
-            ((PostState) currentPhaseData.state).appendContextPreExplosion(phaseContext, currentPhaseData);
-            return;
-        }
-        super.appendContextPreExplosion(phaseContext, currentPhaseData);
     }
 
 }

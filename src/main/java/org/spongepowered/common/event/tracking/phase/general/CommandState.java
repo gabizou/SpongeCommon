@@ -24,7 +24,9 @@
  */
 package org.spongepowered.common.event.tracking.phase.general;
 
+import net.minecraft.block.Block;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.Entity;
@@ -42,11 +44,13 @@ import org.spongepowered.api.event.item.inventory.DropItemEvent;
 import org.spongepowered.api.world.World;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.entity.EntityUtil;
+import org.spongepowered.common.entity.PlayerTracker;
 import org.spongepowered.common.event.tracking.IPhaseState;
 import org.spongepowered.common.event.tracking.ItemDropData;
 import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.TrackingUtil;
 import org.spongepowered.common.event.tracking.phase.block.BlockPhaseState;
+import org.spongepowered.common.interfaces.IMixinChunk;
 import org.spongepowered.common.registry.type.event.InternalSpawnTypes;
 import org.spongepowered.common.world.WorldManager;
 
@@ -67,13 +71,14 @@ final class CommandState extends GeneralState<CommandState.CommandStateContext> 
         return new CommandStateContext();
     }
 
-    public static final class CommandStateContext extends PhaseContext<CommandStateContext> {
+    public static final class CommandStateContext extends GeneralPhaseContext<CommandStateContext> {
 
-        private CommandSource commandSource;
+        public CommandStateContext() {
+            super(GeneralPhase.State.COMMAND);
+        }
 
         public CommandStateContext source(CommandSource commandSource) {
-            super.source = commandSource;
-            this.commandSource = commandSource;
+            this.source = commandSource;
             return this;
         }
 
@@ -98,7 +103,7 @@ final class CommandState extends GeneralState<CommandState.CommandStateContext> 
     }
 
     @Override
-    void unwind(CommandStateContext phaseContext) {
+    public void unwind(CommandStateContext phaseContext) {
         final CommandSource sender = phaseContext.getSource();
         final World world;
         if (sender instanceof ICommandSender) {
@@ -205,5 +210,14 @@ final class CommandState extends GeneralState<CommandState.CommandStateContext> 
         }
 
         return Cause.of(NamedCause.source(TeleportCause.builder().type(TeleportTypes.COMMAND).build()));
+    }
+
+    @Override
+    public void associateNeighborStateNotifier(CommandStateContext context, BlockPos sourcePos, Block block, BlockPos notifyPos,
+        WorldServer mixinWorld, PlayerTracker.Type notifier) {
+        context.getSource(Player.class)
+            .ifPresent(player ->
+                ((IMixinChunk) mixinWorld.getChunkFromBlockCoords(notifyPos)).setBlockNotifier(notifyPos, player.getUniqueId())
+            );
     }
 }

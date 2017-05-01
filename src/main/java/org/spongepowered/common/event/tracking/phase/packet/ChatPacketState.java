@@ -31,7 +31,7 @@ import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.common.event.InternalNamedCauses;
 import org.spongepowered.common.event.tracking.PhaseContext;
 
-final class ChatPacketState extends BasicPacketState {
+final class ChatPacketState extends BasicPacketState<BasicPacketContext> {
 
     @Override
     public void populateContext(EntityPlayerMP playerMP, Packet<?> packet, PhaseContext<?> context) {
@@ -40,5 +40,10 @@ final class ChatPacketState extends BasicPacketState {
         //if (chatMessage.getMessage().contains("kill")) {
         //    context.add(NamedCause.of(InternalNamedCauses.General.DESTRUCT_ITEM_DROPS, true));
         //}
+    }
+
+    @Override
+    public BasicPacketContext start() {
+        return new BasicPacketContext(this);
     }
 }

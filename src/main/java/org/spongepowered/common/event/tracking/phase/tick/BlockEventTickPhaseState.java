@@ -58,13 +58,18 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-class BlockEventTickPhaseState extends TickPhaseState {
+class BlockEventTickPhaseState extends TickPhaseState<BlockEventTickPhaseState.BlockEventContext> {
 
     BlockEventTickPhaseState() {
     }
 
     @Override
-    public void associateNeighborBlockNotifier(PhaseContext<?> context, @Nullable BlockPos sourcePos, Block block, BlockPos notifyPos,
+    public BlockEventContext start() {
+        return new BlockEventContext();
+    }
+
+    @Override
+    public void associateNeighborStateNotifier(BlockEventContext context, @Nullable BlockPos sourcePos, Block block, BlockPos notifyPos,
         WorldServer minecraftWorld, PlayerTracker.Type notifier) {
         if (sourcePos == null) {
             LocatableBlock locatableBlock =  context.getSource(LocatableBlock.class).orElse(null);
@@ -82,7 +87,7 @@ class BlockEventTickPhaseState extends TickPhaseState {
     }
 
     @Override
-    public boolean spawnEntityOrCapture(PhaseContext<?> context, Entity entity, int chunkX, int chunkZ) {
+    public boolean spawnEntityOrCapture(BlockEventContext context, Entity entity, int chunkX, int chunkZ) {
         final Optional<User> notifier = context.getNotifier();
         final Optional<User> owner = context.getOwner();
         final User entityCreator = notifier.orElseGet(() -> owner.orElse(null));
@@ -109,7 +114,7 @@ class BlockEventTickPhaseState extends TickPhaseState {
 
     @Override
     public void handleBlockChangeWithUser(@Nullable BlockChange blockChange,
-        Transaction<BlockSnapshot> snapshotTransaction, PhaseContext<?> context) {
+        Transaction<BlockSnapshot> snapshotTransaction, BlockEventContext context) {
         final Block block = (Block) snapshotTransaction.getOriginal().getState().getType();
         final Location<World> changedLocation = snapshotTransaction.getOriginal().getLocation().get();
         final Vector3d changedPosition = changedLocation.getPosition();
@@ -122,7 +127,7 @@ class BlockEventTickPhaseState extends TickPhaseState {
     }
 
     @Override
-    public void unwind(PhaseContext<?> phaseContext) {
+    public void unwind(BlockEventContext phaseContext) {
         final Optional<User> notifier = phaseContext.getNotifier();
         final Optional<User> owner = phaseContext.getOwner();
         final User entityCreator = notifier.orElseGet(() -> owner.orElse(null));
@@ -150,7 +155,7 @@ class BlockEventTickPhaseState extends TickPhaseState {
     }
 
     @Override
-    public void associateAdditionalBlockChangeCauses(PhaseContext<?> context, Cause.Builder builder) {
+    public void associateAdditionalBlockChangeCauses(BlockEventContext context, Cause.Builder builder) {
         LocatableBlock locatable =  context.getSource(LocatableBlock.class).orElse(null);
         if (locatable == null) {
             TileEntity tileEntity = context.getSource(TileEntity.class).orElseThrow(TrackingUtil.throwWithContext("Expected to be ticking over at a TileEntity!", context));
@@ -162,5 +167,12 @@ class BlockEventTickPhaseState extends TickPhaseState {
     @Override
     public String toString() {
         return "BlockEventTickPhase";
+    }
+
+    public static class BlockEventContext extends TickContext<BlockEventContext> {
+
+        BlockEventContext() {
+            super(TickPhase.Tick.BLOCK_EVENT);
+        }
     }
 }

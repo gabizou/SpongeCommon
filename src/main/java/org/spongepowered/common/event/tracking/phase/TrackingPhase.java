@@ -123,12 +123,6 @@ public abstract class TrackingPhase {
     }
 
     public void associateAdditionalCauses(IPhaseState<?> state, PhaseContext<?> context, Cause.Builder builder) {
-
-    }
-
-
-    public boolean isRestoring(IPhaseState<?> state, PhaseContext<?> context, int updateFlag) {
-        return false;
     }
 
     public void capturePlayerUsingStackToBreakBlock(@Nullable ItemStack itemStack, EntityPlayerMP playerMP, IPhaseState<?> state, PhaseContext<?> context,
@@ -149,38 +143,12 @@ public abstract class TrackingPhase {
         return Optional.empty();
     }
 
-    public void addNotifierToBlockEvent(IPhaseState<?> phaseState, PhaseContext<?> context, IMixinWorldServer mixinWorld, BlockPos pos, IMixinBlockEventData blockEvent) {
-
-    }
-
-    public void associateNeighborStateNotifier(IPhaseState<?> state, PhaseContext<?> context, @Nullable BlockPos sourcePos, Block block, BlockPos notifyPos,
-            WorldServer minecraftWorld, PlayerTracker.Type notifier) {
-
-    }
-
-    public boolean populateCauseForNotifyNeighborEvent(IPhaseState<?> state, PhaseContext<?> context, Cause.Builder builder, CauseTracker causeTracker,
-            IMixinChunk mixinChunk, BlockPos pos) {
-        final Optional<User> notifier = context.firstNamed(NamedCause.NOTIFIER, User.class);
-        if (notifier.isPresent()) {
-            builder.named(NamedCause.notifier(notifier.get()));
-            return true;
-        } else {
-            mixinChunk.getBlockNotifier(pos).ifPresent(user -> builder.named(NamedCause.notifier(user)));
-            mixinChunk.getBlockOwner(pos).ifPresent(owner -> builder.named(NamedCause.owner(owner)));
-        }
-        return true;
-    }
-
     public boolean isTicking(IPhaseState<?> state) {
         return false;
     }
 
     public boolean handlesOwnPhaseCompletion(IPhaseState<?> state) {
         return false;
-    }
-
-    public void appendContextPreExplosion(PhaseContext<?> phaseContext, PhaseData currentPhaseData) {
-
     }
 
     public void appendExplosionCause(PhaseData phaseData) {

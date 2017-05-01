@@ -264,26 +264,6 @@ public final class PacketPhase extends TrackingPhase {
     // TrackingPhase specific methods overridden for state specific handling
 
     @Override
-    public boolean populateCauseForNotifyNeighborEvent(IPhaseState<?> state, PhaseContext<?> context, Cause.Builder builder, CauseTracker causeTracker,
-            IMixinChunk mixinChunk, BlockPos pos) {
-        if (!super.populateCauseForNotifyNeighborEvent(state, context, builder, causeTracker, mixinChunk, pos)) {
-            final Player player = context.getSource(Player.class)
-                    .orElseThrow(TrackingUtil.throwWithContext("Processing a Player PAcket, expecting a player, but had none!", context));
-            builder.named(NamedCause.notifier(player));
-        }
-        return true;
-    }
-
-    @Override
-    public void associateNeighborStateNotifier(IPhaseState<?> state, PhaseContext<?> context, @Nullable BlockPos sourcePos, Block block, BlockPos notifyPos,
-            WorldServer minecraftWorld, PlayerTracker.Type notifier) {
-        final Player player = context.getSource(Player.class)
-                        .orElseThrow(TrackingUtil.throwWithContext("Expected to be tracking a player, but not!", context));
-        ((IMixinChunk) minecraftWorld.getChunkFromBlockCoords(notifyPos)).setBlockNotifier(notifyPos, player.getUniqueId());
-
-    }
-
-    @Override
     public boolean doesCaptureEntityDrops(IPhaseState<?> currentState) {
         return ((IPacketState) currentState).doesCaptureEntityDrops();
     }
@@ -320,16 +300,6 @@ public final class PacketPhase extends TrackingPhase {
     public void processPostEntitySpawns(? unwindingState, ? phaseContext,
         ArrayList<Entity> entities) {
         ((IPacketState) unwindingState).postSpawnEntities(phaseContext, entities);
-    }
-
-    @Override
-    public void appendContextPreExplosion(PhaseContext<?> phaseContext, PhaseData currentPhaseData) {
-        ((IPacketState) currentPhaseData.state).appendContextPreExplosion(phaseContext, currentPhaseData);
-    }
-
-    @Override
-    public void addNotifierToBlockEvent(IPhaseState<?> phaseState, PhaseContext<?> context, IMixinWorldServer mixinWorld, BlockPos pos, IMixinBlockEventData blockEvent) {
-        ((BasicPacketState) phaseState).associateBlockEventNotifier(context, mixinWorld, pos, blockEvent);
     }
 
     // Inventory packet specific methods

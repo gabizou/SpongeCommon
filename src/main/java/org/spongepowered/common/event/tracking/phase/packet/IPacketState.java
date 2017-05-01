@@ -24,11 +24,14 @@
  */
 package org.spongepowered.common.event.tracking.phase.packet;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.Packet;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.SpongeEventFactory;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.NamedCause;
@@ -36,23 +39,23 @@ import org.spongepowered.api.event.cause.entity.spawn.EntitySpawnCause;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.entity.EntityUtil;
+import org.spongepowered.common.entity.PlayerTracker;
+import org.spongepowered.common.event.tracking.CauseTracker;
 import org.spongepowered.common.event.tracking.IPhaseState;
 import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.PhaseData;
 import org.spongepowered.common.event.tracking.TrackingUtil;
+import org.spongepowered.common.event.tracking.phase.general.ExplosionContext;
+import org.spongepowered.common.interfaces.IMixinChunk;
 import org.spongepowered.common.interfaces.world.IMixinWorldServer;
 import org.spongepowered.common.registry.type.event.InternalSpawnTypes;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
-public interface IPacketState extends IPhaseState<PacketContext> {
+public interface IPacketState<P extends PacketContext<P>> extends IPhaseState<P> {
 
     boolean matches(int packetState);
-
-    @Override
-    default PacketContext start() {
-        return new PacketContext();
-    }
 
     default void populateContext(EntityPlayerMP playerMP, Packet<?> packet, PhaseContext<?> context) {
 
@@ -128,9 +131,29 @@ public interface IPacketState extends IPhaseState<PacketContext> {
         }
         return false;
     }
+    @Override
+    default void appendContextPreExplosion(ExplosionContext phaseContext, P context) {
+        phaseContext.add(NamedCause.source(context.packetPlayer));
 
-    default void appendContextPreExplosion(PhaseContext<?> phaseContext, PhaseData currentPhaseData) {
-        currentPhaseData.context.first(Player.class).ifPresent(player -> phaseContext.add(NamedCause.source(player)));
+    }
+    @Override
+    default void associateNeighborStateNotifier(P context, BlockPos sourcePos, Block block, BlockPos notifyPos, WorldServer mixinWorld,
+        PlayerTracker.Type notifier) {
+        final Player player = ((Player) context.packetPlayer);
+        ((IMixinChunk) mixinWorld.getChunkFromBlockCoords(notifyPos)).setBlockNotifier(notifyPos, player.getUniqueId());
     }
 
+    @Override
+    default boolean populateCauseForNotifyNeighborEvent(P context, Cause.Builder builder, CauseTracker causeTracker, IMixinChunk mixinChunk,
+        BlockPos pos) {
+        final Optional<User> notifier = context.firstNamed(NamedCause.NOTIFIER, User.class);
+        if (notifier.isPresent()) {
+            builder.named(NamedCause.notifier(notifier.get()));
+            return true;
+        } else {
+            mixinChunk.getBlockNotifier(pos).ifPresent(user -> builder.named(NamedCause.notifier(user)));
+            mixinChunk.getBlockOwner(pos).ifPresent(owner -> builder.named(NamedCause.owner(owner)));
+        }
+        return true;
+    }
 }

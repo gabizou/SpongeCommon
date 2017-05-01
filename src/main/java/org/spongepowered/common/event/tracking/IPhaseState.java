@@ -24,6 +24,7 @@
  */
 package org.spongepowered.common.event.tracking;
 
+import net.minecraft.block.Block;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
@@ -41,10 +42,13 @@ import org.spongepowered.api.event.cause.entity.teleport.TeleportTypes;
 import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.api.world.World;
 import org.spongepowered.common.SpongeImpl;
+import org.spongepowered.common.entity.PlayerTracker;
 import org.spongepowered.common.event.tracking.phase.TrackingPhase;
 import org.spongepowered.common.event.tracking.phase.entity.EntityPhase;
+import org.spongepowered.common.event.tracking.phase.general.ExplosionContext;
 import org.spongepowered.common.event.tracking.phase.tick.TickPhase;
 import org.spongepowered.common.interfaces.IMixinChunk;
+import org.spongepowered.common.interfaces.block.IMixinBlockEventData;
 import org.spongepowered.common.interfaces.world.IMixinWorldServer;
 import org.spongepowered.common.registry.type.event.InternalSpawnTypes;
 import org.spongepowered.common.world.BlockChange;
@@ -79,7 +83,7 @@ public interface IPhaseState<P extends PhaseContext<P>> {
         return false;
     }
 
-    default void handleBlockChangeWithUser(@Nullable BlockChange blockChange, Transaction<BlockSnapshot> snapshotTransaction, PhaseContext<?> context) {
+    default void handleBlockChangeWithUser(@Nullable BlockChange blockChange, Transaction<BlockSnapshot> snapshotTransaction, P context) {
 
     }
 
@@ -240,6 +244,17 @@ public interface IPhaseState<P extends PhaseContext<P>> {
             mixinChunk.getBlockOwner(pos).ifPresent(newContext::owner);
             mixinChunk.getBlockNotifier(pos).ifPresent(newContext::notifier);
         }
+    }
+    default void appendContextPreExplosion(ExplosionContext phaseContext, P context) {
+
+    }
+
+    default void addNotifierToBlockEvent(P context, IMixinWorldServer mixinWorld, BlockPos pos, IMixinBlockEventData blockEvent) {
+
+    }
+    default void associateNeighborStateNotifier(P context, BlockPos sourcePos, Block block, BlockPos notifyPos, WorldServer mixinWorld,
+        PlayerTracker.Type notifier) {
+
     }
     // Context aware methods (Merged contexts into states, since the states themselves are just classes)
 

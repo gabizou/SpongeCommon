@@ -24,8 +24,6 @@
  */
 package org.spongepowered.common.event.tracking.phase.packet;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.Packet;
 import net.minecraft.util.math.BlockPos;
@@ -46,7 +44,7 @@ import org.spongepowered.common.interfaces.world.IMixinWorldServer;
 
 import java.util.Optional;
 
-public class BasicPacketState<P extends BasicPacketState<P>> implements IPhaseState<PacketContext>, IPacketState {
+public abstract class BasicPacketState<P extends PacketContext<P>> implements IPhaseState<P>, IPacketState<P> {
 
     BasicPacketState() {
 
@@ -57,14 +55,9 @@ public class BasicPacketState<P extends BasicPacketState<P>> implements IPhaseSt
         return TrackingPhases.PACKET;
     }
 
-    @Override
-    public P start() {
-        return null;
-    }
-
     @SuppressWarnings("unchecked")
     @Override
-    public void unwind(PacketContext context) {
+    public void unwind(P context) {
         if (this == PacketPhase.General.INVALID) { // Invalid doesn't capture any packets.
             return;
         }
@@ -85,12 +78,13 @@ public class BasicPacketState<P extends BasicPacketState<P>> implements IPhaseSt
         return false;
     }
 
-    public void associateBlockEventNotifier(PhaseContext<?> context, IMixinWorldServer mixinWorldServer, BlockPos pos, IMixinBlockEventData blockEvent) {
+    @Override
+    public void addNotifierToBlockEvent(P context, IMixinWorldServer mixinWorldServer, BlockPos pos, IMixinBlockEventData blockEvent) {
 
     }
 
     @Override
-    public boolean populateCauseForNotifyNeighborEvent(PacketContext context, Cause.Builder builder, CauseTracker causeTracker,
+    public boolean populateCauseForNotifyNeighborEvent(P context, Cause.Builder builder, CauseTracker causeTracker,
         IMixinChunk mixinChunk, BlockPos pos) {
         final Optional<User> notifier = context.firstNamed(NamedCause.NOTIFIER, User.class);
         if (notifier.isPresent()) {

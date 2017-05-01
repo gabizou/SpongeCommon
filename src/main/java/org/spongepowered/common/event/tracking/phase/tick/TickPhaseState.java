@@ -37,7 +37,6 @@ import org.spongepowered.api.event.entity.SpawnEntityEvent;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.entity.EntityUtil;
 import org.spongepowered.common.entity.PlayerTracker;
-import org.spongepowered.common.event.tracking.DefaultPhaseContext;
 import org.spongepowered.common.event.tracking.IPhaseState;
 import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.phase.TrackingPhase;
@@ -76,13 +75,15 @@ abstract class TickPhaseState<T extends TickContext<T>> implements IPhaseState<T
     @Override
     public void unwind(T phaseContext) { }
 
-    public abstract void associateAdditionalBlockChangeCauses(PhaseContext<?> context, Cause.Builder builder);
+    public abstract void associateAdditionalBlockChangeCauses(T context, Cause.Builder builder);
 
-    public void associateBlockEventNotifier(PhaseContext<?> context, BlockPos pos, IMixinBlockEventData blockEvent) {
+    @Override
+    public void addNotifierToBlockEvent(T context, IMixinWorldServer server, BlockPos pos, IMixinBlockEventData blockEvent) {
 
     }
 
-    public void associateNeighborBlockNotifier(PhaseContext<?> context, @Nullable BlockPos sourcePos, Block block, BlockPos notifyPos,
+    @Override
+    public void associateNeighborStateNotifier(T context, @Nullable BlockPos sourcePos, Block block, BlockPos notifyPos,
             WorldServer minecraftWorld, PlayerTracker.Type notifier) {
 
     }
@@ -97,7 +98,7 @@ abstract class TickPhaseState<T extends TickContext<T>> implements IPhaseState<T
 
     }
 
-    public void processPostSpawns(PhaseContext<?> phaseContext, ArrayList<Entity> entities) {
+    public void processPostSpawns(T phaseContext, ArrayList<Entity> entities) {
         final SpawnEntityEvent
                 event =
                 SpongeEventFactory.createSpawnEntityEvent(InternalSpawnTypes.UNKNOWN_CAUSE, entities, entities.get(0).getWorld());

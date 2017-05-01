@@ -397,7 +397,7 @@ public final class CauseTracker {
      * @param sourceBlock The source block type
      * @param sourcePos The source block position
      */
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "rawtypes", "unchecked"})
     public void notifyBlockOfStateChange(final IMixinWorldServer mixinWorld, final BlockPos notifyPos,
         final Block sourceBlock, @Nullable final BlockPos sourcePos) {
         final IBlockState iblockstate = ((WorldServer) mixinWorld).getBlockState(notifyPos);
@@ -406,8 +406,8 @@ public final class CauseTracker {
             // Sponge start - prepare notification
             if (CauseTracker.ENABLED) {
                 final PhaseData peek = this.stack.peek();
-                final IPhaseState<?> state = peek.state;
-                state.getPhase().associateNeighborStateNotifier(state, peek.context, sourcePos, iblockstate.getBlock(), notifyPos, ((WorldServer) mixinWorld), PlayerTracker.Type.NOTIFIER);
+                final IPhaseState state = peek.state;
+                state.associateNeighborStateNotifier(peek.context, sourcePos, iblockstate.getBlock(), notifyPos, ((WorldServer) mixinWorld), PlayerTracker.Type.NOTIFIER);
             }
             // Sponge End
 

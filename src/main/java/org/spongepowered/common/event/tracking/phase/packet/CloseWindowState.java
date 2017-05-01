@@ -30,7 +30,12 @@ import org.spongepowered.api.event.cause.NamedCause;
 import org.spongepowered.common.event.InternalNamedCauses;
 import org.spongepowered.common.event.tracking.PhaseContext;
 
-final class CloseWindowState extends BasicPacketState {
+final class CloseWindowState extends BasicPacketState<BasicPacketContext> {
+
+    @Override
+    public BasicPacketContext start() {
+        return new BasicPacketContext(this);
+    }
 
     @Override
     public void populateContext(EntityPlayerMP playerMP, Packet<?> packet, PhaseContext<?> context) {

@@ -161,6 +161,7 @@ import org.spongepowered.common.event.tracking.PhaseContext;
 import org.spongepowered.common.event.tracking.PhaseData;
 import org.spongepowered.common.event.tracking.TrackingUtil;
 import org.spongepowered.common.event.tracking.phase.entity.EntityPhase;
+import org.spongepowered.common.event.tracking.phase.general.ExplosionContext;
 import org.spongepowered.common.event.tracking.phase.general.GeneralPhase;
 import org.spongepowered.common.event.tracking.phase.generation.GenerationPhase;
 import org.spongepowered.common.event.tracking.phase.plugin.PluginPhase;
@@ -790,6 +791,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
 
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Redirect(method = "addBlockEvent", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/WorldServer$ServerBlockEventList;add(Ljava/lang/Object;)Z", remap = false))
     public boolean onAddBlockEvent(WorldServer.ServerBlockEventList list, Object obj, BlockPos pos, Block blockIn, int eventId, int eventParam) {
         final BlockEventData blockEventData = (BlockEventData) obj;
@@ -822,7 +824,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                     .build();
 
             blockEvent.setTickBlock(locatable);
-            phaseState.getPhase().addNotifierToBlockEvent(phaseState, context, this, pos, blockEvent);
+            ((IPhaseState) phaseState).addNotifierToBlockEvent(context, this, pos, blockEvent);
         }
         return list.add((BlockEventData) obj);
     }
@@ -1578,6 +1580,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
      * @param isSmoking Whether blocks will break
      * @return The explosion
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Overwrite
     @Override
     public Explosion newExplosion(@Nullable net.minecraft.entity.Entity entityIn, double x, double y, double z, float strength, boolean isFlaming,
@@ -1585,7 +1588,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
         // Sponge Start - Cause tracking
         this.processingExplosion = true;
         if (CauseTracker.ENABLED) {
-            final PhaseContext phaseContext = GeneralPhase.State.EXPLOSION.start()
+            final ExplosionContext phaseContext = GeneralPhase.State.EXPLOSION.start()
                     .explosion()
                     .addEntityCaptures()
                     .addEntityDropCaptures()
@@ -1596,7 +1599,7 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
                 phaseContext.add(NamedCause.source(this));
             }
             final PhaseData currentPhaseData = CauseTracker.getInstance().getCurrentPhaseData();
-            currentPhaseData.state.getPhase().appendContextPreExplosion(phaseContext, currentPhaseData);
+            ((IPhaseState) currentPhaseData.state).appendContextPreExplosion(phaseContext, currentPhaseData.context);
             phaseContext.complete();
             CauseTracker.getInstance().switchToPhase(GeneralPhase.State.EXPLOSION, phaseContext);
         }

@@ -115,8 +115,8 @@ import org.spongepowered.api.service.economy.transaction.TransactionType;
 import org.spongepowered.api.statistic.Statistic;
 import org.spongepowered.api.statistic.StatisticType;
 import org.spongepowered.api.text.chat.ChatVisibility;
+import org.spongepowered.common.text.format.SpongeTextStyleBase;
 import org.spongepowered.api.text.format.TextColor;
-import org.spongepowered.api.text.format.TextStyle;
 import org.spongepowered.api.text.selector.SelectorType;
 import org.spongepowered.api.text.serializer.TextSerializer;
 import org.spongepowered.api.util.ban.Ban;
@@ -460,7 +460,7 @@ public final class CommonModuleRegistry {
             .registerModule(TeleportType.class, TeleportTypeRegistryModule.getInstance())
             .registerModule(TextColor.class, new TextColorRegistryModule())
             .registerModule(TextSerializer.class, new TextSerializerRegistryModule())
-            .registerModule(TextStyle.Base.class, new TextStyleRegistryModule())
+            .registerModule(SpongeTextStyleBase.class, new TextStyleRegistryModule())
             .registerModule(TileEntityType.class, TileEntityTypeRegistryModule.getInstance())
             .registerModule(ToolType.class, new ToolTypeRegistryModule())
             .registerModule(TreeType.class, new TreeTypeRegistryModule())

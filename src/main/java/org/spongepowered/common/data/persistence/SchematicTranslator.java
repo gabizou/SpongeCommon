@@ -100,7 +100,7 @@ public class SchematicTranslator implements DataTranslator<Schematic> {
             Optional<DataView> dot_data = metadata.getView(DataQuery.of("."));
             if (dot_data.isPresent()) {
                 DataView data = dot_data.get();
-                for (DataQuery key : data.getKeys(false)) {
+                for (DataQuery key : data.getKeys()) {
                     if (!metadata.contains(key)) {
                         metadata.set(key, data.get(key).get());
                     }
@@ -132,7 +132,7 @@ public class SchematicTranslator implements DataTranslator<Schematic> {
             // that space for nothing so we use a sensible default instead
             palette = new BimapPalette(palette_max != 0xFFFF ? palette_max : 64);
             DataView paletteMap = paletteData.get();
-            Set<DataQuery> paletteKeys = paletteMap.getKeys(false);
+            Set<DataQuery> paletteKeys = paletteMap.getKeys();
             for (DataQuery key : paletteKeys) {
                 BlockState state = Sponge.getRegistry().getType(BlockState.class, key.getParts().get(0)).get();
                 ((BimapPalette) palette).assign(state, paletteMap.getInt(key).get());
@@ -220,7 +220,7 @@ public class SchematicTranslator implements DataTranslator<Schematic> {
         data.set(DataQueries.Schematic.LENGTH, length);
 
         data.set(DataQueries.Schematic.VERSION, VERSION);
-        for (DataQuery metaKey : schematic.getMetadata().getKeys(false)) {
+        for (DataQuery metaKey : schematic.getMetadata().getKeys()) {
             data.set(DataQueries.Schematic.METADATA.then(metaKey), schematic.getMetadata().get(metaKey).get());
         }
 

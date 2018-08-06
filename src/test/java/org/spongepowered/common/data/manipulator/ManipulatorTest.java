@@ -335,7 +335,7 @@ public class ManipulatorTest {
 
 
     private static void printContainerToPrinter(PrettyPrinter printer, DataView container, int indentation) {
-        for (DataQuery dataQuery : container.getKeys(false)) {
+        for (DataQuery dataQuery : container.getKeys()) {
             final Object o = container.get(dataQuery).get();
             final StringBuilder stringBuilder = new StringBuilder();
             for (int i = 0; i < indentation; i++) {

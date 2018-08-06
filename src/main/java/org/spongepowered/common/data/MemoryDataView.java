@@ -111,6 +111,10 @@ public class MemoryDataView implements DataView {
     }
 
     @Override
+    public Set<DataQuery> getKeys() {
+        return getKeys(false);
+    }
+
     public Set<DataQuery> getKeys(boolean deep) {
         ImmutableSet.Builder<DataQuery> builder = ImmutableSet.builder();
 

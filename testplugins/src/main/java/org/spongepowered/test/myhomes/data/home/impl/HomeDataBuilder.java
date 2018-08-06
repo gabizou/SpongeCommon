@@ -63,7 +63,8 @@ public class HomeDataBuilder extends AbstractDataBuilder<HomeData> implements Da
         HomeData data = new HomeDataImpl();
 
         container.getView(MyHomes.HOMES.getQuery())
-                .get().getKeys(false).forEach(name -> data.homes().put(name.toString(), container.getSerializable(name, Home.class)
+                .get().getKeys()
+            .forEach(name -> data.homes().put(name.toString(), container.getSerializable(name, Home.class)
                 .orElseThrow(InvalidDataException::new)));
 
         container.getSerializable(MyHomes.DEFAULT_HOME.getQuery(), Home.class).ifPresent(home -> {

@@ -137,7 +137,7 @@ public class HomeDataImpl extends AbstractData<HomeData, ImmutableHomeData> impl
         // Loads the map of homes
         this.homes = Maps.newHashMap();
         DataView homes = container.getView(MyHomes.HOMES.getQuery()).get();
-        for (DataQuery homeQuery : homes.getKeys(false)) {
+        for (DataQuery homeQuery : homes.getKeys()) {
             homes.getSerializable(homeQuery, Home.class)
                     .ifPresent(home -> this.homes.put(homeQuery.toString(), home));
         }

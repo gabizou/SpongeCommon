@@ -29,7 +29,7 @@ import static com.google.common.base.Preconditions.checkState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.NextTickListEntry;
 import net.minecraft.world.World;
-import org.spongepowered.api.block.ScheduledBlockUpdate;
+import org.spongepowered.api.scheduler.ScheduledTaskEntry;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -38,7 +38,7 @@ import org.spongepowered.common.interfaces.IMixinNextTickListEntry;
 import org.spongepowered.common.util.VecHelper;
 
 @Mixin(NextTickListEntry.class)
-public class MixinNextTickListEntry implements ScheduledBlockUpdate, IMixinNextTickListEntry {
+public class MixinNextTickListEntry implements ScheduledTaskEntry, IMixinNextTickListEntry {
 
     @Shadow @Final public BlockPos position;
     @Shadow public int priority;

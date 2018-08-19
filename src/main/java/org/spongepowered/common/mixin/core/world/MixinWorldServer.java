@@ -95,7 +95,7 @@ import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.block.ScheduledBlockUpdate;
+import org.spongepowered.api.scheduler.ScheduledTaskEntry;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.manipulator.DataManipulator;
@@ -848,16 +848,16 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
     }
 
     @Override
-    public ScheduledBlockUpdate addScheduledUpdate(int x, int y, int z, int priority, int ticks) {
+    public ScheduledTaskEntry addScheduledUpdate(int x, int y, int z, int priority, int ticks) {
         BlockPos pos = new BlockPos(x, y, z);
         this.updateBlockTick(pos, getBlockState(pos).getBlock(), ticks, priority);
-        ScheduledBlockUpdate sbu = (ScheduledBlockUpdate) this.tmpScheduledObj;
+        ScheduledTaskEntry sbu = (ScheduledTaskEntry) this.tmpScheduledObj;
         this.tmpScheduledObj = null;
         return sbu;
     }
 
     @Override
-    public void removeScheduledUpdate(int x, int y, int z, ScheduledBlockUpdate update) {
+    public void removeScheduledUpdate(int x, int y, int z, ScheduledTaskEntry update) {
         // Note: Ignores position argument
         this.pendingTickListEntriesHashSet.remove(update);
         this.pendingTickListEntriesTreeSet.remove(update);
@@ -1069,12 +1069,12 @@ public abstract class MixinWorldServer extends MixinWorld implements IMixinWorld
     }
 
     @Override
-    public Collection<ScheduledBlockUpdate> getScheduledUpdates(int x, int y, int z) {
+    public Collection<ScheduledTaskEntry> getScheduledUpdates(int x, int y, int z) {
         BlockPos position = new BlockPos(x, y, z);
-        ImmutableList.Builder<ScheduledBlockUpdate> builder = ImmutableList.builder();
+        ImmutableList.Builder<ScheduledTaskEntry> builder = ImmutableList.builder();
         for (NextTickListEntry sbu : this.pendingTickListEntriesTreeSet) {
             if (sbu.position.equals(position)) {
-                builder.add((ScheduledBlockUpdate) sbu);
+                builder.add((ScheduledTaskEntry) sbu);
             }
         }
         return builder.build();

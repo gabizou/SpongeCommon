@@ -60,7 +60,7 @@ import net.minecraft.world.gen.IChunkGenerator;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.block.ScheduledBlockUpdate;
+import org.spongepowered.api.scheduler.ScheduledTaskEntry;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.entity.EntitySnapshot;
 import org.spongepowered.api.entity.EntityType;
@@ -860,17 +860,17 @@ public abstract class MixinChunk implements Chunk, IMixinChunk, IMixinCachable {
     }
 
     @Override
-    public Collection<ScheduledBlockUpdate> getScheduledUpdates(int x, int y, int z) {
+    public Collection<ScheduledTaskEntry> getScheduledUpdates(int x, int y, int z) {
         return this.sponge_world.getScheduledUpdates((this.x << 4) + (x & 15), y, (this.z << 4) + (z & 15));
     }
 
     @Override
-    public ScheduledBlockUpdate addScheduledUpdate(int x, int y, int z, int priority, int ticks) {
+    public ScheduledTaskEntry addScheduledUpdate(int x, int y, int z, int priority, int ticks) {
         return this.sponge_world.addScheduledUpdate((this.x << 4) + (x & 15), y, (this.z << 4) + (z & 15), priority, ticks);
     }
 
     @Override
-    public void removeScheduledUpdate(int x, int y, int z, ScheduledBlockUpdate update) {
+    public void removeScheduledUpdate(int x, int y, int z, ScheduledTaskEntry update) {
         this.sponge_world.removeScheduledUpdate((this.x << 4) + (x & 15), y, (this.z << 4) + (z & 15), update);
     }
 

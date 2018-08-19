@@ -30,7 +30,7 @@ import com.flowpowered.math.vector.Vector3d;
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.block.ScheduledBlockUpdate;
+import org.spongepowered.api.scheduler.ScheduledTaskEntry;
 import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataHolder;
@@ -222,19 +222,19 @@ public class SoftBufferExtentViewDownsize implements DefaultedExtent {
     }
 
     @Override
-    public Collection<ScheduledBlockUpdate> getScheduledUpdates(int x, int y, int z) {
+    public Collection<ScheduledTaskEntry> getScheduledUpdates(int x, int y, int z) {
         checkBlockRange(x, y, z);
         return this.extent.getScheduledUpdates(x, y, z);
     }
 
     @Override
-    public ScheduledBlockUpdate addScheduledUpdate(int x, int y, int z, int priority, int ticks) {
+    public ScheduledTaskEntry addScheduledUpdate(int x, int y, int z, int priority, int ticks) {
         checkBlockRange(x, y, z);
         return this.extent.addScheduledUpdate(x, y, z, priority, ticks);
     }
 
     @Override
-    public void removeScheduledUpdate(int x, int y, int z, ScheduledBlockUpdate update) {
+    public void removeScheduledUpdate(int x, int y, int z, ScheduledTaskEntry update) {
         checkBlockRange(x, y, z);
         this.extent.removeScheduledUpdate(x, y, z, update);
     }

@@ -27,7 +27,7 @@ package org.spongepowered.common.mixin.core.world.extent;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.common.world.extent.DefaultedExtent;
+import org.spongepowered.common.world.volume.DefaultedExtent;
 
 @Mixin({World.class, Chunk.class})
 public abstract class MixinExtent implements DefaultedExtent {

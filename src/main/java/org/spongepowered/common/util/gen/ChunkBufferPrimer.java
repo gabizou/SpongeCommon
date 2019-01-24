@@ -29,6 +29,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.chunk.ChunkPrimer;
 import org.spongepowered.api.block.BlockState;
+import org.spongepowered.api.world.volume.block.MutableBlockVolume;
 
 /**
  * Wraps a {@link MutableBlockVolume} within a ChunkPrimer in order to be able
@@ -37,10 +38,10 @@ import org.spongepowered.api.block.BlockState;
 public class ChunkBufferPrimer extends ChunkPrimer {
 
     private static final IBlockState defaultState = Blocks.AIR.getDefaultState();
-    private final MutableBlockVolume buffer;
+    private final MutableBlockVolume<?> buffer;
     private final Vector3i min;
 
-    public ChunkBufferPrimer(MutableBlockVolume buffer) {
+    public ChunkBufferPrimer(MutableBlockVolume<?> buffer) {
         this.buffer = buffer;
         this.min = buffer.getBlockMin();
     }

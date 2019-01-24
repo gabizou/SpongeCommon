@@ -32,12 +32,12 @@ import org.spongepowered.api.util.DiscreteTransform3;
 import org.spongepowered.api.world.BlockChangeFlag;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
-import org.spongepowered.api.world.extent.archetype.ArchetypeVolume;
-import org.spongepowered.api.world.extent.block.MutableBlockVolume;
-import org.spongepowered.api.world.extent.block.worker.MutableBlockVolumeWorker;
+import org.spongepowered.api.world.volume.archetype.ArchetypeVolume;
+import org.spongepowered.api.world.volume.block.MutableBlockVolume;
+import org.spongepowered.api.world.volume.block.worker.MutableBlockVolumeWorker;
 import org.spongepowered.api.world.schematic.BlockPalette;
 import org.spongepowered.common.util.gen.AbstractBlockBuffer;
-import org.spongepowered.common.world.extent.worker.SpongeMutableBlockVolumeWorker;
+import org.spongepowered.common.world.volume.worker.SpongeMutableBlockVolumeWorker;
 
 import java.util.Map;
 import java.util.Optional;

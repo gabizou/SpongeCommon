@@ -22,5 +22,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-@org.spongepowered.api.util.annotation.NonnullByDefault
-package org.spongepowered.common.world.extent.worker;
+package org.spongepowered.common.world.volume;
+
+import org.spongepowered.api.util.DiscreteTransform3;
+import org.spongepowered.api.world.volume.block.worker.BlockVolumeWorker;
+import org.spongepowered.common.world.volume.worker.SpongeBlockVolumeWorker;
+
+public class ImmutableBlockViewTransform extends AbstractBlockViewTransform<ImmutableBlockVolume> implements ImmutableBlockVolume {
+
+    public ImmutableBlockViewTransform(ImmutableBlockVolume volume, DiscreteTransform3 transform) {
+        super(volume, transform);
+    }
+
+    @Override
+    public BlockVolumeWorker<? extends ImmutableBlockVolume> getBlockWorker() {
+        return new SpongeBlockVolumeWorker<>(this);
+    }
+
+}

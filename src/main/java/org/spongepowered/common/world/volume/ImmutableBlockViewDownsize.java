@@ -22,16 +22,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent;
+package org.spongepowered.common.world.volume;
 
-import org.spongepowered.api.util.DiscreteTransform3;
-import org.spongepowered.api.world.extent.block.worker.BlockVolumeWorker;
-import org.spongepowered.common.world.extent.worker.SpongeBlockVolumeWorker;
+import com.flowpowered.math.vector.Vector3i;
+import org.spongepowered.api.world.volume.block.worker.BlockVolumeWorker;
+import org.spongepowered.common.world.volume.worker.SpongeBlockVolumeWorker;
 
-public class ImmutableBlockViewTransform extends AbstractBlockViewTransform<ImmutableBlockVolume> implements ImmutableBlockVolume {
+public class ImmutableBlockViewDownsize extends AbstractBlockViewDownsize<ImmutableBlockVolume> implements ImmutableBlockVolume {
 
-    public ImmutableBlockViewTransform(ImmutableBlockVolume volume, DiscreteTransform3 transform) {
-        super(volume, transform);
+    public ImmutableBlockViewDownsize(ImmutableBlockVolume volume, Vector3i min, Vector3i max) {
+        super(volume, min, max);
     }
 
     @Override

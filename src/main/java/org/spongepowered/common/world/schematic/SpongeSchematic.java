@@ -29,7 +29,7 @@ import org.spongepowered.api.block.tileentity.TileEntityArchetype;
 import org.spongepowered.api.data.DataContainer;
 import org.spongepowered.api.data.DataView;
 import org.spongepowered.api.world.schematic.Schematic;
-import org.spongepowered.common.world.extent.worker.SpongeMutableBlockVolumeWorker;
+import org.spongepowered.common.world.volume.worker.SpongeMutableBlockVolumeWorker;
 
 import java.util.Map;
 

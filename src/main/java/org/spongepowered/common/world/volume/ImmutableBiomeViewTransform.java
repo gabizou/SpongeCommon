@@ -22,44 +22,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent;
+package org.spongepowered.common.world.volume;
 
 import com.flowpowered.math.vector.Vector3i;
-import org.spongepowered.api.fluid.FluidState;
-import org.spongepowered.api.world.extent.Volume;
-import org.spongepowered.api.world.extent.block.ImmutableBlockVolume;
-import org.spongepowered.api.world.extent.block.UnmodifiableBlockVolume;
-import org.spongepowered.api.world.extent.block.worker.BlockVolumeWorker;
-import org.spongepowered.common.world.extent.worker.SpongeBlockVolumeWorker;
+import org.spongepowered.api.util.DiscreteTransform3;
+import org.spongepowered.common.world.volume.worker.SpongeBiomeVolumeWorker;
 
-public class UnmodifiableBlockViewDownsize extends AbstractBlockViewDownsize<BlockVolume> implements UnmodifiableBlockVolume<UnmodifiableBlockViewDownsize> {
+public class ImmutableBiomeViewTransform extends AbstractBiomeViewTransform<ImmutableBiomeVolume> implements ImmutableBiomeVolume {
 
-    public UnmodifiableBlockViewDownsize(BlockVolume volume, Vector3i min, Vector3i max) {
-        super(volume, min, max);
+    public ImmutableBiomeViewTransform(ImmutableBiomeVolume volume, DiscreteTransform3 transform) {
+        super(volume, transform);
     }
 
     @Override
-    public BlockVolumeWorker<UnmodifiableBlockViewDownsize> getBlockWorker() {
-        return new SpongeBlockVolumeWorker<>(this);
+    public ImmutableBiomeVolume getBiomeView(Vector3i newMin, Vector3i newMax) {
+        return new ImmutableBiomeViewDownsize(this.volume, this.inverseTransform.transform(newMin),
+                this.inverseTransform.transform(newMax)).getBiomeView(this.transform);
     }
 
     @Override
-    public FluidState getFluid(int x, int y, int z) {
-        return null;
+    public ImmutableBiomeVolume getBiomeView(DiscreteTransform3 transform) {
+        return new ImmutableBiomeViewTransform(this.volume, this.transform.withTransformation(transform));
     }
 
     @Override
-    public ImmutableBlockVolume asImmutableBlockVolume() {
-        return null;
+    public BiomeVolumeWorker<? extends ImmutableBiomeVolume> getBiomeWorker() {
+        return new SpongeBiomeVolumeWorker<>(this);
     }
 
-    @Override
-    public boolean isAreaAvailable(int x, int y, int z) {
-        return false;
-    }
-
-    @Override
-    public Volume getView(Vector3i newMin, Vector3i newMax) {
-        return null;
-    }
 }

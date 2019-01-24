@@ -22,17 +22,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent;
+package org.spongepowered.common.world.volume;
 
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.world.biome.BiomeType;
-import org.spongepowered.api.world.extent.Volume;
 import org.spongepowered.api.world.biome.ImmutableBiomeVolume;
 import org.spongepowered.api.world.biome.MutableBiomeVolume;
 import org.spongepowered.api.world.biome.UnmodifiableBiomeVolume;
 import org.spongepowered.api.world.biome.worker.MutableBiomeVolumeWorker;
 import org.spongepowered.common.util.gen.ByteArrayImmutableBiomeBuffer;
-import org.spongepowered.common.world.extent.worker.SpongeMutableBiomeVolumeWorker;
+import org.spongepowered.common.world.volume.worker.SpongeMutableBiomeVolumeWorker;
 
 public class MutableBiomeViewDownsize extends AbstractBiomeViewDownsize<MutableBiomeViewDownsize, MutableBiomeVolume<?>> implements MutableBiomeVolume<MutableBiomeViewDownsize> {
 
@@ -62,33 +61,7 @@ public class MutableBiomeViewDownsize extends AbstractBiomeViewDownsize<MutableB
     }
 
     @Override
-    public Vector3i getBlockMin() {
-        return this.min;
-    }
-
-    @Override
-    public Vector3i getBlockMax() {
-        return this.max;
-    }
-
-    @Override
-    public Vector3i getBlockSize() {
-        return this.size;
-    }
-
-    @Override
-    public boolean containsBlock(int x, int y, int z) {
-        checkRange(x, y, z);
-        return this.volume.containsBlock(x, y, z);
-    }
-
-    @Override
-    public boolean isAreaAvailable(int x, int y, int z) {
-        return this.volume.containsBlock(x, y, z);
-    }
-
-    @Override
-    public Volume getView(Vector3i newMin, Vector3i newMax) {
+    public MutableBiomeViewDownsize getView(Vector3i newMin, Vector3i newMax) {
         checkRange(newMin.getX(), newMin.getY(), newMin.getZ());
         checkRange(newMax.getX(), newMax.getY(), newMax.getZ());
         return new MutableBiomeViewDownsize(this.volume, newMin, newMax);

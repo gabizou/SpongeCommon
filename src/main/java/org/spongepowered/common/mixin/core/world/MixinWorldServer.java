@@ -130,7 +130,7 @@ import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.teleport.PortalAgent;
 import org.spongepowered.api.world.teleport.PortalAgentType;
 import org.spongepowered.api.world.teleport.PortalAgentTypes;
-import org.spongepowered.api.world.gen.BiomeGenerator;
+import org.spongepowered.api.world.gen.biome.BiomeGenerator;
 import org.spongepowered.api.world.gen.WorldGenerator;
 import org.spongepowered.api.world.gen.WorldGeneratorModifier;
 import org.spongepowered.api.world.storage.WorldProperties;

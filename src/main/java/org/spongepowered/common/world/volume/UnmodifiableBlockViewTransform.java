@@ -22,13 +22,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent;
+package org.spongepowered.common.world.volume;
 
-public final class SpongeExtentBufferFactory {
+import org.spongepowered.api.util.DiscreteTransform3;
+import org.spongepowered.api.world.volume.block.worker.BlockVolumeWorker;
+import org.spongepowered.common.world.volume.worker.SpongeBlockVolumeWorker;
 
-    public static final SpongeExtentBufferFactory INSTANCE = new SpongeExtentBufferFactory();
+public class UnmodifiableBlockViewTransform extends AbstractBlockViewTransform<UnmodifiableBlockVolume> implements UnmodifiableBlockVolume {
 
-    private SpongeExtentBufferFactory() {
+    public UnmodifiableBlockViewTransform(UnmodifiableBlockVolume volume, DiscreteTransform3 transform) {
+        super(volume, transform);
+    }
+
+    @Override
+    public BlockVolumeWorker<? extends UnmodifiableBlockVolume> getBlockWorker() {
+        return new SpongeBlockVolumeWorker<>(this);
     }
 
 }

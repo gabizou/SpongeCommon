@@ -22,56 +22,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.util.gen;
+package org.spongepowered.common.world.volume;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.flowpowered.math.vector.Vector3i;
-import com.google.common.base.MoreObjects;
 import org.spongepowered.api.util.PositionOutOfBoundsException;
 import org.spongepowered.api.world.biome.BiomeType;
 import org.spongepowered.api.world.biome.ReadableBiomeVolume;
+import org.spongepowered.api.world.biome.WorkableBiomeVolume;
 import org.spongepowered.common.util.VecHelper;
 
-/**
- * Base class for biome areas. This class provides methods for retrieving the
- * size and for range checking.
- */
-public abstract class AbstractBiomeBuffer implements ReadableBiomeVolume {
+public abstract class AbstractBiomeViewDownsize<V extends WorkableBiomeVolume<V>, M extends ReadableBiomeVolume> implements WorkableBiomeVolume<V> {
 
-    protected Vector3i start;
-    protected Vector3i size;
-    protected Vector3i end;
-    private final int xLine;
+    protected final M volume;
+    protected final Vector3i min;
+    protected final Vector3i max;
+    protected final Vector3i size;
 
-    protected AbstractBiomeBuffer(Vector3i start, Vector3i size) {
-        checkArgument(size.getY() == 1, "Size y coordinate should be 1");
-
-        this.start = start;
-        this.size = size;
-        this.end = this.start.add(this.size).sub(Vector3i.ONE);
-
-        this.xLine = size.getX();
-    }
-
-    protected final void checkRange(int x, int y, int z) {
-        if (!VecHelper.inBounds(x, y, z, this.start, this.end)) {
-            throw new PositionOutOfBoundsException(new Vector3i(x, y, z), this.start, this.end);
-        }
-    }
-
-    protected int getIndex(int x, int z) {
-        return (z - this.start.getZ()) * this.xLine + (x - this.start.getX());
+    public AbstractBiomeViewDownsize(M volume, Vector3i min, Vector3i max) {
+        checkArgument(min.getY() == 0, "Min y coordinate should be 0");
+        checkArgument(max.getY() == 0, "Max y coordinate should be 0");
+        this.volume = volume;
+        this.min = min;
+        this.max = max;
+        this.size = max.sub(min).add(Vector3i.ONE);
     }
 
     @Override
     public Vector3i getBiomeMin() {
-        return this.start;
+        return this.min;
     }
 
     @Override
     public Vector3i getBiomeMax() {
-        return this.end;
+        return this.max;
     }
 
     @Override
@@ -80,26 +65,13 @@ public abstract class AbstractBiomeBuffer implements ReadableBiomeVolume {
     }
 
     @Override
-    public boolean containsBiome(int x, int y, int z) {
-        return VecHelper.inBounds(x, y, z, this.start, this.end);
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-            .add("min", this.getBiomeMin())
-            .add("max", this.getBiomeMax())
-            .toString();
-    }
-
-    @Override
     public Vector3i getBlockMin() {
-        return this.start;
+        return this.min;
     }
 
     @Override
     public Vector3i getBlockMax() {
-        return this.end;
+        return this.max;
     }
 
     @Override
@@ -109,11 +81,29 @@ public abstract class AbstractBiomeBuffer implements ReadableBiomeVolume {
 
     @Override
     public boolean containsBlock(int x, int y, int z) {
-        return VecHelper.inBounds(x, y, z, this.start, this.end);
+        return VecHelper.inBounds(x, y, z, this.min, this.max);
+    }
+
+    @Override
+    public boolean containsBiome(int x, int y, int z) {
+        return VecHelper.inBounds(x, y, z, this.min, this.max);
+    }
+
+    protected final void checkRange(int x, int y, int z) {
+        if (!VecHelper.inBounds(x, y, z, this.min, this.max)) {
+            throw new PositionOutOfBoundsException(new Vector3i(x, y, z), this.min, this.max);
+        }
     }
 
     @Override
     public boolean isAreaAvailable(int x, int y, int z) {
-        return containsBiome(x, y, z);
+        return VecHelper.inBounds(x, y, z, this.min, this.max);
     }
+
+    @Override
+    public BiomeType getBiome(int x, int y, int z) {
+        checkRange(x, y, z);
+        return this.volume.getBiome(x, y, z);
+    }
+
 }

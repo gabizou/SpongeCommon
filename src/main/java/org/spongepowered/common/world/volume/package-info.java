@@ -22,33 +22,5 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent;
-
-import com.flowpowered.math.vector.Vector3i;
-import org.spongepowered.api.util.DiscreteTransform3;
-import org.spongepowered.common.world.extent.worker.SpongeBiomeVolumeWorker;
-
-public class ImmutableBiomeViewDownsize extends AbstractBiomeViewDownsize<ImmutableBiomeVolume> implements ImmutableBiomeVolume {
-
-    public ImmutableBiomeViewDownsize(ImmutableBiomeVolume volume, Vector3i min, Vector3i max) {
-        super(volume, min, max);
-    }
-
-    @Override
-    public ImmutableBiomeVolume getBiomeView(Vector3i newMin, Vector3i newMax) {
-        checkRange(newMin.getX(), newMin.getY(), newMin.getZ());
-        checkRange(newMax.getX(), newMax.getY(), newMax.getZ());
-        return new ImmutableBiomeViewDownsize(this.volume, newMin, newMax);
-    }
-
-    @Override
-    public ImmutableBiomeVolume getBiomeView(DiscreteTransform3 transform) {
-        return new ImmutableBiomeViewTransform(this, transform);
-    }
-
-    @Override
-    public BiomeVolumeWorker<? extends ImmutableBiomeVolume> getBiomeWorker() {
-        return new SpongeBiomeVolumeWorker<>(this);
-    }
-
-}
+@org.spongepowered.api.util.annotation.NonnullByDefault
+package org.spongepowered.common.world.volume;

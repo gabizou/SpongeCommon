@@ -22,63 +22,59 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent;
-
-import static com.google.common.base.Preconditions.checkArgument;
+package org.spongepowered.common.world.volume;
 
 import com.flowpowered.math.vector.Vector3i;
-import org.spongepowered.api.util.PositionOutOfBoundsException;
-import org.spongepowered.api.world.biome.BiomeType;
-import org.spongepowered.api.world.biome.ReadableBiomeVolume;
-import org.spongepowered.api.world.biome.WorkableBiomeVolume;
-import org.spongepowered.common.util.VecHelper;
+import org.spongepowered.api.block.BlockState;
+import org.spongepowered.api.util.DiscreteTransform3;
 
-public abstract class AbstractBiomeViewDownsize<V extends WorkableBiomeVolume<V>, M extends ReadableBiomeVolume> implements WorkableBiomeVolume<V> {
+public abstract class AbstractBlockViewTransform<V extends BlockVolume> implements BlockVolume {
 
-    protected final M volume;
+    protected final V volume;
+    protected final DiscreteTransform3 transform;
+    protected final DiscreteTransform3 inverseTransform;
     protected final Vector3i min;
     protected final Vector3i max;
     protected final Vector3i size;
 
-    public AbstractBiomeViewDownsize(M volume, Vector3i min, Vector3i max) {
-        checkArgument(min.getY() == 0, "Min y coordinate should be 0");
-        checkArgument(max.getY() == 0, "Max y coordinate should be 0");
+    public AbstractBlockViewTransform(V volume, DiscreteTransform3 transform) {
         this.volume = volume;
-        this.min = min;
-        this.max = max;
-        this.size = max.sub(min).add(Vector3i.ONE);
+        this.transform = transform;
+        this.inverseTransform = transform.invert();
+
+        final Vector3i a = transform.transform(volume.getBlockMin());
+        final Vector3i b = transform.transform(volume.getBlockMax());
+        this.min = a.min(b);
+        this.max = a.max(b);
+
+        this.size = this.max.sub(this.min).add(Vector3i.ONE);
     }
 
     @Override
-    public Vector3i getBiomeMin() {
+    public Vector3i getBlockMin() {
         return this.min;
     }
 
     @Override
-    public Vector3i getBiomeMax() {
+    public Vector3i getBlockMax() {
         return this.max;
     }
 
     @Override
-    public Vector3i getBiomeSize() {
+    public Vector3i getBlockSize() {
         return this.size;
     }
 
     @Override
-    public boolean containsBiome(int x, int y, int z) {
-        return VecHelper.inBounds(x, y, z, this.min, this.max);
-    }
-
-    protected final void checkRange(int x, int y, int z) {
-        if (!VecHelper.inBounds(x, y, z, this.min, this.max)) {
-            throw new PositionOutOfBoundsException(new Vector3i(x, y, z), this.min, this.max);
-        }
+    public boolean containsBlock(int x, int y, int z) {
+        return this.volume.containsBlock(this.inverseTransform.transformX(x, y, z), this.inverseTransform.transformY(x, y, z), this.inverseTransform
+            .transformZ(x, y, z));
     }
 
     @Override
-    public BiomeType getBiome(int x, int y, int z) {
-        checkRange(x, y, z);
-        return this.volume.getBiome(x, y, z);
+    public BlockState getBlock(int x, int y, int z) {
+        return this.volume.getBlock(this.inverseTransform.transformX(x, y, z), this.inverseTransform.transformY(x, y, z), this.inverseTransform
+            .transformZ(x, y, z));
     }
 
 }

@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent.worker;
+package org.spongepowered.common.world.volume.worker;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -30,14 +30,14 @@ import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.event.CauseStackManager;
-import org.spongepowered.api.world.extent.block.MutableBlockVolume;
-import org.spongepowered.api.world.extent.block.ReadableBlockVolume;
-import org.spongepowered.api.world.extent.block.UnmodifiableBlockVolume;
-import org.spongepowered.api.world.extent.block.WorkableBlockVolume;
-import org.spongepowered.api.world.extent.block.worker.BlockVolumeWorker;
-import org.spongepowered.api.world.extent.worker.function.VolumeMapper;
-import org.spongepowered.api.world.extent.worker.function.VolumeMerger;
-import org.spongepowered.api.world.extent.worker.function.VolumeVisitor;
+import org.spongepowered.api.world.volume.block.MutableBlockVolume;
+import org.spongepowered.api.world.volume.block.ReadableBlockVolume;
+import org.spongepowered.api.world.volume.block.UnmodifiableBlockVolume;
+import org.spongepowered.api.world.volume.block.WorkableBlockVolume;
+import org.spongepowered.api.world.volume.block.worker.BlockVolumeWorker;
+import org.spongepowered.api.world.volume.worker.function.VolumeMapper;
+import org.spongepowered.api.world.volume.worker.function.VolumeMerger;
+import org.spongepowered.api.world.volume.worker.function.VolumeVisitor;
 import org.spongepowered.common.event.tracking.phase.plugin.BasicPluginContext;
 import org.spongepowered.common.event.tracking.phase.plugin.PluginPhase;
 

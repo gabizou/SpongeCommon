@@ -31,14 +31,14 @@ import com.flowpowered.math.vector.Vector3i;
 import net.minecraft.world.biome.Biome;
 import org.spongepowered.api.world.biome.BiomeType;
 import org.spongepowered.api.world.biome.BiomeTypes;
-import org.spongepowered.api.world.extent.StorageType;
-import org.spongepowered.api.world.extent.Volume;
+import org.spongepowered.api.world.volume.StorageType;
+import org.spongepowered.api.world.volume.Volume;
 import org.spongepowered.api.world.biome.MutableBiomeVolume;
 import org.spongepowered.api.world.biome.UnmodifiableBiomeVolume;
 import org.spongepowered.api.world.biome.worker.MutableBiomeVolumeWorker;
-import org.spongepowered.common.world.extent.MutableBiomeViewDownsize;
-import org.spongepowered.common.world.extent.UnmodifiableBiomeVolumeWrapper;
-import org.spongepowered.common.world.extent.worker.SpongeMutableBiomeVolumeWorker;
+import org.spongepowered.common.world.volume.MutableBiomeViewDownsize;
+import org.spongepowered.common.world.volume.UnmodifiableBiomeVolumeWrapper;
+import org.spongepowered.common.world.volume.worker.SpongeMutableBiomeVolumeWorker;
 
 import java.util.Arrays;
 

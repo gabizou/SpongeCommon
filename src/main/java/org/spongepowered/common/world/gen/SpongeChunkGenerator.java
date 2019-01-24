@@ -65,7 +65,14 @@ import org.spongepowered.api.event.world.chunk.PopulateChunkEvent;
 import org.spongepowered.api.world.biome.BiomeGenerationSettings;
 import org.spongepowered.api.world.biome.BiomeType;
 import org.spongepowered.api.world.biome.GroundCoverLayer;
-import org.spongepowered.api.world.gen.BiomeGenerator;
+import org.spongepowered.api.world.biome.ImmutableBiomeVolume;
+import org.spongepowered.api.world.chunk.ProtoChunk;
+import org.spongepowered.api.world.gen.Carver;
+import org.spongepowered.api.world.gen.CarvingLayers;
+import org.spongepowered.api.world.gen.GenerationConfig;
+import org.spongepowered.api.world.gen.GenerationRegion;
+import org.spongepowered.api.world.gen.SurfacePainter;
+import org.spongepowered.api.world.gen.biome.BiomeGenerator;
 import org.spongepowered.api.world.gen.GenerationPopulator;
 import org.spongepowered.api.world.gen.Populator;
 import org.spongepowered.api.world.gen.PopulatorType;
@@ -85,12 +92,14 @@ import org.spongepowered.common.util.gen.ChunkPrimerBuffer;
 import org.spongepowered.common.util.gen.ObjectArrayMutableBiomeBuffer;
 import org.spongepowered.common.world.WorldUtil;
 import org.spongepowered.common.world.biome.SpongeBiomeGenerationSettings;
-import org.spongepowered.common.world.extent.SoftBufferExtentViewDownsize;
+import org.spongepowered.common.world.volume.SoftBufferExtentViewDownsize;
 import org.spongepowered.common.world.gen.populators.SnowPopulator;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -103,22 +112,80 @@ import javax.annotation.Nullable;
  */
 public class SpongeChunkGenerator implements WorldGenerator, IChunkGenerator {
 
+    /*
+    A note about this class and it's 100% error ridden sections:
+    This is an implementation intended for 1.13 and 1.13's new world generation
+    pipeline. It is not at all compatible with 1.12's world generation base.
+
+    There are some concepts that are being exposed potentially to the API,
+    whether it's through the GenerationConfig, or SurfacePainter etc.
+
+    1.13's world generation pipeline is as follows:
+    1) Create ChunkPrimer (IChunk || ProtoChunk, haven't figured out a name for it in API)
+    2) call IChunkGenerator#makeBase
+      - Makes biome array/ biome buffer
+      - Creates ChunkPrimerBuffer for api structures
+      - Fills biomes onto target chunk
+      - Base GenerationPopulator makes base terrain
+      - chunk heightmap re-calculated
+      - biomes build surface
+      - make bedrock
+      - re-calculate heightmap
+      - set BASE status
+    3) Call IChunkGenerator#carve
+      - Create a WorldGenRegion so leaking out of the chunk is possible if and only if the task
+      allows it
+      - Gets ISurfaceCarver from biome at the position
+      - Sponge will use
+      - Return the "middle" chunk region, which would be the middle of the generation range.
+      If the range is for example, 1, there would be 9 chunks available in the primer array:
+      x x x
+      x c x
+      x x x
+      And the middle "c" would be the returned chunk, while the other chunks may be already either
+      in the process of generation, or are simply being allowed to bleed into them due to
+      carving processes. I don't believe the outer chunks have  been fully processed in that
+      kind, but I can't be too sure.
+    4) Call IChunkGenerator#decorate
+      - Pretty easy, just same stuff as previously, except it uses GenerationStages to determine
+      what stage to process
+      - Iterates over biome's populators, we can expose this as either currently generating
+      populators for biomes, or expose them as keyed to a DecorationStage
+      - Structures are part of this as a decoration stage.
+    5) Call light engines to re-light chunk
+      - Pretty basic, we don't need to really expose this if at all.
+    6) Call IChunkGenerator#spawnMobs
+      - Creates again, another world gen region for mob spawning
+      - controls leaking entities outside of the region.
+      - Again, uses biomes to figure out what mobs to spawn, can re-use animal populator
+    7) Finalized Chunk
+      - re-creates height map specifically for all other heightmap types
+    8) Chunk is ready to be converted from a ChunkPrimer to a Chunk.
+
+    Create
+     */
     private static final Vector3i CHUNK_AREA = new Vector3i(16, 1, 16);
 
+    // First used object in the world gen pipeline, generates our biome volume for us to use
+    // to determine what biomes are where.
     protected BiomeGenerator biomeGenerator;
+    // Standard root terrain builder with it's own surface blocks and fluid filling blocks
     protected GenerationPopulator baseGenerator;
-    protected List<GenerationPopulator> genpop;
+    protected List<GenerationPopulator> genpop; // mixture of structures and carvers.
     protected List<Populator> pop;
     protected Map<BiomeType, BiomeGenerationSettings> biomeSettings;
     protected final World world;
     protected final ObjectArrayMutableBiomeBuffer cachedBiomes;
 
-    protected Random rand;
+    protected SharedSeedRandom rand;
     private NoiseGeneratorPerlin noise4;
     private double[] stoneNoise;
 
     protected Map<CatalogKey, Timing> populatorTimings = Maps.newHashMap();
     protected Timing chunkGeneratorTiming;
+    private SurfacePainter surfacePainter;
+    private GenerationConfig config;
+    private GenerationPopulator bedrockGenerator;
 
     public SpongeChunkGenerator(World world, GenerationPopulator base, BiomeGenerator biomegen) {
         this.world = checkNotNull(world, "world");
@@ -233,16 +300,104 @@ public class SpongeChunkGenerator implements WorldGenerator, IChunkGenerator {
         return this.pop.stream().filter((p) -> type.isAssignableFrom(p.getClass())).collect(Collectors.toList());
     }
 
+    /*
+    Make Base
+     */
+    public void makeBase(IChunk chunkIn) {
+        ChunkPos chunkpos = chunkIn.getPos();
+        int chunkX = chunkpos.x;
+        int chunkZ = chunkpos.z;
+        this.rand = new SharedSeedRandom();
+        this.rand.setSeed(chunkX, chunkZ);
+        // Set the mutable biome array to a new center and recycle the biome array
+        this.cachedBiomes.reuse(new Vector3i(chunkX * 16, 0, chunkZ * 16));
+        // Set up the biomes to be used
+        this.biomeGenerator.generateBiomes(this.cachedBiomes);
+        // Allow the biome worker to fill in the biome array as needed, this doesn't translate to
+        // setting the biome array, because we don't intend to
+        final ImmutableBiomeVolume biomeBuffer = this.cachedBiomes.asImmutableBiomeVolume();
+        // Create the buffer now that we have the necessary information, like biomes
+        ProtoChunk<?> blockBuffer = new ChunkPrimerBuffer(this.world, chunkIn, chunkX, chunkZ);
+        // chunkIn.setBiomes(aBiome); replaced with biome worker and filling, will do fast iteration
+        blockBuffer.getBiomeWorker().fill(biomeBuffer::getBiome);
+        // this.setBlocksInChunk(chunkX, chunkZ, chunkIn); // Instead, we call the base generator
+        // to make the surface.
+        this.baseGenerator.populate((org.spongepowered.api.world.World) this.world, blockBuffer, biomeBuffer);
+        // Since we just made the "base" terrain, usually just stone and "ocean" blocks,
+        // we need to now re-generate the heightmaps
+        // There is no replacing this with our api constructs just yet, since it's re-calculated at every step
+        chunk.createHeightMap(HeightMap.Type.WORLD_SURFACE_WG, HeightMap.Type.OCEAN_FLOOR_WG);
+
+        // Then the surface building, things like placing ice, placing surface layer, middle layer and bottom layer
+        // so, like grass -> dirt -> stone
+        // this.buildSurface(chunkIn, aBiome, sharedseedrandom, this.world.getSeaLevel());
+        // We can reuse the biome buffer to iterate over biomes
+        biomeBuffer.getBiomeWorker().iterate(((volume, x, y, z) -> {
+            this.surfacePainter.paintSurface(this.rand, blockBuffer, volume.getBiome(x, y, z), this.config);
+        }));
+
+        // Then go ahead and make the bedrock layer
+        // this.makeBedrock(chunkIn, sharedseedrandom); // We use another populator, with it's own config
+        // though we could just make it a configuration option on the generation config
+        // and then leave it at that.
+        if (this.bedrockGenerator != null) {
+            this.bedrockGenerator.populate((org.spongepowered.api.world.World) this.world, blockBuffer, biomeBuffer);
+        }
+
+        // Then re-calculate the height map
+        chunkIn.createHeightMap(Heightmap.Type.WORLD_SURFACE_WG, Heightmap.Type.OCEAN_FLOOR_WG);
+
+        // And we're done...
+        chunkIn.setStatus(ChunkStatus.BASE);
+    }
+
+    public void carve(WorldGenRegion region, GenerationStage.Carving carvingStage) {
+        // Set the random
+        SharedSeedRandom sharedseedrandom = new SharedSeedRandom(this.seed);
+        // blah blah blah, look at AbstractChunkGenerator#carve.
+        // Instead, we'll use our world gen region and pass it to the carver.
+        // The carver will perform the logical maths to call the children carvers
+        // based on the biome and region
+        GenerationRegion worldRegion = null; // too
+        // set up the original chunk as a block buffer
+        // and set up the region as a mutable block buffer (it is anyways)
+
+        // So, vanilla goes in order of 8 chunks around due to the carver chunk task
+        // having a radius of 1
+        // actually bother to verify if the world gen region is available in those coordinates.
+        // So, instead, let's just let the carvers have at it.
+        // Get unique biomes to determine what generator populators to run
+        int chunkX = region.getMainChunkX();
+        int chunkZ = region.getMainChunkZ();
+        BitSet bitset = region.getChunk(chunkX, chunkZ).getCarvingMask(carvingStage);
+
+        for (int xOffset = chunkX - 8; xOffset <= chunkX + 8; ++xOffset) {
+            for (int zOffset = chunkZ - 8; zOffset <= chunkZ + 8; ++zOffset) {
+                final BiomeType biomeAtPos = worldRegion.getBiome(xOffset * 16, 0, zOffset * 16);
+                final List<Carver<?>> carvers = this.getBiomeSettings(biomeAtPos).getCarvers(CarvingLayers.AIR);
+
+                for (Carver<?> carver : carvers) {
+                    int index = 0;
+                    // We need to still set the seed howver vanilla does it.
+                    sharedseedrandom.func_202425_c(worldRegion.getSeed() + idex++, chunkX, chunkZ);
+                    // Should use the sharedseedrandom
+                    carver.carve(worldRegion, worldRegion, worldRegion.getRandom(), worldRegion.getCenterChunkPos(), carver.getConfig());
+                }
+            }
+        }
+    }
+
+
     @Override
     public Chunk generateChunk(int chunkX, int chunkZ) {
         this.rand.setSeed(chunkX * 341873128712L + chunkZ * 132897987541L);
         this.cachedBiomes.reuse(new Vector3i(chunkX * 16, 0, chunkZ * 16));
         this.biomeGenerator.generateBiomes(this.cachedBiomes);
-        ImmutableBiomeVolume biomeBuffer = this.cachedBiomes.getImmutableBiomeCopy();
+        ImmutableBiomeVolume biomeBuffer = this.cachedBiomes.asImmutableBiomeVolume();
 
         // Generate base terrain
         ChunkPrimer chunkprimer = new ChunkPrimer();
-        MutableBlockVolume blockBuffer = new ChunkPrimerBuffer(chunkprimer, chunkX, chunkZ);
+        ProtoChunk<?> blockBuffer = new ChunkPrimerBuffer(this.world, chunkprimer, chunkX, chunkZ);
         this.baseGenerator.populate((org.spongepowered.api.world.World) this.world, blockBuffer, biomeBuffer);
 
         if (!(this.baseGenerator instanceof SpongeGenerationPopulator)) {

@@ -32,7 +32,7 @@ import com.google.common.collect.Maps;
 import net.minecraft.world.World;
 import org.spongepowered.api.world.biome.BiomeGenerationSettings;
 import org.spongepowered.api.world.biome.BiomeType;
-import org.spongepowered.api.world.gen.BiomeGenerator;
+import org.spongepowered.api.world.gen.biome.BiomeGenerator;
 import org.spongepowered.api.world.gen.GenerationPopulator;
 import org.spongepowered.api.world.gen.Populator;
 import org.spongepowered.api.world.gen.WorldGenerator;

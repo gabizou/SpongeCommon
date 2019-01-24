@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent;
+package org.spongepowered.common.world.volume;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -67,7 +67,7 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-public class ExtentViewDownsize implements DefaultedExtent {
+public class SoftBufferExtentViewDownsize implements DefaultedExtent {
 
     private final Extent extent;
     private final Vector3i blockMin;
@@ -76,8 +76,12 @@ public class ExtentViewDownsize implements DefaultedExtent {
     private final Vector3i biomeMin;
     private final Vector3i biomeMax;
     private final Vector3i biomeSize;
+    private final Vector3i hardBlockMin;
+    private final Vector3i hardBlockMax;
+    private final Vector3i hardBiomeMin;
+    private final Vector3i hardBiomeMax;
 
-    public ExtentViewDownsize(Extent extent, Vector3i blockMin, Vector3i blockMax) {
+    public SoftBufferExtentViewDownsize(Extent extent, Vector3i blockMin, Vector3i blockMax, Vector3i hardMin, Vector3i hardMax) {
         this.extent = extent;
         this.blockMin = blockMin;
         this.blockMax = blockMax;
@@ -85,6 +89,10 @@ public class ExtentViewDownsize implements DefaultedExtent {
         this.biomeMin = new Vector3i(blockMin.getX(), 0, blockMin.getZ());
         this.biomeMax = new Vector3i(blockMax.getX(), 0, blockMax.getZ());
         this.biomeSize = this.biomeMax.sub(this.biomeMin).add(Vector3i.ONE);
+        this.hardBlockMin = hardMin;
+        this.hardBlockMax = hardMax;
+        this.hardBiomeMin = new Vector3i(hardMin.getX(), 0, hardMin.getZ());
+        this.hardBiomeMax = new Vector3i(hardMax.getX(), 0, hardMax.getZ());
     }
 
     @Override
@@ -118,8 +126,8 @@ public class ExtentViewDownsize implements DefaultedExtent {
     }
 
     private void checkBiomeRange(int x, int y, int z) {
-        if (!VecHelper.inBounds(x, y, z, this.biomeMin, this.biomeMax)) {
-            throw new PositionOutOfBoundsException(new Vector3i(x, y, z), this.biomeMin, this.biomeMax);
+        if (!VecHelper.inBounds(x, y, z, this.hardBiomeMin, this.hardBiomeMax)) {
+            throw new PositionOutOfBoundsException(new Vector3i(x, y, z), this.hardBiomeMin, this.hardBiomeMax);
         }
     }
 
@@ -156,14 +164,14 @@ public class ExtentViewDownsize implements DefaultedExtent {
     }
 
     private void checkBlockRange(double x, double y, double z) {
-        if (!VecHelper.inBounds(x, y, z, this.blockMin, this.blockMax)) {
-            throw new PositionOutOfBoundsException(new Vector3d(x, y, z), this.blockMin.toDouble(), this.blockMax.toDouble());
+        if (!VecHelper.inBounds(x, y, z, this.hardBlockMin, this.hardBlockMax)) {
+            throw new PositionOutOfBoundsException(new Vector3d(x, y, z), this.hardBlockMin.toDouble(), this.hardBlockMax.toDouble());
         }
     }
 
     private void checkBlockRange(int x, int y, int z) {
-        if (!VecHelper.inBounds(x, y, z, this.blockMin, this.blockMax)) {
-            throw new PositionOutOfBoundsException(new Vector3i(x, y, z), this.blockMin, this.blockMax);
+        if (!VecHelper.inBounds(x, y, z, this.hardBlockMin, this.hardBlockMax)) {
+            throw new PositionOutOfBoundsException(new Vector3i(x, y, z), this.hardBlockMin, this.hardBlockMax);
         }
     }
 
@@ -373,10 +381,10 @@ public class ExtentViewDownsize implements DefaultedExtent {
     @Override
     public Collection<TileEntity> getTileEntities() {
         final Collection<TileEntity> tileEntities = this.extent.getTileEntities();
-        final Vector3i max = this.blockMax.add(Vector3i.ONE);
         for (Iterator<TileEntity> iterator = tileEntities.iterator(); iterator.hasNext(); ) {
             final TileEntity tileEntity = iterator.next();
-            if (!VecHelper.inBounds(tileEntity.getLocation().getPosition(), this.blockMin, max)) {
+            final Location<World> block = tileEntity.getLocation();
+            if (!VecHelper.inBounds(block.getX(), block.getY(), block.getZ(), this.blockMin, this.blockMax)) {
                 iterator.remove();
             }
         }
@@ -403,17 +411,42 @@ public class ExtentViewDownsize implements DefaultedExtent {
     }
 
     @Override
+    public Set<Entity> getIntersectingEntities(AABB box, Predicate<Entity> filter) {
+        checkBlockRange(box.getMin().getX(), box.getMin().getY(), box.getMin().getZ());
+        checkBlockRange(box.getMax().getX(), box.getMax().getY(), box.getMax().getZ());
+        return this.extent.getIntersectingEntities(box, filter);
+    }
+
+    @Override
+    public Set<EntityHit> getIntersectingEntities(Vector3d start, Vector3d end, Predicate<EntityHit> filter) {
+        // Order matters! Bounds filter before the argument filter so it doesn't see out of bounds entities
+        final Vector3i max = this.blockMax.add(Vector3i.ONE);
+        return this.extent.getIntersectingEntities(start, end,
+                Functional.predicateAnd(hit -> VecHelper.inBounds(hit.getEntity().getLocation().getPosition(), this.blockMin, max), filter));
+    }
+
+    @Override
+    public Set<EntityHit> getIntersectingEntities(Vector3d start, Vector3d direction, double distance,
+            Predicate<EntityHit> filter) {
+        // Order matters! Bounds filter before the argument filter so it doesn't see out of bounds entities
+        final Vector3i max = this.blockMax.add(Vector3i.ONE);
+        return this.extent.getIntersectingEntities(start, direction, distance,
+                Functional.predicateAnd(hit -> VecHelper.inBounds(hit.getEntity().getLocation().getPosition(), this.blockMin, max), filter));
+    }
+
+    @Override
     public Optional<Entity> getEntity(UUID uuid) {
-        return this.extent.getEntity(uuid);
+        // TODO 1.9 gabizou this is for you
+        return null;
     }
 
     @Override
     public Collection<Entity> getEntities() {
         final Collection<Entity> entities = this.extent.getEntities();
-        final Vector3i max = this.blockMax.add(Vector3i.ONE);
         for (Iterator<Entity> iterator = entities.iterator(); iterator.hasNext(); ) {
             final Entity tileEntity = iterator.next();
-            if (!VecHelper.inBounds(tileEntity.getLocation().getPosition(), this.blockMin, max)) {
+            final Location<World> block = tileEntity.getLocation();
+            if (!VecHelper.inBounds(block.getX(), block.getY(), block.getZ(), this.blockMin, this.blockMax)) {
                 iterator.remove();
             }
         }
@@ -423,9 +456,10 @@ public class ExtentViewDownsize implements DefaultedExtent {
     @Override
     public Collection<Entity> getEntities(Predicate<Entity> filter) {
         // Order matters! Bounds filter before the argument filter so it doesn't see out of bounds entities
-        final Vector3i max = this.blockMax.add(Vector3i.ONE);
-        return this.extent.getEntities(Functional.predicateAnd(input ->
-            VecHelper.inBounds(input.getLocation().getPosition(), this.blockMin, max), filter));
+        return this.extent.getEntities(Functional.predicateAnd(input -> {
+            final Location<World> block = input.getLocation();
+            return VecHelper.inBounds(block.getX(), block.getY(), block.getZ(), this.blockMin, this.blockMax);
+        }, filter));
     }
 
     @Override
@@ -459,33 +493,36 @@ public class ExtentViewDownsize implements DefaultedExtent {
         return this.extent.restoreSnapshot(snapshot, position);
     }
 
-    @Override
-    public Extent getExtentView(Vector3i newMin, Vector3i newMax) {
-        checkBlockRange(newMin.getX(), newMin.getY(), newMin.getZ());
-        checkBlockRange(newMax.getX(), newMax.getY(), newMax.getZ());
-        return new ExtentViewDownsize(this.extent, newMin, newMax);
+    private void checkSoftRange(int x, int y, int z) {
+        if (!VecHelper.inBounds(x, y, z, this.blockMin, this.blockMax)) {
+            throw new PositionOutOfBoundsException(new Vector3i(x, y, z), this.blockMin, this.blockMax);
+        }
     }
 
     @Override
-    public Optional<UUID> getCreator(int x, int y, int z) {
+    public Extent getExtentView(Vector3i newMin, Vector3i newMax) {
+        checkSoftRange(newMin.getX(), newMin.getY(), newMin.getZ());
+        checkSoftRange(newMax.getX(), newMax.getY(), newMax.getZ());
+        return new SoftBufferExtentViewDownsize(this.extent, newMin, newMax, newMin.add(this.hardBlockMin.sub(this.blockMin)),
+                newMax.add(this.hardBlockMax.sub(this.blockMax)));
+    }
+
+    @Override public Optional<UUID> getCreator(int x, int y, int z) {
         checkBlockRange(x, y, z);
         return this.extent.getCreator(x, y, z);
     }
 
-    @Override
-    public Optional<UUID> getNotifier(int x, int y, int z) {
+    @Override public Optional<UUID> getNotifier(int x, int y, int z) {
         checkBlockRange(x, y, z);
         return this.extent.getNotifier(x, y, z);
     }
 
-    @Override
-    public void setCreator(int x, int y, int z, @Nullable UUID uuid) {
+    @Override public void setCreator(int x, int y, int z, @Nullable UUID uuid) {
         checkBlockRange(x, y, z);
         this.extent.setCreator(x, y, z, uuid);
     }
 
-    @Override
-    public void setNotifier(int x, int y, int z, @Nullable UUID uuid) {
+    @Override public void setNotifier(int x, int y, int z, @Nullable UUID uuid) {
         checkBlockRange(x, y, z);
         this.extent.setNotifier(x, y, z, uuid);
     }
@@ -494,13 +531,6 @@ public class ExtentViewDownsize implements DefaultedExtent {
     public Optional<AABB> getBlockSelectionBox(int x, int y, int z) {
         checkBlockRange(x, y, z);
         return this.extent.getBlockSelectionBox(x, y, z);
-    }
-
-    @Override
-    public Set<Entity> getIntersectingEntities(AABB box, Predicate<Entity> filter) {
-        checkBlockRange(box.getMin().getX(), box.getMin().getY(), box.getMin().getZ());
-        checkBlockRange(box.getMax().getX(), box.getMax().getY(), box.getMax().getZ());
-        return this.extent.getIntersectingEntities(box, filter);
     }
 
     @Override
@@ -515,22 +545,6 @@ public class ExtentViewDownsize implements DefaultedExtent {
         checkBlockRange(box.getMin().getX(), box.getMin().getY(), box.getMin().getZ());
         checkBlockRange(box.getMax().getX(), box.getMax().getY(), box.getMax().getZ());
         return this.extent.getIntersectingCollisionBoxes(owner, box);
-    }
-
-    @Override
-    public Set<EntityHit> getIntersectingEntities(Vector3d start, Vector3d direction, double distance, Predicate<EntityHit> filter) {
-        // Order matters! Bounds filter before the argument filter so it doesn't see out of bounds entities
-        final Vector3i max = this.blockMax.add(Vector3i.ONE);
-        return this.extent.getIntersectingEntities(start, direction, distance,
-            Functional.predicateAnd(hit -> VecHelper.inBounds(hit.getEntity().getLocation().getPosition(), this.blockMin, max), filter));
-    }
-
-    @Override
-    public Set<EntityHit> getIntersectingEntities(Vector3d start, Vector3d end, Predicate<EntityHit> filter) {
-        // Order matters! Bounds filter before the argument filter so it doesn't see out of bounds entities
-        final Vector3i max = this.blockMax.add(Vector3i.ONE);
-        return this.extent.getIntersectingEntities(start, end,
-                Functional.predicateAnd(hit -> VecHelper.inBounds(hit.getEntity().getLocation().getPosition(), this.blockMin, max), filter));
     }
 
     @Override

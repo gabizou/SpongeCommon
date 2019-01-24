@@ -22,58 +22,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent;
+package org.spongepowered.common.world.volume;
 
 import com.flowpowered.math.vector.Vector3i;
-import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.util.PositionOutOfBoundsException;
-import org.spongepowered.api.world.extent.block.ReadableBlockVolume;
-import org.spongepowered.common.util.VecHelper;
+import org.spongepowered.api.fluid.FluidState;
+import org.spongepowered.api.world.volume.Volume;
+import org.spongepowered.api.world.volume.block.ImmutableBlockVolume;
+import org.spongepowered.api.world.volume.block.UnmodifiableBlockVolume;
+import org.spongepowered.api.world.volume.block.worker.BlockVolumeWorker;
+import org.spongepowered.common.world.volume.worker.SpongeBlockVolumeWorker;
 
-public abstract class AbstractBlockViewDownsize<V extends ReadableBlockVolume> implements ReadableBlockVolume {
+public class UnmodifiableBlockViewDownsize extends AbstractBlockViewDownsize<BlockVolume> implements UnmodifiableBlockVolume<UnmodifiableBlockViewDownsize> {
 
-    protected final V volume;
-    protected final Vector3i min;
-    protected final Vector3i max;
-    protected final Vector3i size;
-
-    public AbstractBlockViewDownsize(V volume, Vector3i min, Vector3i max) {
-        this.volume = volume;
-        this.min = min;
-        this.max = max;
-        this.size = max.sub(min).add(Vector3i.ONE);
+    public UnmodifiableBlockViewDownsize(BlockVolume volume, Vector3i min, Vector3i max) {
+        super(volume, min, max);
     }
 
     @Override
-    public Vector3i getBlockMin() {
-        return this.min;
+    public BlockVolumeWorker<UnmodifiableBlockViewDownsize> getBlockWorker() {
+        return new SpongeBlockVolumeWorker<>(this);
     }
 
     @Override
-    public Vector3i getBlockMax() {
-        return this.max;
+    public FluidState getFluid(int x, int y, int z) {
+        return null;
     }
 
     @Override
-    public Vector3i getBlockSize() {
-        return this.size;
+    public ImmutableBlockVolume asImmutableBlockVolume() {
+        return null;
     }
 
     @Override
-    public boolean containsBlock(int x, int y, int z) {
-        return VecHelper.inBounds(x, y, z, this.min, this.max);
-    }
-
-    protected final void checkRange(int x, int y, int z) {
-        if (!VecHelper.inBounds(x, y, z, this.min, this.max)) {
-            throw new PositionOutOfBoundsException(new Vector3i(x, y, z), this.min, this.max);
-        }
+    public boolean isAreaAvailable(int x, int y, int z) {
+        return false;
     }
 
     @Override
-    public BlockState getBlock(int x, int y, int z) {
-        checkRange(x, y, z);
-        return this.volume.getBlock(x, y, z);
+    public Volume getView(Vector3i newMin, Vector3i newMax) {
+        return null;
     }
-
 }

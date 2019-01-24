@@ -22,32 +22,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent;
+package org.spongepowered.common.world.volume;
 
 import com.flowpowered.math.vector.Vector3i;
-import org.spongepowered.api.util.DiscreteTransform3;
-import org.spongepowered.common.world.extent.worker.SpongeBiomeVolumeWorker;
+import org.spongepowered.api.world.biome.ImmutableBiomeVolume;
+import org.spongepowered.api.world.biome.worker.BiomeVolumeWorker;
+import org.spongepowered.common.world.volume.worker.SpongeBiomeVolumeWorker;
 
-public class ImmutableBiomeViewTransform extends AbstractBiomeViewTransform<ImmutableBiomeVolume> implements ImmutableBiomeVolume {
+public class ImmutableBiomeViewDownsize extends AbstractBiomeViewDownsize<ImmutableBiomeVolume, ImmutableBiomeVolume> implements ImmutableBiomeVolume {
 
-    public ImmutableBiomeViewTransform(ImmutableBiomeVolume volume, DiscreteTransform3 transform) {
-        super(volume, transform);
+    public ImmutableBiomeViewDownsize(ImmutableBiomeVolume volume, Vector3i min, Vector3i max) {
+        super(volume, min, max);
     }
 
     @Override
-    public ImmutableBiomeVolume getBiomeView(Vector3i newMin, Vector3i newMax) {
-        return new ImmutableBiomeViewDownsize(this.volume, this.inverseTransform.transform(newMin),
-                this.inverseTransform.transform(newMax)).getBiomeView(this.transform);
-    }
-
-    @Override
-    public ImmutableBiomeVolume getBiomeView(DiscreteTransform3 transform) {
-        return new ImmutableBiomeViewTransform(this.volume, this.transform.withTransformation(transform));
-    }
-
-    @Override
-    public BiomeVolumeWorker<? extends ImmutableBiomeVolume> getBiomeWorker() {
+    public BiomeVolumeWorker<ImmutableBiomeVolume, ?> getBiomeWorker() {
         return new SpongeBiomeVolumeWorker<>(this);
+    }
+
+    @Override
+    public ImmutableBiomeVolume getView(Vector3i newMin, Vector3i newMax) {
+        checkRange(newMin.getX(), newMin.getY(), newMin.getZ());
+        checkRange(newMax.getX(), newMax.getY(), newMax.getZ());
+        return new ImmutableBiomeViewDownsize(this, newMin, newMax);
     }
 
 }

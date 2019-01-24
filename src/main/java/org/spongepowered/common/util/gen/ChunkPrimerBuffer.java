@@ -28,27 +28,34 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.flowpowered.math.vector.Vector3i;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkPrimer;
 import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.util.DiscreteTransform3;
-import org.spongepowered.api.world.schematic.BlockPalette;
-import org.spongepowered.common.world.extent.MutableBlockViewTransform;
-import org.spongepowered.common.world.extent.UnmodifiableBlockVolumeWrapper;
-import org.spongepowered.common.world.extent.worker.SpongeMutableBlockVolumeWorker;
-import org.spongepowered.common.world.schematic.GlobalPalette;
+import org.spongepowered.api.world.ProtoWorld;
+import org.spongepowered.api.world.biome.BiomeType;
+import org.spongepowered.api.world.biome.worker.MutableBiomeVolumeWorker;
+import org.spongepowered.api.world.chunk.ProtoChunk;
+import org.spongepowered.api.world.volume.block.worker.MutableBlockVolumeWorker;
+import org.spongepowered.common.world.chunk.AbstractWrapperChunk;
+import org.spongepowered.common.world.volume.worker.SpongeMutableBlockVolumeWorker;
 import org.spongepowered.common.world.storage.SpongeChunkLayout;
 
 import java.util.Optional;
 
 /**
- * Makes a {@link ChunkPrimer} usable as a {@link MutableBlockVolume}.
+ * Makes a {@link ChunkPrimer} usable as a {@link ProtoChunk}.
  */
-public final class ChunkPrimerBuffer extends AbstractBlockBuffer implements MutableBlockVolume {
+public final class ChunkPrimerBuffer extends AbstractWrapperChunk<IChunk, ChunkPrimerBuffer> implements ProtoChunk<ChunkPrimerBuffer> {
 
-    private final ChunkPrimer chunkPrimer;
+    private final IChunk chunkPrimer;
+    // Use a WorldGenRegionWrapper of sorts
+    // to generate
+    private final World world; // Will use WorldGenRegion with a wrapper on top
 
-    public ChunkPrimerBuffer(ChunkPrimer chunkPrimer, int chunkX, int chunkZ) {
-        super(getBlockStart(chunkX, chunkZ), SpongeChunkLayout.CHUNK_SIZE);
+
+    public ChunkPrimerBuffer(World world, IChunk chunkPrimer, int chunkX, int chunkZ) {
+        super(getBlockStart(chunkX, chunkZ), getBlockEnd(chunkX, chunkZ), SpongeChunkLayout.CHUNK_SIZE);
+        this.world = world;
         this.chunkPrimer = chunkPrimer;
     }
 
@@ -58,10 +65,10 @@ public final class ChunkPrimerBuffer extends AbstractBlockBuffer implements Muta
         return worldCoords.get();
     }
 
-    @Override
-    public BlockPalette getPalette() {
-        return GlobalPalette.instance;
+    private static Vector3i getBlockEnd(int chunkX, int chunkZ) {
+        return new Vector3i(chunkX, 0, chunkZ); // TODO - this obviously isn't right, just too lazy to do it right now.
     }
+
 
     @Override
     public BlockState getBlock(int x, int y, int z) {
@@ -76,19 +83,34 @@ public final class ChunkPrimerBuffer extends AbstractBlockBuffer implements Muta
         return true;
     }
 
-    @Override
-    public MutableBlockVolume getBlockView(DiscreteTransform3 transform) {
-        return new MutableBlockViewTransform(this, transform);
-    }
 
     @Override
-    public MutableBlockVolumeWorker<? extends MutableBlockVolume> getBlockWorker() {
+    public MutableBlockVolumeWorker<ChunkPrimerBuffer> getBlockWorker() {
         return new SpongeMutableBlockVolumeWorker<>(this);
     }
 
     @Override
-    public UnmodifiableBlockVolume getUnmodifiableBlockView() {
-        return new UnmodifiableBlockVolumeWrapper(this);
+    public ProtoWorld<?> getWorld() {
+        return (ProtoWorld) this.world; // Will actually use WorldGenRegion instead.
     }
 
+    @Override
+    public boolean setBiome(int x, int y, int z, BiomeType block) {
+        return false;
+    }
+
+    @Override
+    public MutableBiomeVolumeWorker<ChunkPrimerBuffer> getBiomeWorker() {
+        return null;
+    }
+
+    @Override
+    public BiomeType getBiome(int x, int y, int z) {
+        return null;
+    }
+
+    @Override
+    public boolean containsBiome(int x, int y, int z) {
+        return false;
+    }
 }

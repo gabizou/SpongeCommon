@@ -27,7 +27,7 @@ package org.spongepowered.common.util.gen;
 import com.flowpowered.math.vector.Vector3i;
 import com.google.common.base.MoreObjects;
 import org.spongepowered.api.util.PositionOutOfBoundsException;
-import org.spongepowered.api.world.extent.block.ReadableBlockVolume;
+import org.spongepowered.api.world.volume.block.ReadableBlockVolume;
 import org.spongepowered.api.world.schematic.BlockPalette;
 import org.spongepowered.common.util.VecHelper;
 

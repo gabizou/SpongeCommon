@@ -22,18 +22,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent;
+package org.spongepowered.common.world.volume;
 
 import com.flowpowered.math.vector.Vector3i;
-import org.spongepowered.api.util.DiscreteTransform3;
 import org.spongepowered.api.world.biome.BiomeType;
-import org.spongepowered.api.world.extent.Volume;
+import org.spongepowered.api.world.biome.MutableBiomeVolume;
+import org.spongepowered.api.world.biome.ReadableBiomeVolume;
 import org.spongepowered.api.world.biome.ImmutableBiomeVolume;
 import org.spongepowered.api.world.biome.UnmodifiableBiomeVolume;
 import org.spongepowered.api.world.biome.worker.BiomeVolumeWorker;
-import org.spongepowered.common.world.extent.worker.SpongeBiomeVolumeWorker;
+import org.spongepowered.common.world.volume.worker.SpongeBiomeVolumeWorker;
 
-public class UnmodifiableBiomeVolumeWrapper<V extends BlockVolume> implements UnmodifiableBiomeVolume<UnmodifiableBlockVolumeWrapper<V>> {
+public class UnmodifiableBiomeVolumeWrapper<V extends ReadableBiomeVolume> implements UnmodifiableBiomeVolume<UnmodifiableBiomeVolumeWrapper<V>> {
 
     private final V volume;
 
@@ -67,52 +67,43 @@ public class UnmodifiableBiomeVolumeWrapper<V extends BlockVolume> implements Un
     }
 
     @Override
-    public UnmodifiableBiomeVolume getBiomeView(Vector3i newMin, Vector3i newMax) {
-        return new UnmodifiableBiomeVolumeWrapper(this.volume.getBiomeView(newMin, newMax));
-    }
-
-    @Override
-    public UnmodifiableBiomeVolume getBiomeView(DiscreteTransform3 transform) {
-        return new UnmodifiableBiomeVolumeWrapper(this.volume.getBiomeView(transform));
-    }
-
-    @Override
-    public BiomeVolumeWorker<UnmodifiableBlockVolumeWrapper<V>, ?> getBiomeWorker() {
-        return new SpongeBiomeVolumeWorker<>(this);
-    }
-
-    @Override
     public ImmutableBiomeVolume asImmutableBiomeVolume() {
         return null;
     }
 
     @Override
     public Vector3i getBlockMin() {
-        return null;
+        return this.volume.getBlockMin();
     }
 
     @Override
     public Vector3i getBlockMax() {
-        return null;
+        return this.volume.getBlockMax();
     }
 
     @Override
     public Vector3i getBlockSize() {
-        return null;
+        return this.volume.getBlockSize();
     }
 
     @Override
     public boolean containsBlock(int x, int y, int z) {
-        return false;
+        return this.volume.containsBlock(x, y, z);
     }
 
     @Override
     public boolean isAreaAvailable(int x, int y, int z) {
-        return false;
+        return this.volume.isAreaAvailable(x, y, z);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public BiomeVolumeWorker<UnmodifiableBiomeVolumeWrapper<V>, ?> getBiomeWorker() {
+        return new SpongeBiomeVolumeWorker<UnmodifiableBiomeVolumeWrapper<V>, MutableBiomeVolume>(this);
     }
 
     @Override
-    public Volume getView(Vector3i newMin, Vector3i newMax) {
+    public UnmodifiableBiomeVolumeWrapper<V> getView(Vector3i newMin, Vector3i newMax) {
         return null;
     }
 }

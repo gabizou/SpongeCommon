@@ -22,12 +22,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent;
+package org.spongepowered.common.world.volume;
 
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.util.DiscreteTransform3;
 import org.spongepowered.api.world.biome.BiomeType;
-import org.spongepowered.api.world.extent.StorageType;
+import org.spongepowered.api.world.volume.StorageType;
 import org.spongepowered.common.util.gen.ByteArrayMutableBiomeBuffer;
 
 public abstract class AbstractBiomeViewTransform<V extends BiomeVolume> implements BiomeVolume {

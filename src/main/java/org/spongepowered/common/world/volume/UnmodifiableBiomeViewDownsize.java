@@ -22,29 +22,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent;
+package org.spongepowered.common.world.volume;
 
 import com.flowpowered.math.vector.Vector3i;
-import org.spongepowered.api.util.DiscreteTransform3;
+import org.spongepowered.api.world.biome.ImmutableBiomeVolume;
+import org.spongepowered.api.world.biome.UnmodifiableBiomeVolume;
+import org.spongepowered.api.world.biome.WorkableBiomeVolume;
+import org.spongepowered.api.world.biome.worker.BiomeVolumeWorker;
 import org.spongepowered.common.util.gen.ByteArrayImmutableBiomeBuffer;
-import org.spongepowered.common.world.extent.worker.SpongeBiomeVolumeWorker;
+import org.spongepowered.common.world.volume.worker.SpongeBiomeVolumeWorker;
 
-public class UnmodifiableBiomeViewDownsize extends AbstractBiomeViewDownsize<BiomeVolume> implements UnmodifiableBiomeVolume {
+public class UnmodifiableBiomeViewDownsize extends AbstractBiomeViewDownsize<WorkableBiomeVolume, UnmodifiableBiomeViewDownsize> implements UnmodifiableBiomeVolume<WorkableBiomeVolume<?>> {
 
-    public UnmodifiableBiomeViewDownsize(BiomeVolume volume, Vector3i min, Vector3i max) {
+    public UnmodifiableBiomeViewDownsize(WorkableBiomeVolume volume, Vector3i min, Vector3i max) {
         super(volume, min, max);
     }
 
     @Override
-    public UnmodifiableBiomeVolume getBiomeView(Vector3i newMin, Vector3i newMax) {
+    public UnmodifiableBiomeVolume<?> asUnmodifiableBiomeVolume() {
         checkRange(newMin.getX(), newMin.getY(), newMin.getZ());
         checkRange(newMax.getX(), newMax.getY(), newMax.getZ());
         return new UnmodifiableBiomeViewDownsize(this.volume, newMin, newMax);
-    }
-
-    @Override
-    public UnmodifiableBiomeVolume getBiomeView(DiscreteTransform3 transform) {
-        return new UnmodifiableBiomeViewTransform(this, transform);
     }
 
     @Override
@@ -54,8 +52,18 @@ public class UnmodifiableBiomeViewDownsize extends AbstractBiomeViewDownsize<Bio
     }
 
     @Override
-    public BiomeVolumeWorker<? extends UnmodifiableBiomeVolume> getBiomeWorker() {
+    public BiomeVolumeWorker<UnmodifiableBiomeViewDownsize, ?> getBiomeWorker() {
         return new SpongeBiomeVolumeWorker<>(this);
+    }
+
+    @Override
+    public ImmutableBiomeVolume asImmutableBiomeVolume() {
+        return null;
+    }
+
+    @Override
+    public WorkableBiomeVolume<?> getView(Vector3i newMin, Vector3i newMax) {
+        return null;
     }
 
 }

@@ -22,24 +22,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent.worker;
+package org.spongepowered.common.world.volume.worker;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.flowpowered.math.vector.Vector3i;
 import org.spongepowered.api.world.biome.BiomeType;
+import org.spongepowered.api.world.biome.MutableBiomeVolume;
+import org.spongepowered.api.world.biome.ReadableBiomeVolume;
+import org.spongepowered.api.world.biome.UnmodifiableBiomeVolume;
+import org.spongepowered.api.world.biome.WorkableBiomeVolume;
 import org.spongepowered.api.world.biome.worker.BiomeVolumeWorker;
-import org.spongepowered.api.world.extent.worker.procedure.BiomeVolumeMapper;
-import org.spongepowered.api.world.extent.worker.procedure.BiomeVolumeMerger;
-import org.spongepowered.api.world.extent.worker.procedure.BiomeVolumeReducer;
-import org.spongepowered.api.world.extent.worker.procedure.BiomeVolumeVisitor;
-
-import java.util.function.BiFunction;
+import org.spongepowered.api.world.volume.worker.function.VolumeMapper;
+import org.spongepowered.api.world.volume.worker.function.VolumeMerger;
+import org.spongepowered.api.world.volume.worker.function.VolumeVisitor;
 
 /**
  *
  */
-public class SpongeBiomeVolumeWorker<V extends BiomeVolume> implements BiomeVolumeWorker<V> {
+public class SpongeBiomeVolumeWorker<V extends WorkableBiomeVolume<V>, M extends MutableBiomeVolume<M>> implements BiomeVolumeWorker<V, M> {
 
     protected final V volume;
 
@@ -53,12 +54,12 @@ public class SpongeBiomeVolumeWorker<V extends BiomeVolume> implements BiomeVolu
     }
 
     @Override
-    public void map(BiomeVolumeMapper mapper, MutableBiomeVolume destination) {
+    public void map(VolumeMapper<BiomeType, UnmodifiableBiomeVolume<?>> mapper, M destination) {
         final Vector3i offset = align(destination);
         final int xOffset = offset.getX();
         final int yOffset = offset.getY();
         final int zOffset = offset.getZ();
-        final UnmodifiableBiomeVolume unmodifiableArea = this.volume.getUnmodifiableBiomeView();
+        final UnmodifiableBiomeVolume unmodifiableArea = this.volume.asUnmodifiableBiomeVolume();
         final int xMin = unmodifiableArea.getBiomeMin().getX();
         final int yMin = unmodifiableArea.getBiomeMin().getY();
         final int zMin = unmodifiableArea.getBiomeMin().getZ();
@@ -76,7 +77,7 @@ public class SpongeBiomeVolumeWorker<V extends BiomeVolume> implements BiomeVolu
     }
 
     @Override
-    public void merge(BiomeVolume second, BiomeVolumeMerger merger, MutableBiomeVolume destination) {
+    public void merge(V second, VolumeMerger<BiomeType, UnmodifiableBiomeVolume<?>> merger, M destination) {
         final Vector3i offsetSecond = align(second);
         final int xOffsetSecond = offsetSecond.getX();
         final int yOffsetSecond = offsetSecond.getY();
@@ -85,14 +86,14 @@ public class SpongeBiomeVolumeWorker<V extends BiomeVolume> implements BiomeVolu
         final int xOffsetDestination = offsetDestination.getX();
         final int yOffsetDestination = offsetDestination.getY();
         final int zOffsetDestination = offsetDestination.getZ();
-        final UnmodifiableBiomeVolume firstUnmodifiableArea = this.volume.getUnmodifiableBiomeView();
+        final UnmodifiableBiomeVolume firstUnmodifiableArea = this.volume.asUnmodifiableBiomeVolume();
         final int xMin = firstUnmodifiableArea.getBiomeMin().getX();
         final int yMin = firstUnmodifiableArea.getBiomeMin().getY();
         final int zMin = firstUnmodifiableArea.getBiomeMin().getZ();
         final int xMax = firstUnmodifiableArea.getBiomeMax().getX();
         final int yMax = firstUnmodifiableArea.getBiomeMax().getY();
         final int zMax = firstUnmodifiableArea.getBiomeMax().getZ();
-        final UnmodifiableBiomeVolume secondUnmodifiableArea = second.getUnmodifiableBiomeView();
+        final UnmodifiableBiomeVolume secondUnmodifiableArea = second.asUnmodifiableBiomeVolume();
         for (int z = zMin; z <= zMax; z++) {
             for (int y = yMin; y <= yMax; y++) {
                 for (int x = xMin; x <= xMax; x++) {
@@ -105,7 +106,7 @@ public class SpongeBiomeVolumeWorker<V extends BiomeVolume> implements BiomeVolu
     }
 
     @Override
-    public void iterate(BiomeVolumeVisitor<V> visitor) {
+    public void iterate(VolumeVisitor<V> visitor) {
         final int xMin = this.volume.getBiomeMin().getX();
         final int yMin = this.volume.getBiomeMin().getY();
         final int zMin = this.volume.getBiomeMin().getZ();
@@ -121,27 +122,7 @@ public class SpongeBiomeVolumeWorker<V extends BiomeVolume> implements BiomeVolu
         }
     }
 
-    @Override
-    public <T> T reduce(BiomeVolumeReducer<T> reducer, BiFunction<T, T, T> merge, T identity) {
-        final UnmodifiableBiomeVolume unmodifiableArea = this.volume.getUnmodifiableBiomeView();
-        final int xMin = unmodifiableArea.getBiomeMin().getX();
-        final int yMin = unmodifiableArea.getBiomeMin().getY();
-        final int zMin = unmodifiableArea.getBiomeMin().getZ();
-        final int xMax = unmodifiableArea.getBiomeMax().getX();
-        final int yMax = unmodifiableArea.getBiomeMax().getY();
-        final int zMax = unmodifiableArea.getBiomeMax().getZ();
-        T reduction = identity;
-        for (int z = zMin; z <= zMax; z++) {
-            for (int y = yMin; y <= yMax; y++) {
-                for (int x = xMin; x <= xMax; x++) {
-                    reduction = reducer.reduce(unmodifiableArea, x, y, z, reduction);
-                }
-            }
-        }
-        return reduction;
-    }
-
-    private Vector3i align(BiomeVolume other) {
+    private Vector3i align(ReadableBiomeVolume other) {
         final Vector3i thisSize = this.volume.getBiomeSize();
         final Vector3i otherSize = other.getBiomeSize();
         checkArgument(otherSize.getX() >= thisSize.getX() && otherSize.getY() >= thisSize.getY() && otherSize.getZ() >= thisSize.getZ(),

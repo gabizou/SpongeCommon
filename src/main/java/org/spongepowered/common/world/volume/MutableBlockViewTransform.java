@@ -22,39 +22,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent;
+package org.spongepowered.common.world.volume;
 
-import com.flowpowered.math.vector.Vector3i;
+import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.util.DiscreteTransform3;
-import org.spongepowered.common.util.gen.ByteArrayImmutableBiomeBuffer;
-import org.spongepowered.common.world.extent.worker.SpongeBiomeVolumeWorker;
+import org.spongepowered.common.world.volume.worker.SpongeMutableBlockVolumeWorker;
 
-public class UnmodifiableBiomeViewTransform extends AbstractBiomeViewTransform<UnmodifiableBiomeVolume> implements UnmodifiableBiomeVolume {
+public class MutableBlockViewTransform extends AbstractBlockViewTransform<MutableBlockVolume> implements MutableBlockVolume {
 
-    public UnmodifiableBiomeViewTransform(UnmodifiableBiomeVolume volume, DiscreteTransform3 transform) {
+    public MutableBlockViewTransform(MutableBlockVolume volume, DiscreteTransform3 transform) {
         super(volume, transform);
     }
 
     @Override
-    public UnmodifiableBiomeVolume getBiomeView(Vector3i newMin, Vector3i newMax) {
-        return new UnmodifiableBiomeViewDownsize(this.volume, this.inverseTransform.transform(newMin),
-                this.inverseTransform.transform(newMax)).getBiomeView(this.transform);
+    public boolean setBlock(int x, int y, int z, BlockState block) {
+        return this.volume.setBlock(this.inverseTransform.transformX(x, y, z), this.inverseTransform.transformY(x, y, z),
+                this.inverseTransform.transformZ(x, y, z), block);
     }
 
     @Override
-    public UnmodifiableBiomeVolume getBiomeView(DiscreteTransform3 transform) {
-        return new UnmodifiableBiomeViewTransform(this.volume, this.transform.withTransformation(transform));
+    public MutableBlockVolume getBlockView(DiscreteTransform3 transform) {
+        return new MutableBlockViewTransform(this.volume, this.transform.withTransformation(transform));
     }
 
     @Override
-    public ImmutableBiomeVolume getImmutableBiomeCopy() {
-        return ByteArrayImmutableBiomeBuffer.newWithoutArrayClone(ExtentBufferUtil.copyToArray(this, this.min, this.max, this.size), this.min,
-            this.size);
+    public MutableBlockVolumeWorker<? extends MutableBlockVolume> getBlockWorker() {
+        return new SpongeMutableBlockVolumeWorker<>(this);
     }
 
     @Override
-    public BiomeVolumeWorker<? extends UnmodifiableBiomeVolume> getBiomeWorker() {
-        return new SpongeBiomeVolumeWorker<>(this);
+    public UnmodifiableBlockVolume getUnmodifiableBlockView() {
+        return new UnmodifiableBlockVolumeWrapper(this);
     }
 
 }

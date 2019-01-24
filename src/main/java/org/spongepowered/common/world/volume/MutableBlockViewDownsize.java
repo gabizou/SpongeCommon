@@ -22,5 +22,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-@org.spongepowered.api.util.annotation.NonnullByDefault
-package org.spongepowered.common.world.extent;
+package org.spongepowered.common.world.volume;
+
+import com.flowpowered.math.vector.Vector3i;
+import org.spongepowered.api.block.BlockState;
+import org.spongepowered.api.util.DiscreteTransform3;
+import org.spongepowered.common.world.volume.worker.SpongeMutableBlockVolumeWorker;
+
+public class MutableBlockViewDownsize extends AbstractBlockViewDownsize<MutableBlockVolume> implements MutableBlockVolume {
+
+    public MutableBlockViewDownsize(MutableBlockVolume volume, Vector3i min, Vector3i max) {
+        super(volume, min, max);
+    }
+
+    @Override
+    public boolean setBlock(int x, int y, int z, BlockState block) {
+        checkRange(x, y, z);
+        return this.volume.setBlock(x, y, z, block);
+    }
+
+    @Override
+    public MutableBlockVolume getBlockView(DiscreteTransform3 transform) {
+        return new MutableBlockViewTransform(this, transform);
+    }
+
+    @Override
+    public MutableBlockVolumeWorker<? extends MutableBlockVolume> getBlockWorker() {
+        return new SpongeMutableBlockVolumeWorker<>(this);
+    }
+
+    @Override
+    public UnmodifiableBlockVolume getUnmodifiableBlockView() {
+        return new UnmodifiableBlockVolumeWrapper(this);
+    }
+
+}

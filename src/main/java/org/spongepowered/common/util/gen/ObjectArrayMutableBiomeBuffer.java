@@ -30,11 +30,13 @@ import com.flowpowered.math.vector.Vector3i;
 import net.minecraft.world.biome.Biome;
 import org.spongepowered.api.world.biome.BiomeType;
 import org.spongepowered.api.world.biome.BiomeTypes;
+import org.spongepowered.api.world.biome.ImmutableBiomeVolume;
+import org.spongepowered.api.world.biome.UnmodifiableBiomeVolume;
 import org.spongepowered.api.world.biome.VirtualBiomeType;
-import org.spongepowered.api.world.extent.StorageType;
 import org.spongepowered.api.world.biome.MutableBiomeVolume;
 import org.spongepowered.api.world.biome.worker.MutableBiomeVolumeWorker;
-import org.spongepowered.common.world.extent.worker.SpongeMutableBiomeVolumeWorker;
+import org.spongepowered.common.world.volume.UnmodifiableBiomeVolumeWrapper;
+import org.spongepowered.common.world.volume.worker.SpongeMutableBiomeVolumeWorker;
 
 import java.util.Arrays;
 
@@ -73,6 +75,16 @@ public final class ObjectArrayMutableBiomeBuffer extends AbstractBiomeBuffer imp
     public BiomeType getBiome(int x, int y, int z) {
         checkRange(x, y, z);
         return this.biomes[getIndex(x, z)];
+    }
+
+    @Override
+    public UnmodifiableBiomeVolume<?> asUnmodifiableBiomeVolume() {
+        return new UnmodifiableBiomeVolumeWrapper<>(this);
+    }
+
+    @Override
+    public ImmutableBiomeVolume asImmutableBiomeVolume() {
+        return new ObjectArrayImmutableBiomeBuffer(this.biomes.clone(), this.start, this.end);
     }
 
     /**
@@ -138,36 +150,16 @@ public final class ObjectArrayMutableBiomeBuffer extends AbstractBiomeBuffer imp
     }
 
     @Override
-    public MutableBiomeVolume getBiomeView(Vector3i newMin, Vector3i newMax) {
-        checkRange(newMin.getX(), newMin.getY(), newMin.getZ());
-        checkRange(newMax.getX(), newMax.getY(), newMax.getZ());
-        return new MutableBiomeViewDownsize(this, newMin, newMax);
-    }
-
-    @Override
     public MutableBiomeVolumeWorker<ObjectArrayMutableBiomeBuffer> getBiomeWorker() {
         return new SpongeMutableBiomeVolumeWorker<>(this);
     }
 
     @Override
-    public UnmodifiableBiomeVolume getUnmodifiableBiomeView() {
-        return new UnmodifiableBiomeVolumeWrapper(this);
+    public ObjectArrayMutableBiomeBuffer getView(Vector3i newMin, Vector3i newMax) {
+        checkRange(newMin.getX(), newMin.getY(), newMin.getZ());
+        checkRange(newMax.getX(), newMax.getY(), newMax.getZ());
+        return new ObjectArrayMutableBiomeBuffer(this.biomes.clone(), newMin, newMax);
     }
 
-    @Override
-    public MutableBiomeVolume getBiomeCopy(StorageType type) {
-        switch (type) {
-            case STANDARD:
-                return new ObjectArrayMutableBiomeBuffer(this.biomes.clone(), this.start, this.size);
-            case THREAD_SAFE:
-            default:
-                throw new UnsupportedOperationException(type.name());
-        }
-    }
-
-    @Override
-    public ImmutableBiomeVolume getImmutableBiomeCopy() {
-        return new ObjectArrayImmutableBiomeBuffer(this.biomes, this.start, this.size);
-    }
 
 }

@@ -24,7 +24,7 @@
  */
 package org.spongepowered.common.interfaces.world.gen;
 
-import org.spongepowered.api.world.gen.BiomeGenerator;
+import org.spongepowered.api.world.gen.biome.BiomeGenerator;
 
 public interface IChunkProviderOverworld {
 

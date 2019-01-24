@@ -32,12 +32,14 @@ minecraft {
 }
 
 // Generate mcmod.info file for implementation
-apply plugin: 'org.spongepowered.meta'
+//apply plugin: 'org.spongepowered.meta' // TODO Update spongegradle
 
-generateMetadata {
-    dependsOn common.resolveApiRevision
-}
+// TODO update SpongeGradle
+//generateMetadata {
+//    dependsOn common.resolveApiRevision
+//}
 
+/*
 sponge {
     plugin {
         id = 'sponge'
@@ -61,6 +63,7 @@ sponge {
         }
     }
 }
+*/
 
 jar {
     classifier = 'base'

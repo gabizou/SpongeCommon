@@ -16,12 +16,8 @@ buildscript {
     }
 
     dependencies {
-        // VanillaGradle contains a custom ForgeGradle extension for SpongeCommon (see below)
-        classpath 'gradle.plugin.net.minecrell:vanillagradle:2.2-5'
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:3.0.23'
         classpath 'gradle.plugin.net.minecrell:licenser:0.3'
-        classpath 'gradle.plugin.org.spongepowered:spongegradle:0.8.1'
-        classpath 'org.spongepowered:mixingradle:0.4-SNAPSHOT'
     }
 }
 
@@ -57,19 +53,68 @@ dependencies {
     compile 'com.h2database:h2:1.4.196'
     runtime 'org.xerial:sqlite-jdbc:3.20.0'
 
-    forgeGradleMcDeps('net.minecraft:launchwrapper:1.11') {
-        transitive = false
-    }
+//    forgeGradleMcDeps('net.minecraft:launchwrapper:1.11') {
+//        transitive = false
+//    }
 
     // Taken from https://stackoverflow.com/a/7969292
     testCompile api.sourceSets.test.output
+}
+
+apply plugin: 'eclipse'
+apply plugin: 'net.minecraftforge.gradle.forgedev.patcher'
+sourceSets {
+    main {
+        java {
+            srcDir "$rootDir/src/main/java"
+        }
+        resources {
+            srcDir "$rootDir/src/main/resources"
+        }
+    }
+}
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+patcher {
+    parent = project(':clean')
+    patches = file("$rootDir/patches")
+    patchedSrc = file('src/main/java')
+    srgPatches = true
+    serverRun {
+        main = "net.minecraft.server.MinecraftServer"
+    }
+}
+applyPatches {
+    canonicalizeAccess true
+    canonicalizeWhitespace true
+    maxFuzz 3
+}
+
+task runserver(type: JavaExec) {
+    doFirst {
+        mkdir 'runserver'
+    }
+    classpath sourceSets.main.runtimeClasspath
+    main settings.servermain
+    args 'nogui'
+    workingDir 'runserver'
+}
+
+task setup() {
+    dependsOn ':clean:extractMapped'
+    dependsOn ':' + common.name + ':extractMapped'
+    //These must be strings so that we can do lazy resolution. Else we need evaluationDependsOnChildren above
 }
 
 uploadArchives {
     repositories {
         mavenDeployer {
             pom.whenConfigured {
-                pom -> pom.dependencies.removeAll { it.groupId == 'org.spongepowered' && (it.artifactId == 'testplugins' || it.artifactId == 'testmods') }
+                pom ->
+                    pom.dependencies.
+                            removeAll { it.groupId == 'org.spongepowered' && (it.artifactId == 'testplugins' || it.artifactId == 'testmods') }
             }
         }
     }

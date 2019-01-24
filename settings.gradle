@@ -1,3 +1,8 @@
 rootProject.name = name
 include 'SpongeAPI'
 include 'testplugins'
+include ':mcp'
+include ':clean'
+
+project(':mcp').projectDir = file('projects/mcp')
+project(':clean').projectDir = file('projects/clean')

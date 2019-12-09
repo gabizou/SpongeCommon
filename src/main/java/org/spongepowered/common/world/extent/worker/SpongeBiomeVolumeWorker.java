@@ -34,7 +34,7 @@ import org.spongepowered.api.world.extent.worker.procedure.BiomeVolumeVisitor;
 import org.spongepowered.api.world.volume.biome.MutableBiomeVolume;
 import org.spongepowered.api.world.volume.biome.ReadableBiomeVolume;
 import org.spongepowered.api.world.volume.biome.UnmodifiableBiomeVolume;
-import org.spongepowered.api.world.volume.biome.worker.BiomeVolumeStream;
+import org.spongepowered.api.world.volume.biome.stream.BiomeVolumeStream;
 import org.spongepowered.math.vector.Vector3i;
 import java.util.function.BiFunction;
 

@@ -199,10 +199,7 @@ public abstract class WorldServerMixin_API extends WorldMixin_API {
         return builder.build();
     }
 
-    @Override
-    public Optional<Entity> getEntity(final UUID uuid) {
-        return Optional.ofNullable((Entity) this.getEntityFromUuid(uuid));
-    }
+
     @SuppressWarnings("deprecation")
     @Override
     public Optional<org.spongepowered.api.world.chunk.Chunk> regenerateChunk(final int cx, final int cy, final int cz, final ChunkRegenerateFlag flag) {

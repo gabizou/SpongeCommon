@@ -35,17 +35,29 @@ import org.spongepowered.api.world.extent.worker.procedure.BlockVolumeReducer;
 import org.spongepowered.api.world.extent.worker.procedure.BlockVolumeVisitor;
 import org.spongepowered.api.world.volume.block.MutableBlockVolume;
 import org.spongepowered.api.world.volume.block.ReadableBlockVolume;
+import org.spongepowered.api.world.volume.block.StreamableBlockVolume;
 import org.spongepowered.api.world.volume.block.UnmodifiableBlockVolume;
-import org.spongepowered.api.world.volume.block.worker.BlockVolumeStream;
+import org.spongepowered.api.world.volume.block.stream.BlockVolumeStream;
+import org.spongepowered.api.world.volume.function.VolumeConsumer;
+import org.spongepowered.api.world.volume.function.VolumeMapper;
+import org.spongepowered.api.world.volume.function.VolumePredicate;
+import org.spongepowered.api.world.volume.function.VolumeResult;
+import org.spongepowered.api.world.volume.function.VolumeResultSupplier;
+import org.spongepowered.api.world.volume.stream.VolumeStream;
 import org.spongepowered.common.event.tracking.phase.plugin.BasicPluginContext;
 import org.spongepowered.common.event.tracking.phase.plugin.PluginPhase;
 import org.spongepowered.math.vector.Vector3i;
+
+import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  *
  */
-public class SpongeBlockVolumeWorker<V extends ReadableBlockVolume> implements BlockVolumeStream<V> {
+public class SpongeBlockVolumeWorker<V extends StreamableBlockVolume<V>, M extends MutableBlockVolume<M>> implements BlockVolumeStream<V> {
 
     protected final V volume;
 
@@ -56,6 +68,81 @@ public class SpongeBlockVolumeWorker<V extends ReadableBlockVolume> implements B
     @Override
     public V getVolume() {
         return this.volume;
+    }
+
+    @Override
+    public VolumeResultSupplier<? super V, BlockState> getSupplier() {
+        return ReadableBlockVolume::getBlock;
+    }
+
+    @Override
+    public VolumeStream<V, UnmodifiableBlockVolume<?>, M> filter(VolumePredicate<V, BlockState> predicate) {
+        return null;
+    }
+
+    @Override
+    public <T> VolumeStream<V, UnmodifiableBlockVolume<?>, M> map(VolumeMapper<BlockState, UnmodifiableBlockVolume<?>, T> mapper) {
+        return null;
+    }
+
+    @Override
+    public long count() {
+        return 0;
+    }
+
+    @Override
+    public boolean allMatch(VolumePredicate<? super V, ? super BlockState> predicate) {
+        return false;
+    }
+
+    @Override
+    public boolean allMatch(Predicate<VolumeResult<? super V, ? super BlockState>> predicate) {
+        return false;
+    }
+
+    @Override
+    public boolean noneMatch(VolumePredicate<? super V, ? super BlockState> predicate) {
+        return false;
+    }
+
+    @Override
+    public boolean noneMatch(Predicate<VolumeResult<? super V, ? super BlockState>> predicate) {
+        return false;
+    }
+
+    @Override
+    public boolean anyMatch(VolumePredicate<? super V, ? super BlockState> predicate) {
+        return false;
+    }
+
+    @Override
+    public boolean anyMatch(Predicate<VolumeResult<? super V, ? super BlockState>> predicate) {
+        return false;
+    }
+
+    @Override
+    public Optional<VolumeResult<V, BlockState>> findFirst() {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<VolumeResult<V, BlockState>> findAny() {
+        return Optional.empty();
+    }
+
+    @Override
+    public Stream<VolumeResult<V, BlockState>> toStream() {
+        return null;
+    }
+
+    @Override
+    public void forEach(VolumeConsumer<V, BlockState> visitor) {
+
+    }
+
+    @Override
+    public void forEach(Consumer<VolumeResult<V, BlockState>> consumer) {
+
     }
 
     @SuppressWarnings("try")
@@ -171,4 +258,8 @@ public class SpongeBlockVolumeWorker<V extends ReadableBlockVolume> implements B
         return other.getBlockMin().sub(this.volume.getBlockMin());
     }
 
+    @Override
+    public BlockVolumeStream filter(Predicate predicate) {
+        return null;
+    }
 }

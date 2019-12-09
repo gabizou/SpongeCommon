@@ -44,12 +44,12 @@ import org.spongepowered.api.world.chunk.ProtoChunk;
 import org.spongepowered.api.world.dimension.Dimension;
 import org.spongepowered.api.world.volume.biome.ImmutableBiomeVolume;
 import org.spongepowered.api.world.volume.biome.UnmodifiableBiomeVolume;
-import org.spongepowered.api.world.volume.biome.worker.BiomeVolumeStream;
-import org.spongepowered.api.world.volume.block.entity.worker.BlockEntityStream;
-import org.spongepowered.api.world.volume.block.worker.BlockVolumeStream;
+import org.spongepowered.api.world.volume.biome.stream.BiomeVolumeStream;
+import org.spongepowered.api.world.volume.block.entity.stream.BlockEntityStream;
+import org.spongepowered.api.world.volume.block.stream.BlockVolumeStream;
 import org.spongepowered.api.world.volume.entity.ImmutableEntityVolume;
 import org.spongepowered.api.world.volume.entity.UnmodifiableEntityVolume;
-import org.spongepowered.api.world.volume.entity.worker.EntityStream;
+import org.spongepowered.api.world.volume.entity.stream.EntityStream;
 import org.spongepowered.api.world.volume.game.ReadableRegion;
 import org.spongepowered.asm.mixin.Implements;
 import org.spongepowered.asm.mixin.Interface;
@@ -73,7 +73,7 @@ public interface IWorldReaderMixin_API<R extends ReadableRegion<R>> extends IEnv
     @Shadow boolean shadow$isAirBlock(BlockPos p_175623_1_);
     @Shadow boolean shadow$canBlockSeeSky(BlockPos p_175710_1_);
     @Shadow int shadow$getLightSubtracted(BlockPos p_201669_1_, int p_201669_2_);
-    @Nullable
+    @javax.annotation.Nullable
     @Shadow IChunk shadow$getChunk(int p_217353_1_, int p_217353_2_, ChunkStatus p_217353_3_, boolean p_217353_4_);
     @Deprecated
     @Shadow boolean shadow$chunkExists(int p_217354_1_, int p_217354_2_);
@@ -171,21 +171,6 @@ public interface IWorldReaderMixin_API<R extends ReadableRegion<R>> extends IEnv
     }
 
     @Override
-    default BiomeVolumeStream<R, ?> toBiomeStream() {
-        throw new UnsupportedOperationException("Unfortunately, you've found an extended class of IWorldReaderBase that isn't part of Sponge API");
-    }
-
-    @Override
-    default BlockEntityStream<R, ?> toBlockEntityStream() {
-        throw new UnsupportedOperationException("Unfortunately, you've found an extended class of IWorldReaderBase that isn't part of Sponge API");
-    }
-
-    @Override
-    default EntityStream<R, ?> toEntityStream() {
-        throw new UnsupportedOperationException("Unfortunately, you've found an extended class of IWorldReaderBase that isn't part of Sponge API");
-    }
-
-    @Override
     default UnmodifiableBiomeVolume<?> asUnmodifiableBiomeVolume() {
         throw new UnsupportedOperationException("Unfortunately, you've found an extended class of IWorldReaderBase that isn't part of Sponge API");
     }
@@ -226,11 +211,6 @@ public interface IWorldReaderMixin_API<R extends ReadableRegion<R>> extends IEnv
     @Override
     default <T extends Entity> Collection<? extends T> getEntities(Class<? extends T> entityClass, AABB box,
                                                                    @javax.annotation.Nullable Predicate<? super T> predicate) {
-        throw new UnsupportedOperationException("Unfortunately, you've found an extended class of IWorldReaderBase that isn't part of Sponge API");
-    }
-
-    @Override
-    default BlockVolumeStream<R, ?> toBlockStream() {
         throw new UnsupportedOperationException("Unfortunately, you've found an extended class of IWorldReaderBase that isn't part of Sponge API");
     }
 

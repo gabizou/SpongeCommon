@@ -22,35 +22,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.spongepowered.common.world.extent;
+package org.spongepowered.common.world.volume.stream;
 
-import org.spongepowered.api.util.DiscreteTransform3;
-import org.spongepowered.api.world.volume.biome.ImmutableBiomeVolume;
-import org.spongepowered.api.world.volume.biome.stream.BiomeVolumeStream;
-import org.spongepowered.common.world.extent.worker.SpongeBiomeVolumeWorker;
-import org.spongepowered.math.vector.Vector3i;
+import org.spongepowered.api.world.volume.Volume;
 
-public class ImmutableBiomeViewDownsize extends AbstractBiomeViewDownsize<ImmutableBiomeVolume> implements ImmutableBiomeVolume {
+public interface KitchenSink<V extends Volume, T> {
 
-    public ImmutableBiomeViewDownsize(ImmutableBiomeVolume volume, Vector3i min, Vector3i max) {
-        super(volume, min, max);
+    void accept(V volume, T element, int x, int y, int z);
+
+    default void begin() {}
+
+    default void end() {}
+
+    default boolean isAcceptingMoreData() {
+        return true;
     }
 
-    @Override
-    public ImmutableBiomeVolume getBiomeView(Vector3i newMin, Vector3i newMax) {
-        this.checkRange(newMin.getX(), newMin.getY(), newMin.getZ());
-        this.checkRange(newMax.getX(), newMax.getY(), newMax.getZ());
-        return new ImmutableBiomeViewDownsize(this.volume, newMin, newMax);
-    }
+    static abstract class ChainedReference<V extends Volume, E_OUT, T> implements KitchenSink<V, T> {
+        protected final KitchenSink<? super V, ? super E_OUT> downstream;
 
-    @Override
-    public ImmutableBiomeVolume getBiomeView(DiscreteTransform3 transform) {
-        return new ImmutableBiomeViewTransform(this, transform);
-    }
+        public ChainedReference(KitchenSink<? super V, ? super E_OUT> downstream) {
+            this.downstream = downstream;
+        }
 
-    @Override
-    public BiomeVolumeStream<? extends ImmutableBiomeVolume> getBiomeWorker() {
-        return new SpongeBiomeVolumeWorker<>(this);
+        @Override
+        public void begin() {
+            this.downstream.begin();
+        }
+
+        @Override
+        public void end() {
+            this.downstream.end();
+        }
+
+        @Override
+        public boolean isAcceptingMoreData() {
+            return this.downstream.isAcceptingMoreData();
+        }
     }
 
 }

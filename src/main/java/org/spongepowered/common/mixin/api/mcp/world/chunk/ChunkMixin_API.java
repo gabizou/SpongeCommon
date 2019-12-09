@@ -60,7 +60,6 @@ import org.spongepowered.api.world.biome.BiomeType;
 import org.spongepowered.api.world.chunk.Chunk;
 import org.spongepowered.api.world.extent.Extent;
 import org.spongepowered.api.world.volume.biome.workerMutableBiomeVolumeStream;
-import org.spongepowered.api.world.volume.block.worker.MutableBlockVolumeStream;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

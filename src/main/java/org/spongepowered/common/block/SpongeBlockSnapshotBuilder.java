@@ -37,6 +37,7 @@ import org.spongepowered.api.block.BlockSnapshot;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.DataManipulator.Immutable;
 import org.spongepowered.api.data.DataManipulator.Mutable;
+import org.spongepowered.api.data.Key;
 import org.spongepowered.api.data.key.Key;
 import org.spongepowered.api.data.persistence.AbstractDataBuilder;
 import org.spongepowered.api.data.persistence.DataView;
@@ -142,7 +143,7 @@ public class SpongeBlockSnapshotBuilder extends AbstractDataBuilder<BlockSnapsho
     }
 
     @Override
-    public SpongeBlockSnapshotBuilder from(final Location<World> location) {
+    public SpongeBlockSnapshotBuilder from(final Location location) {
         this.blockState = location.getBlock();
         this.worldUuid = location.getExtent().getUniqueId();
         this.coords = location.getBlockPosition();

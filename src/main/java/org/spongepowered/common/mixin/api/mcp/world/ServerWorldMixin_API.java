@@ -68,8 +68,12 @@ import net.minecraft.world.storage.DimensionSavedDataManager;
 import net.minecraft.world.storage.MapData;
 import net.minecraft.world.storage.SaveHandler;
 import net.minecraft.world.storage.SessionLockException;
+import org.spongepowered.api.Server;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.server.ServerPlayer;
+import org.spongepowered.api.item.inventory.ItemStack;
+import org.spongepowered.api.profile.GameProfile;
+import org.spongepowered.api.util.Direction;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -79,8 +83,11 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
@@ -193,12 +200,65 @@ public abstract class ServerWorldMixin_API extends WorldMixin_API implements org
     }
 
     @Shadow @Final private List<ServerPlayerEntity> players;
+    @Shadow @Final private MinecraftServer server;
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Collection<ServerPlayer> getPlayers() {
+        return (Collection<ServerPlayer>) (Collection<?>) Collections.unmodifiableList(this.players);
+    }
+
+    @Override
+    public Server getServer() {
+        return (Server) this.server;
+    }
+
+    @Override
+    public Optional<org.spongepowered.api.entity.Entity> getEntity(final UUID uuid) {
+        return Optional.ofNullable((org.spongepowered.api.entity.Entity) this.shadow$getEntityByUuid(uuid));
+    }
+
+    @Override
+    public boolean unloadChunk(org.spongepowered.api.world.chunk.Chunk chunk) {
+
+        return false;
+    }
 
 
+    @Override
+    public boolean hitBlock(int x, int y, int z, Direction side, GameProfile profile) {
+        throw new UnsupportedOperationException("Unfortunately, you've found an extended class of IWorld that isn't part of Sponge API: " + this.getClass());
+    }
 
- @SuppressWarnings("unchecked")
- @Override
- public Collection<ServerPlayer> getPlayers() {
-  return ImmutableList.copyOf((Collection<ServerPlayer>) (Collection<?>) this.shadow$getPlayers());
- }
+    @Override
+    public boolean interactBlock(int x, int y, int z, Direction side, GameProfile profile) {
+        return false;
+    }
+
+    @Override
+    public boolean interactBlockWith(int x, int y, int z, ItemStack itemStack, Direction side, GameProfile profile) {
+        throw new UnsupportedOperationException("Unfortunately, you've found an extended class of IWorld that isn't part of Sponge API: " + this.getClass());
+    }
+
+    @Override
+    public boolean placeBlock(int x, int y, int z, org.spongepowered.api.block.BlockState block, Direction side, GameProfile profile) {
+        throw new UnsupportedOperationException("Unfortunately, you've found an extended class of IWorld that isn't part of Sponge API: " + this.getClass());
+    }
+
+    @Override
+    public boolean digBlock(int x, int y, int z, GameProfile profile) {
+        return this.shadow$destroyBlock(new BlockPos(x, y, z), true);
+    }
+
+    @Override
+    public boolean digBlockWith(int x, int y, int z, ItemStack itemStack, GameProfile profile) {
+        return this.shadow$destroyBlock(new BlockPos(x, y, z), true);
+    }
+
+    @Override
+    public Duration getBlockDigTimeWith(int x, int y, int z, ItemStack itemStack, GameProfile profile) {
+        throw new UnsupportedOperationException("Unfortunately, you've found an extended class of IWorld that isn't part of Sponge API: " + this.getClass());
+    }
+
+
 }

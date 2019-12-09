@@ -30,7 +30,7 @@ import org.spongepowered.api.world.volume.StorageType;
 import org.spongepowered.api.world.volume.biome.ImmutableBiomeVolume;
 import org.spongepowered.api.world.volume.biome.MutableBiomeVolume;
 import org.spongepowered.api.world.volume.biome.UnmodifiableBiomeVolume;
-import org.spongepowered.api.world.volume.biome.worker.BiomeVolumeStream;
+import org.spongepowered.api.world.volume.biome.stream.BiomeVolumeStream;
 import org.spongepowered.common.world.extent.worker.SpongeBiomeVolumeWorker;
 import org.spongepowered.math.vector.Vector3i;
 

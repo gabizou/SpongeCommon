@@ -31,7 +31,7 @@ import org.spongepowered.api.world.biome.VirtualBiomeType;
 import org.spongepowered.api.world.volume.StorageType;
 import org.spongepowered.api.world.volume.biome.ImmutableBiomeVolume;
 import org.spongepowered.api.world.volume.biome.MutableBiomeVolume;
-import org.spongepowered.api.world.volume.biome.worker.BiomeVolumeStream;
+import org.spongepowered.api.world.volume.biome.stream.BiomeVolumeStream;
 import org.spongepowered.common.world.extent.ImmutableBiomeViewDownsize;
 import org.spongepowered.common.world.extent.ImmutableBiomeViewTransform;
 import org.spongepowered.common.world.extent.worker.SpongeBiomeVolumeWorker;

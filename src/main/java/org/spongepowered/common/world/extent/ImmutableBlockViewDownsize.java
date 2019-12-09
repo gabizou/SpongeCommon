@@ -26,7 +26,7 @@ package org.spongepowered.common.world.extent;
 
 import org.spongepowered.api.util.DiscreteTransform3;
 import org.spongepowered.api.world.volume.block.ImmutableBlockVolume;
-import org.spongepowered.api.world.volume.block.worker.BlockVolumeStream;
+import org.spongepowered.api.world.volume.block.stream.BlockVolumeStream;
 import org.spongepowered.common.world.extent.worker.SpongeBlockVolumeWorker;
 import org.spongepowered.math.vector.Vector3i;
 

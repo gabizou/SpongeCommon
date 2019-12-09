@@ -33,7 +33,6 @@ import org.spongepowered.api.world.biome.BiomeType;
 import org.spongepowered.api.world.schematic.Palette;
 import org.spongepowered.api.world.schematic.Schematic;
 import org.spongepowered.api.world.volume.biome.MutableBiomeVolume;
-import org.spongepowered.api.world.volume.block.worker.MutableBlockVolumeStream;
 import org.spongepowered.common.world.extent.worker.SpongeMutableBlockVolumeWorker;
 
 import java.util.Objects;

@@ -28,7 +28,7 @@ import org.spongepowered.api.util.DiscreteTransform3;
 import org.spongepowered.api.world.volume.biome.ImmutableBiomeVolume;
 import org.spongepowered.api.world.volume.biome.ReadableBiomeVolume;
 import org.spongepowered.api.world.volume.biome.UnmodifiableBiomeVolume;
-import org.spongepowered.api.world.volume.biome.worker.BiomeVolumeStream;
+import org.spongepowered.api.world.volume.biome.stream.BiomeVolumeStream;
 import org.spongepowered.common.util.gen.ByteArrayImmutableBiomeBuffer;
 import org.spongepowered.common.world.extent.worker.SpongeBiomeVolumeWorker;
 import org.spongepowered.math.vector.Vector3i;

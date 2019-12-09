@@ -33,6 +33,8 @@ import net.minecraft.world.IEntityReader;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.util.AABB;
+import org.spongepowered.api.world.volume.archetype.entity.ImmutableEntityArchetypeVolume;
+import org.spongepowered.api.world.volume.archetype.entity.UnmodifiableEntityArchetypeVolume;
 import org.spongepowered.api.world.volume.entity.ImmutableEntityVolume;
 import org.spongepowered.api.world.volume.entity.ReadableEntityVolume;
 import org.spongepowered.api.world.volume.entity.UnmodifiableEntityVolume;
@@ -120,12 +122,12 @@ public interface IEntityReaderMixin_API extends ReadableEntityVolume {
     }
 
     @Override
-    default UnmodifiableEntityVolume<?> asUnmodifiableEntityVolume() {
+    default UnmodifiableEntityArchetypeVolume<?> asUnmodifiableEntityVolume() {
         throw new UnsupportedOperationException("Unfortunately, you've found an extended class of IEntityReader that isn't part of Sponge API");
     }
 
     @Override
-    default ImmutableEntityVolume asImmutableEntityVolume() {
+    default ImmutableEntityArchetypeVolume asImmutableEntityVolume() {
         throw new UnsupportedOperationException("Unfortunately, you've found an extended class of IEntityReader that isn't part of Sponge API");
     }
 

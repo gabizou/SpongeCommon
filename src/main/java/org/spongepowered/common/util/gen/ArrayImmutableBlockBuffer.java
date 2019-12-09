@@ -26,13 +26,15 @@ package org.spongepowered.common.util.gen;
 
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockTypes;
+import org.spongepowered.api.fluid.FluidState;
 import org.spongepowered.api.util.DiscreteTransform3;
 import org.spongepowered.api.world.schematic.Palette;
 import org.spongepowered.api.world.volume.StorageType;
+import org.spongepowered.api.world.volume.UnmodifiableVolume;
 import org.spongepowered.api.world.volume.block.ImmutableBlockVolume;
 import org.spongepowered.api.world.volume.block.MutableBlockVolume;
 import org.spongepowered.api.world.volume.block.UnmodifiableBlockVolume;
-import org.spongepowered.api.world.volume.block.worker.BlockVolumeStream;
+import org.spongepowered.api.world.volume.block.stream.BlockVolumeStream;
 import org.spongepowered.common.util.gen.ArrayMutableBlockBuffer.BackingData;
 import org.spongepowered.common.util.gen.ArrayMutableBlockBuffer.CharBackingData;
 import org.spongepowered.common.world.extent.ImmutableBlockViewDownsize;
@@ -78,6 +80,16 @@ public class ArrayImmutableBlockBuffer extends AbstractBlockBuffer implements Im
     public BlockState getBlock(int x, int y, int z) {
         this.checkRange(x, y, z);
         return this.palette.get(this.data.get(this.getIndex(x, y, z))).orElse(AIR);
+    }
+
+    @Override
+    public FluidState getFluid(int x, int y, int z) {
+        return null;
+    }
+
+    @Override
+    public int getHighestYAt(int x, int z) {
+        return 0;
     }
 
     @Override
@@ -146,4 +158,15 @@ public class ArrayImmutableBlockBuffer extends AbstractBlockBuffer implements Im
     public int hashCode() {
         return Objects.hash(super.hashCode(), this.palette, this.data);
     }
+
+    @Override
+    public boolean isAreaAvailable(int x, int y, int z) {
+        return false;
+    }
+
+    @Override
+    public UnmodifiableVolume getView(Vector3i newMin, Vector3i newMax) {
+        return null;
+    }
+
 }

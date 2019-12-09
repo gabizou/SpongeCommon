@@ -39,6 +39,7 @@ import net.minecraft.particles.IParticleData;
 import net.minecraft.profiler.IProfiler;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.management.PlayerList;
 import net.minecraft.tags.NetworkTagManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
@@ -62,46 +63,86 @@ import net.minecraft.world.storage.MapData;
 import net.minecraft.world.storage.WorldInfo;
 import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.spongepowered.api.Server;
 import org.spongepowered.api.block.BlockSnapshot;
+import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.data.DataHolder;
+import org.spongepowered.api.data.DataTransactionResult;
+import org.spongepowered.api.data.Key;
+import org.spongepowered.api.data.persistence.DataContainer;
+import org.spongepowered.api.data.persistence.DataView;
+import org.spongepowered.api.data.persistence.InvalidDataException;
+import org.spongepowered.api.data.property.Property;
+import org.spongepowered.api.data.value.MergeFunction;
+import org.spongepowered.api.data.value.Value;
+import org.spongepowered.api.effect.particle.ParticleEffect;
+import org.spongepowered.api.effect.sound.SoundType;
+import org.spongepowered.api.effect.sound.music.MusicDisc;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.fluid.FluidType;
+import org.spongepowered.api.scheduler.ScheduledUpdateList;
 import org.spongepowered.api.service.context.Context;
+import org.spongepowered.api.text.BookView;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.text.chat.ChatType;
+import org.spongepowered.api.text.title.Title;
+import org.spongepowered.api.util.AABB;
+import org.spongepowered.api.util.TemporalUnits;
 import org.spongepowered.api.world.BlockChangeFlag;
-import org.spongepowered.api.world.ChunkRegenerateFlag;
+import org.spongepowered.api.world.BlockChangeFlags;
+import org.spongepowered.api.world.HeightType;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+import org.spongepowered.api.world.biome.BiomeType;
 import org.spongepowered.api.world.chunk.Chunk;
-import org.spongepowered.api.world.explosion.Explosion;
-import org.spongepowered.api.world.storage.WorldStorage;
-import org.spongepowered.api.world.teleport.PortalAgent;
+import org.spongepowered.api.world.gen.TerrainGenerator;
+import org.spongepowered.api.world.storage.WorldProperties;
 import org.spongepowered.api.world.volume.archetype.ArchetypeVolume;
+import org.spongepowered.api.world.volume.biome.stream.BiomeVolumeStream;
+import org.spongepowered.api.world.volume.block.stream.BlockVolumeStream;
+import org.spongepowered.api.world.volume.entity.ImmutableEntityVolume;
+import org.spongepowered.api.world.volume.entity.UnmodifiableEntityVolume;
+import org.spongepowered.api.world.volume.entity.stream.EntityStream;
 import org.spongepowered.api.world.weather.Weather;
+import org.spongepowered.api.world.weather.Weathers;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.common.block.SpongeBlockSnapshotBuilder;
+import org.spongepowered.common.bridge.world.chunk.ChunkBridge;
+import org.spongepowered.common.effect.particle.SpongeParticleEffect;
+import org.spongepowered.common.effect.particle.SpongeParticleHelper;
+import org.spongepowered.common.event.tracking.TrackingUtil;
+import org.spongepowered.common.registry.type.world.BlockChangeFlagRegistryModule;
+import org.spongepowered.common.util.Constants;
 import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 @Mixin(net.minecraft.world.World.class)
 public abstract class WorldMixin_API implements IWorldMixin_API<World>, World, IEnvironmentBlockReaderMixin_API, AutoCloseable {
     @Shadow protected static @Final Logger LOGGER;
     @Shadow private static @Final Direction[] FACING_VALUES;
-    @Shadow public@Final List<TileEntity> loadedTileEntityList;
-    @Shadow public@Final List<TileEntity> tickableTileEntities;
-    @Shadow protected@Final List<TileEntity> addedTileEntityList;
+    @Shadow public @Final List<TileEntity> loadedTileEntityList;
+    @Shadow public @Final List<TileEntity> tickableTileEntities;
+    @Shadow protected @Final List<TileEntity> addedTileEntityList;
     @Shadow protected @Final List<TileEntity> tileEntitiesToBeRemoved;
     @Shadow private @Final long cloudColour;
     @Shadow private @Final Thread mainThread;
@@ -239,6 +280,9 @@ public abstract class WorldMixin_API implements IWorldMixin_API<World>, World, I
     @Shadow public abstract void shadow$sendPacketToServer(IPacket<?> p_184135_1_);
     @Shadow public abstract @javax.annotation.Nullable BlockPos shadow$findNearestStructure(String p_211157_1_, BlockPos p_211157_2_, int p_211157_3_, boolean p_211157_4_);
     @Shadow public abstract Dimension shadow$getDimension();
+
+
+
     @Shadow public abstract Random shadow$getRandom();
     @Shadow public abstract boolean shadow$hasBlockState(BlockPos p_217375_1_, Predicate<BlockState> p_217375_2_);
     @Shadow public abstract RecipeManager shadow$getRecipeManager();
@@ -249,38 +293,299 @@ public abstract class WorldMixin_API implements IWorldMixin_API<World>, World, I
     @Shadow public abstract BlockPos shadow$getHeight(Heightmap.Type p_205770_1_, BlockPos p_205770_2_);
 
     @Override
+    public Random getRandom() {
+        return this.rand;
+    }
+
+    @Override
+    public Vector3i getBlockMin() {
+        return Constants.World.BLOCK_MIN;
+    }
+
+    @Override
+    public Vector3i getBlockMax() {
+        return Constants.World.BLOCK_MAX;
+    }
+
+    @Override
+    public Vector3i getBlockSize() {
+        return Constants.World.BLOCK_SIZE;
+    }
+
+    @Override
+    public boolean setBiome(int x, int y, int z, BiomeType biome) {
+        return false;
+    }
+
+    @Override
+    public World getView(Vector3i newMin, Vector3i newMax) {
+        return null;
+    }
+
+    @Override
+    public UnmodifiableEntityVolume<?> asUnmodifiableEntityVolume() {
+        return null;
+    }
+
+    @Override
+    public ImmutableEntityVolume asImmutableEntityVolume() {
+        return null;
+    }
+
+    @Override
+    public Optional<org.spongepowered.api.entity.Entity> getEntity(UUID uuid) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Collection<? extends org.spongepowered.api.entity.Entity> getEntities(AABB box, Predicate<? super org.spongepowered.api.entity.Entity> filter) {
+        return null;
+    }
+
+    @Override
+    public <E extends org.spongepowered.api.entity.Entity> Collection<? extends E> getEntities(Class<? extends E> entityClass, AABB box, @javax.annotation.Nullable Predicate<? super E> predicate) {
+        return null;
+    }
+
+    @Override
+    public long getSeed() {
+        return 0;
+    }
+
+    @Override
+    public TerrainGenerator<?> getTerrainGenerator() {
+        return null;
+    }
+
+    @Override
+    public WorldProperties getProperties() {
+        return null;
+    }
+
+    @Override
+    public <V> Optional<V> getProperty(int x, int y, int z, Property<V> property) {
+        return Optional.empty();
+    }
+
+    @Override
+    public OptionalInt getIntProperty(int x, int y, int z, Property<Integer> property) {
+        return null;
+    }
+
+    @Override
+    public OptionalDouble getDoubleProperty(int x, int y, int z, Property<Double> property) {
+        return null;
+    }
+
+    @Override
+    public <V> Optional<V> getProperty(int x, int y, int z, org.spongepowered.api.util.Direction direction, Property<V> property) {
+        return Optional.empty();
+    }
+
+    @Override
+    public OptionalInt getIntProperty(int x, int y, int z, org.spongepowered.api.util.Direction direction, Property<Integer> property) {
+        return null;
+    }
+
+    @Override
+    public OptionalDouble getDoubleProperty(int x, int y, int z, org.spongepowered.api.util.Direction direction, Property<Double> property) {
+        return null;
+    }
+
+    @Override
+    public Map<Property<?>, ?> getProperties(int x, int y, int z) {
+        return null;
+    }
+
+    @Override
+    public Collection<org.spongepowered.api.util.Direction> getFacesWithProperty(int x, int y, int z, Property<?> property) {
+        return null;
+    }
+
+    @Override
+    public org.spongepowered.api.entity.Entity createEntity(org.spongepowered.api.entity.EntityType<?> type, Vector3d position) throws IllegalArgumentException, IllegalStateException {
+        return null;
+    }
+
+    @Override
+    public org.spongepowered.api.entity.Entity createEntityNaturally(org.spongepowered.api.entity.EntityType<?> type, Vector3d position) throws IllegalArgumentException, IllegalStateException {
+        return null;
+    }
+
+    @Override
+    public Optional<org.spongepowered.api.entity.Entity> createEntity(DataContainer entityContainer) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<org.spongepowered.api.entity.Entity> createEntity(DataContainer entityContainer, Vector3d position) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Collection<org.spongepowered.api.entity.Entity> spawnEntities(Iterable<? extends org.spongepowered.api.entity.Entity> entities) {
+        return null;
+    }
+
+    @Override
+    public int getHeight(HeightType type, int x, int z) {
+        return 0;
+    }
+
+    @Override
+    public <E> Optional<E> get(int x, int y, int z, Key<? extends Value<E>> key) {
+        return Optional.empty();
+    }
+
+    @Override
+    public <E, V extends Value<E>> Optional<V> getValue(int x, int y, int z, Key<V> key) {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean supports(int x, int y, int z, Key<?> key) {
+        return false;
+    }
+
+    @Override
+    public Set<Key<?>> getKeys(int x, int y, int z) {
+        return null;
+    }
+
+    @Override
+    public Set<Value.Immutable<?>> getValues(int x, int y, int z) {
+        return null;
+    }
+
+    @Override
+    public <E> DataTransactionResult offer(int x, int y, int z, Key<? extends Value<E>> key, E value) {
+        return null;
+    }
+
+    @Override
+    public DataTransactionResult remove(int x, int y, int z, Key<?> key) {
+        return null;
+    }
+
+    @Override
+    public DataTransactionResult undo(int x, int y, int z, DataTransactionResult result) {
+        return null;
+    }
+
+    @Override
+    public DataTransactionResult copyFrom(int xTo, int yTo, int zTo, DataHolder from) {
+        return null;
+    }
+
+    @Override
+    public DataTransactionResult copyFrom(int xTo, int yTo, int zTo, DataHolder from, MergeFunction function) {
+        return null;
+    }
+
+    @Override
+    public DataTransactionResult copyFrom(int xTo, int yTo, int zTo, int xFrom, int yFrom, int zFrom, MergeFunction function) {
+        return null;
+    }
+
+    @Override
+    public boolean validateRawData(int x, int y, int z, DataView container) {
+        return false;
+    }
+
+    @Override
+    public void setRawData(int x, int y, int z, DataView container) throws InvalidDataException {
+
+    }
+
+    @Override
+    public int getSeaLevel() {
+        return 0;
+    }
+
+    @Override
+    public ScheduledUpdateList<BlockType> getScheduledBlockUpdates() {
+        return null;
+    }
+
+    @Override
+    public ScheduledUpdateList<FluidType> getScheduledFluidUpdates() {
+        return null;
+    }
+
+    @Override
+    public boolean setBlock(int x, int y, int z, org.spongepowered.api.block.BlockState state, BlockChangeFlag flag) {
+        return false;
+    }
+
+    @Override
+    public boolean spawnEntity(org.spongepowered.api.entity.Entity entity) {
+        return false;
+    }
+
+    @Override
+    public boolean removeBlock(int x, int y, int z) {
+        return false;
+    }
+
+    @Override
     public Optional<Player> getClosestPlayer(int x, int y, int z, double distance, Predicate<? super Player> predicate) {
         return Optional.empty();
     }
 
     @Override
     public BlockSnapshot createSnapshot(int x, int y, int z) {
-        return null;
+        if (!containsBlock(x, y, z)) {
+            return BlockSnapshot.NONE;
+        }
+        if (!this.shadow$chunkExists(x >> 4, z >> 4)) {
+            return BlockSnapshot.NONE;
+        }
+        final BlockPos pos = new BlockPos(x, y, z);
+        final SpongeBlockSnapshotBuilder builder = SpongeBlockSnapshotBuilder.pooled();
+        builder.worldId(this.getProperties().getUniqueId())
+                .position(new Vector3i(x, y, z));
+        final IChunk chunk = this.shadow$getChunk(pos);
+        final net.minecraft.block.BlockState state = chunk.getBlockState(pos);
+        builder.blockState(state);
+        if (chunk instanceof net.minecraft.world.chunk.Chunk) {
+            @javax.annotation.Nullable final net.minecraft.tileentity.TileEntity tile = ((net.minecraft.world.chunk.Chunk) chunk).getTileEntity(pos, net.minecraft.world.chunk.Chunk.CreateEntityType.CHECK);
+            if (tile != null) {
+                TrackingUtil.addTileEntityToBuilder(tile, builder);
+            }
+        }
+        ((ChunkBridge) chunk).bridge$getBlockOwnerUUID(pos).ifPresent(builder::creator);
+        ((ChunkBridge) chunk).bridge$getBlockNotifierUUID(pos).ifPresent(builder::notifier);
+
+        builder.flag(BlockChangeFlags.NONE);
+
+
+        return builder.build();
     }
 
     @Override
     public boolean restoreSnapshot(BlockSnapshot snapshot, boolean force, BlockChangeFlag flag) {
-        return false;
+        return snapshot.restore(force, flag);
     }
 
     @Override
     public boolean restoreSnapshot(int x, int y, int z, BlockSnapshot snapshot, boolean force, BlockChangeFlag flag) {
-        return false;
+        return snapshot.withLocation(Location.of(this, x, y, z))
+                .restore(force, flag);
     }
 
     @Override
     public Chunk getChunkAtBlock(Vector3i blockPosition) {
-        return null;
+        return (Chunk) this.shadow$getChunkAt(new BlockPos(blockPosition.getX(), blockPosition.getY(), blockPosition.getZ()));
     }
 
     @Override
     public Chunk getChunkAtBlock(int bx, int by, int bz) {
-        return null;
+        return (Chunk) this.shadow$getChunkAt(new BlockPos(bx, by, bz));
     }
 
     @Override
     public Chunk getChunk(Vector3i chunkPos) {
-        return null;
+        return (Chunk) this.shadow$getChunk(chunkPos.getX() >> 4, chunkPos.getZ() >> 4, ChunkStatus.FULL, false);
     }
 
     @Override
@@ -289,73 +594,39 @@ public abstract class WorldMixin_API implements IWorldMixin_API<World>, World, I
     }
 
     @Override
+    public boolean setBlock(Vector3i position, org.spongepowered.api.block.BlockState block) {
+        return this.shadow$setBlockState(new BlockPos(position.getX(), position.getY(), position.getZ()), (BlockState) block, Constants.BlockChangeFlags.ALL);
+    }
+
+    @Override
+    public boolean setBlock(int x, int y, int z, org.spongepowered.api.block.BlockState block) {
+        return this.shadow$setBlockState(new BlockPos(x, y, z), (BlockState) block, Constants.BlockChangeFlags.ALL);
+    }
+
+    @Override
+    public boolean setBlock(Vector3i position, org.spongepowered.api.block.BlockState state, BlockChangeFlag flag) {
+        return this.shadow$setBlockState(new BlockPos(position.getX(), position.getY(), position.getZ()), (BlockState) state, BlockChangeFlagRegistryModule.toNative(flag));
+    }
+
+    @Override
     public Chunk getChunk(int cx, int cy, int cz) {
-        return (Chunk) IWorldMixin_API.super.getChunk(cx, cy, cz);
+        return (Chunk) this.shadow$getChunk(cx, cz);
     }
 
     @Override
     public Optional<Chunk> loadChunk(int cx, int cy, int cz, boolean shouldGenerate) {
-        return Optional.empty();
+        return Optional.ofNullable((Chunk) this.shadow$getChunk(cx >> 4, cz >> 4, shouldGenerate ? ChunkStatus.FULL : ChunkStatus.EMPTY, false));
     }
 
-    @Override
-    public Optional<Chunk> regenerateChunk(int cx, int cy, int cz, ChunkRegenerateFlag flag) {
-        return Optional.empty();
-    }
-
-    @Override
-    public boolean unloadChunk(Chunk chunk) {
-        return false;
-    }
 
     @Override
     public Iterable<Chunk> getLoadedChunks() {
-        return null;
-    }
-
-    @Override
-    public Path getDirectory() {
-        return null;
-    }
-
-    @Override
-    public WorldStorage getWorldStorage() {
-        return null;
-    }
-
-    @Override
-    public void triggerExplosion(Explosion explosion) {
-
-    }
-
-    @Override
-    public PortalAgent getPortalAgent() {
-        return null;
-    }
-
-    @Override
-    public boolean save() throws IOException {
-        return false;
-    }
-
-    @Override
-    public int getViewDistance() {
-        return 0;
-    }
-
-    @Override
-    public void setViewDistance(int viewDistance) {
-
-    }
-
-    @Override
-    public void resetViewDistance() {
-
+        throw new UnsupportedOperationException("Unfortunately, you've found a World that doesn't know how to iterate it's loaded chunks.");
     }
 
     @Override
     public boolean isLoaded() {
-        return false;
+        throw new UnsupportedOperationException("Unfortunately, Sponge doesn't know how to make a non-managed world loaded.");
     }
 
     @Override
@@ -370,62 +641,68 @@ public abstract class WorldMixin_API implements IWorldMixin_API<World>, World, I
 
     @Override
     public MessageChannel getMessageChannel() {
-        return null;
+        return MessageChannel.toNone();
     }
 
     @Override
     public void setMessageChannel(MessageChannel channel) {
-
+        throw new UnsupportedOperationException("Unfortunately, you've found a World that doesn't know how to change it's message channel.");
     }
 
     @Override
     public Location getLocation(Vector3i position) {
-        return null;
+        return Location.of(this, position);
     }
 
     @Override
     public Location getLocation(Vector3d position) {
-        return null;
+        return Location.of(this, position);
     }
 
     @Override
     public ArchetypeVolume createArchetypeVolume(Vector3i min, Vector3i max, Vector3i origin) {
+
         return null;
     }
 
     @Override
     public Optional<UUID> getCreator(int x, int y, int z) {
+        // By default, this does nothing - We use a separate mixin to implement this onto ServerWorld.
         return Optional.empty();
     }
 
     @Override
     public Optional<UUID> getNotifier(int x, int y, int z) {
+        // By default, this does nothing - We use a separate mixin to implement this onto ServerWorld.
         return Optional.empty();
     }
 
     @Override
     public void setCreator(int x, int y, int z, @Nullable UUID uuid) {
-
+        // By default, this does nothing - We use a separate mixin to implement this onto ServerWorld.
     }
 
     @Override
     public void setNotifier(int x, int y, int z, @Nullable UUID uuid) {
-
+        // By default, this does nothing - We use a separate mixin to implement this onto ServerWorld.
     }
 
     @Override
     public Weather getWeather() {
-        return null;
+        // TODO - determine how to implement this properly
+        return Weathers.CLEAR;
     }
 
     @Override
     public Duration getRemainingWeatherDuration() {
-        return null;
+        // TODO - determine how to implement this properly
+        return Duration.of(0, TemporalUnits.MINECRAFT_TICKS);
     }
 
     @Override
     public Duration getRunningWeatherDuration() {
-        return null;
+        // TODO - determine how to implement this properly
+        return Duration.of(0, TemporalUnits.MINECRAFT_TICKS);
     }
 
     @Override
@@ -438,4 +715,86 @@ public abstract class WorldMixin_API implements IWorldMixin_API<World>, World, I
 
     }
 
+    @Override
+    public void spawnParticles(ParticleEffect particleEffect, Vector3d position, int radius) {
+        checkNotNull(particleEffect, "The particle effect cannot be null!");
+        checkNotNull(position, "The position cannot be null");
+        checkArgument(radius > 0, "The radius has to be greater then zero!");
+
+        final List<IPacket<?>> packets = SpongeParticleHelper.toPackets((SpongeParticleEffect) particleEffect, position);
+
+        if (!packets.isEmpty()) {
+            final PlayerList playerList = this.shadow$getServer().getPlayerList();
+
+            final double x = position.getX();
+            final double y = position.getY();
+            final double z = position.getZ();
+
+            for (final IPacket<?> packet : packets) {
+                // TODO - Might have to spoof this because of the separation from type and id
+                playerList.sendToAllNearExcept(null, x, y, z, radius, this.shadow$getDimension().getType(), packet);
+            }
+        }
+    }
+
+
+    @Override
+    public void playSound(SoundType sound, org.spongepowered.api.effect.sound.SoundCategory category, Vector3d position, double volume, double pitch, double minVolume) {
+        throw new UnsupportedOperationException("Unfortunately you've found a World that doesn't implement playSound");
+    }
+
+    @Override
+    public void stopSounds() {
+        throw new UnsupportedOperationException("Unfortunately you've found a World that doesn't implement stopSounds");
+    }
+
+    @Override
+    public void stopSounds(SoundType sound) {
+        throw new UnsupportedOperationException("Unfortunately you've found a World that doesn't implement stopSounds");
+    }
+
+    @Override
+    public void stopSounds(org.spongepowered.api.effect.sound.SoundCategory category) {
+        throw new UnsupportedOperationException("Unfortunately you've found a World that doesn't implement stopSounds");
+    }
+
+    @Override
+    public void stopSounds(SoundType sound, org.spongepowered.api.effect.sound.SoundCategory category) {
+        throw new UnsupportedOperationException("Unfortunately you've found a World that doesn't implement stopSounds");
+    }
+
+    @Override
+    public void playMusicDisc(Vector3i position, MusicDisc musicDiscType) {
+        throw new UnsupportedOperationException("Unfortunately you've found a World that doesn't implement playMusicDisc");
+    }
+
+    @Override
+    public void stopMusicDisc(Vector3i position) {
+        throw new UnsupportedOperationException("Unfortunately you've found a World that doesn't implement stopMusicDisc");
+    }
+
+    @Override
+    public void sendTitle(Title title) {
+        throw new UnsupportedOperationException("Unfortunately you've found a World that doesn't implement sendTitle");
+    }
+
+    @Override
+    public void sendBookView(BookView bookView) {
+        throw new UnsupportedOperationException("Unfortunately you've found a World that doesn't implement sendBookView");
+    }
+
+    @Override
+    public void sendBlockChange(int x, int y, int z, org.spongepowered.api.block.BlockState state) {
+        throw new UnsupportedOperationException("Unfortunately you've found a World that doesn't implement sendBlockChange");
+    }
+
+    @Override
+    public void resetBlockChange(int x, int y, int z) {
+        throw new UnsupportedOperationException("Unfortunately you've found a World that doesn't implement resetBlockChange");
+    }
+
+    @Override
+    public Server getServer() {
+        return (Server) this.shadow$getServer();
+    }
 }

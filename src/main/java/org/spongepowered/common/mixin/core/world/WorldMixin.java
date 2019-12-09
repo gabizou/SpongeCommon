@@ -214,7 +214,7 @@ public abstract class WorldMixin implements WorldBridge {
         if (this.bridge$isFake() || entity == null) {
             return;
         }
-        if (entity.world != null && !((WorldBridge) entity.world).bridge$isFake() && SpongeHooks.checkBoundingBoxSize(entity, axis)) {
+        if (entity.world != null && !((WorldBridge) entitAlsoy.world).bridge$isFake() && SpongeHooks.checkBoundingBoxSize(entity, axis)) {
             // Removing misbehaved living entities
             cir.setReturnValue(new ArrayList<>());
         }

@@ -24,15 +24,11 @@
  */
 package org.spongepowered.common.event.tracking;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.common.collect.ImmutableList;
 import net.minecraft.block.Block;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.crash.ReportedException;
-import net.minecraft.entity.IEntityOwnable;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -52,7 +48,6 @@ import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.event.CauseStackManager;
-import org.spongepowered.api.event.SpongeEventFactory;
 import org.spongepowered.api.event.block.ChangeBlockEvent;
 import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.cause.EventContextKeys;
@@ -89,6 +84,7 @@ import org.spongepowered.common.util.Constants;
 import org.spongepowered.common.world.SpongeBlockChangeFlag;
 import org.spongepowered.common.world.SpongeLocatableBlockBuilder;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayDeque;
@@ -102,7 +98,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiConsumer;
 
-import javax.annotation.Nullable;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * The core state machine of Sponge. Acts a as proxy between various engine objects by processing actions through
@@ -143,7 +140,8 @@ public final class PhaseTracker {
                 }
 
             })
-            .submit(SpongeImpl.getPlugin());
+            .plugin(SpongeImpl.getSpongePlugin())
+            .build();
     }
 
     @Nullable private Thread sidedThread;
@@ -326,7 +324,7 @@ public final class PhaseTracker {
         this.stack.pop();
 
         if (this.stack.isEmpty()) {
-            for (final ServerWorld world : WorldManager.getWorlds()) {
+            for (final org.spongepowered.api.world.server.ServerWorld world : SpongeImpl.getWorldManager().getWorlds()) {
                 final ServerWorldBridge mixinWorld = (ServerWorldBridge) world;
                 if (mixinWorld.bridge$getProxyAccess().hasProxy()) {
                     new PrettyPrinter().add("BlockPRoxy has extra proxies not pruned!").centre().hr()
@@ -478,7 +476,7 @@ public final class PhaseTracker {
                         + "attempting to perform a neighbor notification with it. Because "
                         + "this is guaranteed to lead to a crash or a spam of reports, "
                         + "Sponge is going ahead and fixing the issue. The offending Tile "
-                        + "is " + type.getId())
+                        + "is " + type.getKey().toString())
             .add()
             .add("%s : %s", "Source position", pos)
             .add("%s : %s", "Source TileEntity", type)
@@ -662,21 +660,21 @@ public final class PhaseTracker {
                     .orElse(null);
                 if (type != null) {
                     final Map<String, Boolean> autoFixedTiles = trackerConfig.getAutoFixedTiles();
-                    final boolean contained = autoFixedTiles.containsKey(type.getId());
+                    final boolean contained = autoFixedTiles.containsKey(type.getKey().toString());
                     // If we didn't map the tile entity yet, we should apply the mapping
                     // based on whether the source is the same as the TileEntity.
                     if (!contained) {
                         if (pos.equals(currentContext.getSource(TileEntity.class).get().getPos())) {
-                            autoFixedTiles.put(type.getId(), true);
+                            autoFixedTiles.put(type.getKey().toString(), true);
                         } else {
-                            autoFixedTiles.put(type.getId(), false);
+                            autoFixedTiles.put(type.getKey().toString(), false);
                         }
                     }
-                    final boolean useTile = contained && autoFixedTiles.get(type.getId());
+                    final boolean useTile = contained && autoFixedTiles.get(type.getKey().toString());
                     if (useTile) {
-                        blockIn = ((TileEntity) currentContext.getSource()).getBlockType();
+                        blockIn = ((TileEntity) currentContext.getSource()).getBlockState().getBlock();
                     } else {
-                        blockIn = (pos.getX() >> 4 == chunk.x && pos.getZ() >> 4 == chunk.z)
+                        blockIn = (pos.getX() >> 4 == chunk.getPos().x && pos.getZ() >> 4 == chunk.getPos().z)
                                   ? chunk.getBlockState(pos).getBlock()
                                   : worldServer.getBlockState(pos).getBlock();
                     }
@@ -684,7 +682,7 @@ public final class PhaseTracker {
                         printNullSourceBlockWithTile(pos, blockIn, otherPos, type, useTile, new NullPointerException("Null Source Block For TileEntity Neighbor Notification"));
                     }
                 } else {
-                    blockIn = (pos.getX() >> 4 == chunk.x && pos.getZ() >> 4 == chunk.z)
+                    blockIn = (pos.getX() >> 4 == chunk.getPos().x && pos.getZ() >> 4 == chunk.getPos().z)
                               ? chunk.getBlockState(pos).getBlock()
                               : worldServer.getBlockState(pos).getBlock();
                     if (trackerConfig.isReportNullSourceBlocks()) {
@@ -694,7 +692,7 @@ public final class PhaseTracker {
                 }
 
             } else {
-                blockIn = (pos.getX() >> 4 == chunk.x && pos.getZ() >> 4 == chunk.z)
+                blockIn = (pos.getX() >> 4 == chunk.getPos().x && pos.getZ() >> 4 == chunk.getPos().z)
                           ? chunk.getBlockState(pos).getBlock()
                           : worldServer.getBlockState(pos).getBlock();
                 if (trackerConfig.isReportNullSourceBlocks()) {

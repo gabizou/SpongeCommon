@@ -28,6 +28,7 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.particles.IParticleData;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -39,9 +40,11 @@ import net.minecraft.world.IWorld;
 import net.minecraft.world.chunk.AbstractChunkProvider;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.IChunk;
+import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.storage.WorldInfo;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.BlockType;
+import org.spongepowered.api.block.entity.BlockEntity;
 import org.spongepowered.api.data.DataHolder;
 import org.spongepowered.api.data.DataTransactionResult;
 import org.spongepowered.api.data.Key;
@@ -51,40 +54,30 @@ import org.spongepowered.api.data.persistence.InvalidDataException;
 import org.spongepowered.api.data.property.Property;
 import org.spongepowered.api.data.value.MergeFunction;
 import org.spongepowered.api.data.value.Value;
-import org.spongepowered.api.effect.particle.ParticleEffect;
-import org.spongepowered.api.effect.sound.SoundCategory;
-import org.spongepowered.api.effect.sound.SoundType;
-import org.spongepowered.api.effect.sound.music.MusicDisc;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.fluid.FluidType;
-import org.spongepowered.api.item.inventory.ItemStack;
-import org.spongepowered.api.profile.GameProfile;
 import org.spongepowered.api.scheduler.ScheduledUpdateList;
-import org.spongepowered.api.text.BookView;
-import org.spongepowered.api.text.title.Title;
 import org.spongepowered.api.util.AABB;
 import org.spongepowered.api.util.Direction;
 import org.spongepowered.api.world.BlockChangeFlag;
 import org.spongepowered.api.world.HeightType;
 import org.spongepowered.api.world.ProtoWorld;
-import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.biome.BiomeType;
 import org.spongepowered.api.world.chunk.ProtoChunk;
 import org.spongepowered.api.world.gen.TerrainGenerator;
 import org.spongepowered.api.world.storage.WorldProperties;
-import org.spongepowered.api.world.volume.biome.worker.MutableBiomeVolumeStream;
-import org.spongepowered.api.world.volume.block.worker.MutableBlockVolumeStream;
+import org.spongepowered.api.world.volume.biome.stream.BiomeVolumeStream;
 import org.spongepowered.api.world.volume.entity.ImmutableEntityVolume;
 import org.spongepowered.api.world.volume.entity.UnmodifiableEntityVolume;
-import org.spongepowered.api.world.volume.entity.worker.MutableEntityStream;
+import org.spongepowered.api.world.volume.entity.stream.EntityStream;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
 
-import java.time.Duration;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -95,9 +88,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
+import java.util.stream.StreamSupport;
 
 @Mixin(IWorld.class)
 public interface IWorldMixin_API<T extends ProtoWorld<T>> extends IEntityReaderMixin_API, IWorldReaderMixin_API<T>, IWorldGenerationReaderMixin_API, ProtoWorld<T> {
@@ -129,11 +122,6 @@ public interface IWorldMixin_API<T extends ProtoWorld<T>> extends IEntityReaderM
             return false;
         }
         return ((ProtoChunk) iChunk).setBiome(x, y, z, biome);
-    }
-
-    @Override
-    default MutableBiomeVolumeStream<T> toBiomeStream() {
-        throw new UnsupportedOperationException("Unfortunately, you've found an extended class of IWorld that isn't part of Sponge API: " + this.getClass());
     }
 
     @Override
@@ -178,6 +166,7 @@ public interface IWorldMixin_API<T extends ProtoWorld<T>> extends IEntityReaderM
 
     @Override
     default Optional<Entity> getEntity(UUID uuid) {
+        // Overridden in ServerWorld
         return Optional.empty();
     }
 
@@ -185,9 +174,12 @@ public interface IWorldMixin_API<T extends ProtoWorld<T>> extends IEntityReaderM
     default Collection<? extends Player> getPlayers() {
         return IEntityReaderMixin_API.super.getPlayers();
     }
-    @Override default Collection<? extends Entity> getEntities(AABB box, Predicate<? super Entity> filter) {
+
+    @Override
+    default Collection<? extends Entity> getEntities(AABB box, Predicate<? super Entity> filter) {
         return IEntityReaderMixin_API.super.getEntities(box, filter);
     }
+
     @Override
     default <E extends Entity> Collection<? extends E> getEntities(Class<? extends E> entityClass, AABB box,
                                                                    @Nullable Predicate<? super E> predicate) {
@@ -227,16 +219,61 @@ public interface IWorldMixin_API<T extends ProtoWorld<T>> extends IEntityReaderM
 
     @Override
     default <V> Optional<V> getProperty(int x, int y, int z, Property<V> property) {
+        // Start with getting the chunk for the block and tile entity
+        @Nullable final IChunk iChunk = this.shadow$getChunk(x >> 4, z >> 4, ChunkStatus.FULL, false);
+        if (iChunk == null) {
+            return Optional.empty();
+        }
+        BlockPos pos = new BlockPos(x, y, z);
+        net.minecraft.block.BlockState state = iChunk.getBlockState(pos);
+        Optional<V> prop = ((BlockState) state).getProperty(property);
+        if (prop.isPresent()) {
+            return prop;
+        }
+        @Nullable final TileEntity tile = iChunk.getTileEntity(pos);
+        if (tile != null) {
+            return ((BlockEntity) tile).getProperty(property);
+        }
         return Optional.empty();
     }
 
     @Override
     default OptionalInt getIntProperty(int x, int y, int z, Property<Integer> property) {
+        // Start with getting the chunk for the block and tile entity
+        @Nullable final IChunk iChunk = this.shadow$getChunk(x >> 4, z >> 4, ChunkStatus.FULL, false);
+        if (iChunk == null) {
+            return OptionalInt.empty();
+        }
+        BlockPos pos = new BlockPos(x, y, z);
+        net.minecraft.block.BlockState state = iChunk.getBlockState(pos);
+        OptionalInt prop = ((BlockState) state).getIntProperty(property);
+        if (prop.isPresent()) {
+            return prop;
+        }
+        @Nullable final TileEntity tile = iChunk.getTileEntity(pos);
+        if (tile != null) {
+            return ((BlockEntity) tile).getIntProperty(property);
+        }
         return OptionalInt.empty();
     }
 
     @Override
     default OptionalDouble getDoubleProperty(int x, int y, int z, Property<Double> property) {
+        // Start with getting the chunk for the block and tile entity
+        @Nullable final IChunk iChunk = this.shadow$getChunk(x >> 4, z >> 4, ChunkStatus.FULL, false);
+        if (iChunk == null) {
+            return OptionalDouble.empty();
+        }
+        BlockPos pos = new BlockPos(x, y, z);
+        net.minecraft.block.BlockState state = iChunk.getBlockState(pos);
+        OptionalDouble prop = ((BlockState) state).getDoubleProperty(property);
+        if (prop.isPresent()) {
+            return prop;
+        }
+        @Nullable final TileEntity tile = iChunk.getTileEntity(pos);
+        if (tile != null) {
+            return ((BlockEntity) tile).getDoubleProperty(property);
+        }
         return OptionalDouble.empty();
     }
 
@@ -267,64 +304,6 @@ public interface IWorldMixin_API<T extends ProtoWorld<T>> extends IEntityReaderM
 
     // TODO - the rest of this implementation.
 
-    @Override
-    default void spawnParticles(ParticleEffect particleEffect, Vector3d position, int radius) {
-    }
-
-    @Override
-    default void playSound(SoundType sound, SoundCategory category, Vector3d position, double volume, double pitch, double minVolume) {
-
-    }
-
-    @Override
-    default void stopSounds() {
-
-    }
-
-    @Override
-    default void stopSounds(SoundType sound) {
-
-    }
-
-    @Override
-    default void stopSounds(SoundCategory category) {
-
-    }
-
-    @Override
-    default void stopSounds(SoundType sound, SoundCategory category) {
-
-    }
-
-    @Override
-    default void playMusicDisc(Vector3i position, MusicDisc musicDiscType) {
-
-    }
-
-    @Override
-    default void stopMusicDisc(Vector3i position) {
-
-    }
-
-    @Override
-    default void sendTitle(Title title) {
-
-    }
-
-    @Override
-    default void sendBookView(BookView bookView) {
-
-    }
-
-    @Override
-    default void sendBlockChange(int x, int y, int z, BlockState state) {
-
-    }
-
-    @Override
-    default void resetBlockChange(int x, int y, int z) {
-
-    }
 
     @Override
     default Entity createEntity(EntityType<?> type, Vector3d position) throws IllegalArgumentException, IllegalStateException {
@@ -348,58 +327,21 @@ public interface IWorldMixin_API<T extends ProtoWorld<T>> extends IEntityReaderM
 
     @Override
     default Collection<Entity> spawnEntities(Iterable<? extends Entity> entities) {
-        return null;
+        return StreamSupport.stream(entities.spliterator(), false)
+                .map(entity -> (net.minecraft.entity.Entity) entity)
+                .filter(this::shadow$addEntity)
+                .map(entity -> (Entity) entity)
+                .collect(Collectors.toList());
     }
 
     @Override
-    default MutableEntityStream<T> toEntityStream() {
-        return null;
+    default ProtoChunk<?> getChunk(int x, int y, int z) {
+        return IWorldReaderMixin_API.super.getChunk(x, y, z);
     }
 
     @Override
-    default MutableBlockVolumeStream<T> toBlockStream() {
-        return null;
-    }
-    @Override default ProtoChunk<?> getChunk(int x, int y, int z) {
-        return null;
-    }
-    @Override default int getHeight(HeightType type, int x, int z) {
-        return 0;
-    }
-
-    @Override
-    default boolean hitBlock(int x, int y, int z, Direction side, GameProfile profile) {
-        return false;
-    }
-
-    @Override
-    default boolean interactBlock(int x, int y, int z, Direction side, GameProfile profile) {
-        return false;
-    }
-
-    @Override
-    default boolean interactBlockWith(int x, int y, int z, ItemStack itemStack, Direction side, GameProfile profile) {
-        return false;
-    }
-
-    @Override
-    default boolean placeBlock(int x, int y, int z, BlockState block, Direction side, GameProfile profile) {
-        return false;
-    }
-
-    @Override
-    default boolean digBlock(int x, int y, int z, GameProfile profile) {
-        return false;
-    }
-
-    @Override
-    default boolean digBlockWith(int x, int y, int z, ItemStack itemStack, GameProfile profile) {
-        return false;
-    }
-
-    @Override
-    default Duration getBlockDigTimeWith(int x, int y, int z, ItemStack itemStack, GameProfile profile) {
-        return null;
+    default int getHeight(HeightType type, int x, int z) {
+        return shadow$getHeight((Heightmap.Type) (Object) type, x, z);
     }
 
     @Override

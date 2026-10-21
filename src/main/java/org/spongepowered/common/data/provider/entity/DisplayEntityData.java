@@ -29,12 +29,11 @@ import net.minecraft.util.Brightness;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.item.ItemDisplayContext;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.joml.Quaterniond;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.data.Keys;
 import org.spongepowered.api.entity.display.BillboardType;
-import org.spongepowered.api.entity.display.DisplayEntity;
 import org.spongepowered.api.entity.display.ItemDisplayType;
 import org.spongepowered.api.entity.display.TextAlignment;
 import org.spongepowered.api.util.Color;
@@ -48,10 +47,14 @@ import org.spongepowered.common.adventure.SpongeAdventure;
 import org.spongepowered.common.data.provider.DataProviderRegistrator;
 import org.spongepowered.common.item.util.ItemStackUtil;
 import org.spongepowered.common.util.SpongeTicks;
+import org.spongepowered.math.imaginary.Quaterniond;
 import org.spongepowered.math.matrix.Matrix4d;
 import org.spongepowered.math.vector.Vector3d;
 
 public class DisplayEntityData {
+
+    private static final int MAX_TELEPORT_DURATION = 59;
+    private static final int NO_GLOW_COLOR_OVERRIDE = -1;
 
     private DisplayEntityData() {
     }
@@ -62,7 +65,7 @@ public class DisplayEntityData {
                 .asMutable(Display.class)
                     .create(Keys.TRANSFORM)
                         .get(DisplayEntityData::getTransform)
-                        .set((h, v) -> DisplayEntityData.setTransform(h, v.toMatrix()))
+                        .set(DisplayEntityData::setTransform)
                     .create(Keys.MATRIX)
                         .get(DisplayEntityData::getMatrix)
                         .set(DisplayEntityData::setTransform)
@@ -72,11 +75,23 @@ public class DisplayEntityData {
                         .set((h, v) -> h.invoker$setBillboardConstraints((Display.BillboardConstraints) (Object) v))
                     .create(Keys.SKY_LIGHT)
                         .get(h -> DisplayEntityData.skyLight(h.invoker$getPackedBrightnessOverride()))
-                        .set((h, v) -> h.invoker$setBrightnessOverride(DisplayEntityData.brightness(h.invoker$getPackedBrightnessOverride(), v, null)))
+                        .setAnd((h, v) -> {
+                            if (!DisplayEntityData.isLightValue(v)) {
+                                return false;
+                            }
+                            h.invoker$setBrightnessOverride(DisplayEntityData.brightness(h.invoker$getPackedBrightnessOverride(), null, v));
+                            return true;
+                        })
                         .delete(h -> h.invoker$setBrightnessOverride(null))
                     .create(Keys.BLOCK_LIGHT)
                         .get(h -> DisplayEntityData.blockLight(h.invoker$getPackedBrightnessOverride()))
-                        .set((h, v) -> h.invoker$setBrightnessOverride(DisplayEntityData.brightness(h.invoker$getPackedBrightnessOverride(), null, v)))
+                        .setAnd((h, v) -> {
+                            if (!DisplayEntityData.isLightValue(v)) {
+                                return false;
+                            }
+                            h.invoker$setBrightnessOverride(DisplayEntityData.brightness(h.invoker$getPackedBrightnessOverride(), v, null));
+                            return true;
+                        })
                         .delete(h -> h.invoker$setBrightnessOverride(null))
                     .create(Keys.INTERPOLATION_DURATION)
                         .get(h -> Ticks.of(h.invoker$getInterpolationDuration()))
@@ -99,7 +114,8 @@ public class DisplayEntityData {
                     .create(Keys.TELEPORT_DURATION)
                         .get(h -> Ticks.of(h.invoker$getPosRotInterpolationDuration()))
                         .setAnd((h ,v) -> {
-                            if (v.isInfinite()) {
+                            // Vanilla clamps it to this range when loading the entity
+                            if (v.isInfinite() || v.ticks() > DisplayEntityData.MAX_TELEPORT_DURATION) {
                                 return false;
                             }
                             h.invoker$setPosRotInterpolationDuration(SpongeTicks.toSaturatedIntOrInfinite(v));
@@ -114,6 +130,31 @@ public class DisplayEntityData {
                     .create(Keys.VIEW_RANGE)
                         .get(h -> (double) h.invoker$getViewRange())
                         .set((h ,v) -> h.invoker$setViewRange(v.floatValue()))
+                    .create(Keys.CULLING_WIDTH)
+                        .get(h -> (double) h.invoker$getWidth())
+                        .setAnd((h, v) -> {
+                            if (v < 0) {
+                                return false;
+                            }
+                            h.invoker$setWidth(v.floatValue());
+                            return true;
+                        })
+                    .create(Keys.CULLING_HEIGHT)
+                        .get(h -> (double) h.invoker$getHeight())
+                        .setAnd((h, v) -> {
+                            if (v < 0) {
+                                return false;
+                            }
+                            h.invoker$setHeight(v.floatValue());
+                            return true;
+                        })
+                    .create(Keys.GLOW_COLOR)
+                        .get(h -> {
+                            final int color = h.invoker$getGlowColorOverride();
+                            return color == DisplayEntityData.NO_GLOW_COLOR_OVERRIDE ? null : Color.ofRgb(color & 0x00ffffff);
+                        })
+                        .set((h, v) -> h.invoker$setGlowColorOverride(v.rgb()))
+                        .delete(h -> h.invoker$setGlowColorOverride(DisplayEntityData.NO_GLOW_COLOR_OVERRIDE))
                 .asMutable(Display_BlockDisplayAccessor.class)
                     .create(Keys.BLOCK_STATE)
                         .get(h -> ((BlockState) h.invoker$getBlockState()))
@@ -126,7 +167,7 @@ public class DisplayEntityData {
                         .get(h -> (ItemDisplayType) (Object) h.invoker$getItemTransform())
                         .set((h, v) -> h.invoker$setItemTransform(((ItemDisplayContext) (Object) v)))
                 .asMutable(Display_TextDisplayAccessor.class)
-                    .create(Keys.DISPLAY_NAME)
+                    .create(Keys.TEXT)
                         .get(h -> SpongeAdventure.asAdventure(h.invoker$getText()))
                         .set((h, v) -> h.invoker$setText(SpongeAdventure.asVanilla(v)))
                     .create(Keys.LINE_WIDTH)
@@ -154,7 +195,6 @@ public class DisplayEntityData {
                         .get(h -> DisplayEntityData.argbToOpacity(h.invoker$getBackgroundColor()))
                         .set((h, v) -> h.invoker$setBackgroundColor(DisplayEntityData.argbWithOpacity(h.invoker$getBackgroundColor(), v)))
         ;
-        registrator.spongeDataStore(Keys.TELEPORT_DURATION.key(), DisplayEntity.class, Keys.TELEPORT_DURATION);
     }
     // @formatter:on
 
@@ -186,6 +226,10 @@ public class DisplayEntityData {
             skyValue = sky == null ? 15 : sky;
         }
         return new Brightness(blockValue, skyValue);
+    }
+
+    private static boolean isLightValue(final int value) {
+        return value >= 0 && value <= 15;
     }
 
     @Nullable
@@ -245,18 +289,26 @@ public class DisplayEntityData {
         }
     }
 
+    // A Transform has no right rotation: it is folded into the left one, which is exact while the scale is uniform
     private static Transform getTransform(final Display display) {
-        var vanillaTransform = DisplayAccessor.invoker$createTransformation(display.getEntityData());
-        var vMatrix = vanillaTransform.getMatrix();
-        var scale = vMatrix.getScale(new Vector3f());
-        var translation = vMatrix.getTranslation(new Vector3f());
-        var rotation = vMatrix.getNormalizedRotation(new Quaterniond());
-        var eulerRot = rotation.getEulerAnglesXYZ(new org.joml.Vector3d());
+        final Transformation transformation = DisplayAccessor.invoker$createTransformation(display.getEntityData());
+        final Vector3f translation = transformation.getTranslation();
+        final Vector3f scale = transformation.getScale();
+        final Quaternionf rotation = new Quaternionf(transformation.getLeftRotation()).mul(transformation.getRightRotation());
+        return Transform.of(new Vector3d(translation.x, translation.y, translation.z))
+            .withRotation(Quaterniond.from(rotation.x, rotation.y, rotation.z, rotation.w))
+            .withScale(new Vector3d(scale.x, scale.y, scale.z));
+    }
 
-        final Transform transform = Transform.of(new Vector3d(translation.x, translation.y, translation.z),
-                                                 new Vector3d(eulerRot.x, eulerRot.y, eulerRot.z),
-                                                 new Vector3d(scale.x, scale.y, scale.z));
-        return transform;
+    private static void setTransform(final Display display, final Transform transform) {
+        final Vector3d translation = transform.position();
+        final Quaterniond rotation = transform.rotationAsQuaternion();
+        final Vector3d scale = transform.scale();
+        ((DisplayAccessor) display).invoker$setTransformation(new Transformation(
+            new Vector3f((float) translation.x(), (float) translation.y(), (float) translation.z()),
+            new Quaternionf((float) rotation.x(), (float) rotation.y(), (float) rotation.z(), (float) rotation.w()),
+            new Vector3f((float) scale.x(), (float) scale.y(), (float) scale.z()),
+            null));
     }
 
     private static Matrix4d getMatrix(final Display display) {

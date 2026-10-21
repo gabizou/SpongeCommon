@@ -74,4 +74,16 @@ public interface DisplayAccessor {
 
     @Invoker("getViewRange") float invoker$getViewRange();
 
+    @Invoker("setWidth") void invoker$setWidth(float $$0);
+
+    @Invoker("getWidth") float invoker$getWidth();
+
+    @Invoker("setHeight") void invoker$setHeight(float $$0);
+
+    @Invoker("getHeight") float invoker$getHeight();
+
+    @Invoker("setGlowColorOverride") void invoker$setGlowColorOverride(int $$0);
+
+    @Invoker("getGlowColorOverride") int invoker$getGlowColorOverride();
+
 }

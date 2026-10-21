@@ -40,6 +40,7 @@ import org.spongepowered.common.launch.Launch;
 import org.spongepowered.common.test.gametest.block.ChangeBlockEventGameTests;
 import org.spongepowered.common.test.gametest.block.NeighborNotificationGameTests;
 import org.spongepowered.common.test.gametest.block.PistonGameTests;
+import org.spongepowered.common.test.gametest.entity.DisplayEntityGameTests;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -71,7 +72,8 @@ public final class SpongeGameTests {
     private static final List<Class<?>> COMMON = List.of(
         ChangeBlockEventGameTests.class,
         NeighborNotificationGameTests.class,
-        PistonGameTests.class
+        PistonGameTests.class,
+        DisplayEntityGameTests.class
     );
     private static final Pattern WORD_START = Pattern.compile("(?<=[a-z0-9])(?=[A-Z])");
 

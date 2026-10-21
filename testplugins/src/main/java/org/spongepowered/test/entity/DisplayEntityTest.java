@@ -86,13 +86,13 @@ public class DisplayEntityTest {
                         final int col7 = 6;
                         final int col8 = 7;
                         var textDisplay = spawnEntity(player.world(), EntityTypes.TEXT_DISPLAY, centerPos, forwardDir, -4, -1);
-                        textDisplay.offer(Keys.DISPLAY_NAME, Component.text("DisplayEntityTest").color(NamedTextColor.GOLD));
+                        textDisplay.offer(Keys.TEXT, Component.text("DisplayEntityTest").color(NamedTextColor.GOLD));
                         textDisplay.offer(Keys.SEE_THROUGH_BLOCKS, true);
                         textDisplay.offer(Keys.TEXT_BACKGROUND_COLOR, Color.CYAN);
                         textDisplay.offer(Keys.TEXT_BACKGROUND_OPACITY, (byte) 255);
 
                         textDisplay = spawnEntity(player.world(), EntityTypes.TEXT_DISPLAY, centerPos, forwardDir, col0, 0);
-                        textDisplay.offer(Keys.DISPLAY_NAME, Component.text("Fixed"));
+                        textDisplay.offer(Keys.TEXT, Component.text("Fixed"));
                         textDisplay.offer(Keys.BILLBOARD_TYPE, BillboardTypes.FIXED.get());
                         textDisplay.offer(Keys.TEXT_BACKGROUND_OPACITY, (byte) 0);
 
@@ -101,11 +101,11 @@ public class DisplayEntityTest {
                         itemDisplay.offer(Keys.BILLBOARD_TYPE, BillboardTypes.FIXED.get());
 
                         textDisplay = spawnEntity(player.world(), EntityTypes.TEXT_DISPLAY, centerPos, forwardDir, col1, 0);
-                        textDisplay.offer(Keys.DISPLAY_NAME, Component.text("default\nlight"));
+                        textDisplay.offer(Keys.TEXT, Component.text("default\nlight"));
                         textDisplay.offer(Keys.TEXT_ALIGNMENT, TextAlignments.RIGHT.get());
 
                         textDisplay = spawnEntity(player.world(), EntityTypes.TEXT_DISPLAY, centerPos, forwardDir, col0, 1);
-                        textDisplay.offer(Keys.DISPLAY_NAME, Component.text("Center"));
+                        textDisplay.offer(Keys.TEXT, Component.text("Center"));
                         textDisplay.offer(Keys.BILLBOARD_TYPE, BillboardTypes.CENTER.get());
 
                         itemDisplay = spawnEntity(player.world(), EntityTypes.ITEM_DISPLAY, centerPos, forwardDir, col2, 1);
@@ -115,10 +115,10 @@ public class DisplayEntityTest {
                         itemDisplay.offer(Keys.BILLBOARD_TYPE, BillboardTypes.CENTER.get());
 
                         textDisplay = spawnEntity(player.world(), EntityTypes.TEXT_DISPLAY, centerPos, forwardDir, col1, 1);
-                        textDisplay.offer(Keys.DISPLAY_NAME, Component.text("Full\nlight"));
+                        textDisplay.offer(Keys.TEXT, Component.text("Full\nlight"));
 
                         textDisplay = spawnEntity(player.world(), EntityTypes.TEXT_DISPLAY, centerPos, forwardDir, col0, 2);
-                        textDisplay.offer(Keys.DISPLAY_NAME, Component.text("Horizontal"));
+                        textDisplay.offer(Keys.TEXT, Component.text("Horizontal"));
                         textDisplay.offer(Keys.BILLBOARD_TYPE, BillboardTypes.HORIZONTAL.get());
 
                         itemDisplay = spawnEntity(player.world(), EntityTypes.ITEM_DISPLAY, centerPos, forwardDir, col2, 2);
@@ -128,11 +128,11 @@ public class DisplayEntityTest {
                         itemDisplay.offer(Keys.BILLBOARD_TYPE, BillboardTypes.HORIZONTAL.get());
 
                         textDisplay = spawnEntity(player.world(), EntityTypes.TEXT_DISPLAY, centerPos, forwardDir, col1, 2);
-                        textDisplay.offer(Keys.DISPLAY_NAME, Component.text("block\nlight"));
+                        textDisplay.offer(Keys.TEXT, Component.text("block\nlight"));
 
 
                         textDisplay = spawnEntity(player.world(), EntityTypes.TEXT_DISPLAY, centerPos, forwardDir, col0, 3);
-                        textDisplay.offer(Keys.DISPLAY_NAME, Component.text("Vertical"));
+                        textDisplay.offer(Keys.TEXT, Component.text("Vertical"));
                         textDisplay.offer(Keys.BILLBOARD_TYPE, BillboardTypes.VERTICAL.get());
 
                         itemDisplay = spawnEntity(player.world(), EntityTypes.ITEM_DISPLAY, centerPos, forwardDir, col2, 3);
@@ -142,10 +142,10 @@ public class DisplayEntityTest {
                         itemDisplay.offer(Keys.BILLBOARD_TYPE, BillboardTypes.VERTICAL.get());
 
                         textDisplay = spawnEntity(player.world(), EntityTypes.TEXT_DISPLAY, centerPos, forwardDir, col1, 3);
-                        textDisplay.offer(Keys.DISPLAY_NAME, Component.text("sky\nlight"));
+                        textDisplay.offer(Keys.TEXT, Component.text("sky\nlight"));
 
                         textDisplay = spawnEntity(player.world(), EntityTypes.TEXT_DISPLAY, centerPos, forwardDir, col0, 4);
-                        textDisplay.offer(Keys.DISPLAY_NAME, Component.text("Low\nViewRange"));
+                        textDisplay.offer(Keys.TEXT, Component.text("Low\nViewRange"));
 
                         itemDisplay = spawnEntity(player.world(), EntityTypes.ITEM_DISPLAY, centerPos, forwardDir, col2, 4);
                         itemDisplay.offer(Keys.ITEM_STACK_SNAPSHOT, ItemStack.of(ItemTypes.EMERALD).asImmutable());
@@ -153,7 +153,7 @@ public class DisplayEntityTest {
 
 
                         textDisplay = spawnEntity(player.world(), EntityTypes.TEXT_DISPLAY, centerPos, forwardDir, col3, 0);
-                        textDisplay.offer(Keys.DISPLAY_NAME, Component.text("Translation"));
+                        textDisplay.offer(Keys.TEXT, Component.text("Translation"));
                         textDisplay.offer(Keys.BILLBOARD_TYPE, BillboardTypes.FIXED.get());
 
                         var blockDisplay = spawnEntity(player.world(), EntityTypes.BLOCK_DISPLAY, centerPos, forwardDir, col4, 0);
@@ -167,7 +167,7 @@ public class DisplayEntityTest {
                         blockDisplay.offer(Keys.TRANSFORM, Transform.of(blockCenterOffset));
 
                         textDisplay = spawnEntity(player.world(), EntityTypes.TEXT_DISPLAY, centerPos, forwardDir, col3, 1);
-                        textDisplay.offer(Keys.DISPLAY_NAME, Component.text("& Scale"));
+                        textDisplay.offer(Keys.TEXT, Component.text("& Scale"));
                         textDisplay.offer(Keys.BILLBOARD_TYPE, BillboardTypes.FIXED.get());
 
                         blockDisplay = spawnEntity(player.world(), EntityTypes.BLOCK_DISPLAY, centerPos, forwardDir, col4, 1);
@@ -181,7 +181,7 @@ public class DisplayEntityTest {
                                         Vector3d.ONE.mul(0.25)));
 
                         textDisplay = spawnEntity(player.world(), EntityTypes.TEXT_DISPLAY, centerPos, forwardDir, col3, 2);
-                        textDisplay.offer(Keys.DISPLAY_NAME, Component.text("& Rotation"));
+                        textDisplay.offer(Keys.TEXT, Component.text("& Rotation"));
                         textDisplay.offer(Keys.BILLBOARD_TYPE, BillboardTypes.FIXED.get());
 
 
@@ -242,7 +242,7 @@ public class DisplayEntityTest {
 
 
                         textDisplay = createEntity(player.world(), EntityTypes.TEXT_DISPLAY, centerPos, forwardDir, col7, 0);
-                        textDisplay.offer(Keys.DISPLAY_NAME, Component.text("Look at these interpolations").color(NamedTextColor.RED));
+                        textDisplay.offer(Keys.TEXT, Component.text("Look at these interpolations").color(NamedTextColor.RED));
                         textDisplay.offer(Keys.LINE_WIDTH, 100);
                         textDisplay.offer(Keys.SEE_THROUGH_BLOCKS, true);
                         textDisplay.offer(Keys.TEXT_BACKGROUND_COLOR, Color.BLACK); // set initial value before spawning
@@ -259,6 +259,16 @@ public class DisplayEntityTest {
                             .scale(0.5)
                             .rotate(Quaterniond.fromAxesAnglesDeg(45, 0, 0)));
                         player.world().spawnEntity(blockDisplay);
+
+                        // Glowing with an outline color of its own rather than its team's, and only culled once
+                        // its 1x1 box is out of view
+                        blockDisplay = spawnEntity(player.world(), EntityTypes.BLOCK_DISPLAY, centerPos, forwardDir, col8, 1);
+                        blockDisplay.offer(Keys.BLOCK_STATE, BlockTypes.WHITE_WOOL.get().defaultState());
+                        blockDisplay.offer(Keys.TRANSFORM, Transform.of(blockCenterOffset));
+                        blockDisplay.offer(Keys.IS_GLOWING, true);
+                        blockDisplay.offer(Keys.GLOW_COLOR, Color.LIME);
+                        blockDisplay.offer(Keys.CULLING_WIDTH, 1.0);
+                        blockDisplay.offer(Keys.CULLING_HEIGHT, 1.0);
 
                         // TODO interpolate text opacity?
 

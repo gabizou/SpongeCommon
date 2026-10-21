@@ -64,6 +64,9 @@ import java.util.UUID;
  * <p>Comparison is strict ({@link LosslessSupport#difference}): runtime class
  * must match, so Long 1 read back as Integer 1 is LOSSY.</p>
  *
+ * <p>Statuses are pinned for api-17 (Minecraft 1.21.10). Compared with api-12: booleans in
+ * CompoundTagDataView read back as Byte (X20), and mixed lists round-trip through NBT.</p>
+ *
  * <p>The table is written to {@code lossless-matrix.md} in the test working
  * directory and the statuses are pinned below so a behavior change fails the test.</p>
  */
@@ -158,8 +161,8 @@ class LosslessMatrixTest {
     static final Map<String, String> EXPECTED = new LinkedHashMap<>();
 
     static {
-        EXPECTED.put("Boolean true", "PPPPP");
-        EXPECTED.put("Boolean false", "PPPPP");
+        EXPECTED.put("Boolean true", "PPPPL");
+        EXPECTED.put("Boolean false", "PPPPL");
         EXPECTED.put("Byte 0", "PPPLP");
         EXPECTED.put("Byte MIN", "PPPLP");
         EXPECTED.put("Byte MAX", "PPPLP");
@@ -210,7 +213,7 @@ class LosslessMatrixTest {
         EXPECTED.put("List<Double>", "-PPPP");
         EXPECTED.put("List<String>", "-PPPP");
         EXPECTED.put("List empty", "-PPPP");
-        EXPECTED.put("List mixed [1, \"a\"] (extra)", "-PEPE");
+        EXPECTED.put("List mixed [1, \"a\"] (extra)", "-PPPP");
         EXPECTED.put("List<List<Integer>> (extra)", "-PPPP");
         EXPECTED.put("Map<String,?>", "-LPPL");
         EXPECTED.put("Map<String,?> key with '.'", "-LPPL");
@@ -223,7 +226,7 @@ class LosslessMatrixTest {
         EXPECTED.put("enum DayOfWeek (no translator)", "-PEEE");
         EXPECTED.put("enum Month (has translator)", "-LPPL");
         EXPECTED.put("nested DataView", "-PPLP");
-        EXPECTED.put("nested DataView with boolean (extra)", "-PPPP");
+        EXPECTED.put("nested DataView with boolean (extra)", "-PPPL");
         EXPECTED.put("Optional.empty() (extra)", "-PEEE");
         EXPECTED.put("null", "EE--E");
     }

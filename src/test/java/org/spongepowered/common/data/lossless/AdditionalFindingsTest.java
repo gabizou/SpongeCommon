@@ -61,7 +61,7 @@ import java.util.stream.Collectors;
  * Issues found while verifying H1-H9 that are not in the original list.
  * Each test is named Xn to match docs/analysis/dataview-lossless.md.
  */
-@DisplayName("Additional findings X1-X19")
+@DisplayName("Additional findings X1-X20")
 class AdditionalFindingsTest {
 
     @Test
@@ -244,12 +244,13 @@ class AdditionalFindingsTest {
     }
 
     @Test
-    @DisplayName("X17 silent corruption: NBT list of booleans reads back as bytes, and mixed lists cannot be written (NBTTranslator.java:138-145)")
+    @DisplayName("X17 silent corruption: NBT list of booleans reads back as bytes; mixed lists round-trip on 1.21.5+ ListTag (api-17)")
     void x17NbtListTyping() throws IOException {
         final DataContainer bools = LosslessSupport.memory().set(KEY, List.of(true));
         assertEquals(List.of((byte) 1), LosslessSupport.nbtRoundTrip(bools).getList(KEY).get());
+        // api-12 (MC 1.21.1) threw UnsupportedOperationException here; 1.21.5+ ListTag accepts mixed element types
         final DataContainer mixed = LosslessSupport.memory().set(KEY, List.of(1, "a"));
-        assertThrows(UnsupportedOperationException.class, () -> LosslessSupport.nbtRoundTrip(mixed));
+        assertEquals(List.of(1, "a"), LosslessSupport.nbtRoundTrip(mixed).getList(KEY).get());
     }
 
     @Test
@@ -278,5 +279,17 @@ class AdditionalFindingsTest {
         assertSame(first, c.get(KEY).get());
         final DataContainer all = LosslessSupport.memory(DataView.SafetyMode.ALL_DATA_CLONED).set(KEY, array);
         assertFalse(all.get(KEY).get() == all.get(KEY).get());
+    }
+
+    @Test
+    @DisplayName("X20 regression (api-17+): CompoundTagDataView returns booleans as Byte; the $Boolean check in NBTTranslator.fromTagBase was lost in merge 3bbe5c5")
+    void x20CompoundBooleanReadsAsByte() {
+        final DataContainer c = LosslessSupport.compound().set(KEY, true);
+        assertEquals(Byte.valueOf((byte) 1), c.get(KEY).get());
+        // Coerce.asBoolean accepts Byte, so the lenient getter still hides it
+        assertEquals(Boolean.TRUE, c.getBoolean(KEY).get());
+        // values() and equality see the Byte
+        assertEquals(Byte.valueOf((byte) 1), c.values(false).get(KEY));
+        assertFalse(c.equals(LosslessSupport.memory().set(KEY, true)));
     }
 }

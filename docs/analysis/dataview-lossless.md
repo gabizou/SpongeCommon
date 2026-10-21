@@ -414,7 +414,7 @@ Numbering follows the earlier open-questions list; the answers were given by top
 
 | # | Topic | Answer |
 |---|---|---|
-| F1 | Shape of the strict getters | **No `Result`/`DataResult` type** unless it is built specifically for codecs. Use plain methods following SpongeAPI's no-`get` naming. The exact names are still open; see below. |
+| F1 | Shape of the strict getters | **No `Result`/`DataResult` type** unless it is built specifically for codecs. Use plain methods following SpongeAPI's no-`get` naming. **Named with an `exact` prefix:** `exactInt(DataQuery)`, `exactLong`, `exactDouble`, and so on (option a below). |
 | F2 | When "throw on scalar intermediate" lands | **A later API version**, not api-12. |
 | F3 | Lenient optional fields | **Strict only.** A field that is present but malformed is an error, like DFU's `optionalFieldOf`; there is no counterpart to `lenientOptionalFieldOf`. |
 | F4 | `src/main` bugs independent of the codec | **Fix separately.** Issue drafts are in [`issues/`](issues/README.md): X1, X7, and X3+X12. None is filed yet. |
@@ -429,7 +429,7 @@ SpongeAPI api-12 keeps `get` for **keyed lookups** and drops it for **properties
   `getInt(DataQuery)`.
 - Properties: `name()`, `id()`, `dataVersion()`.
 
-Candidates for the strict getters (`int` shown):
+Candidates for the strict getters (`int` shown). **Chosen: option a, the `exact` prefix.**
 
 | Option | Example | For | Against |
 |---|---|---|---|

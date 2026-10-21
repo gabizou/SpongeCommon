@@ -36,7 +36,7 @@ below.
    - **JSON cannot write NaN or ±Infinity at all.** One such value fails the whole document (X6).
    - **JSON writes `byte[]` and small-valued `long[]` that its own reader cannot read back** (X7).
    - **NBT turns `-0.0` into `0.0`** (X2).
-   - **NBT silently writes strings over 65535 bytes as `""`** (X1).
+   - **NBT writes strings over 65535 bytes as `""` without throwing.** The only sign is an `ERROR` log line (X1).
    - **NBT reads a `List<Boolean>` back as `List<Byte>`, and cannot write mixed lists** (X17).
 
    **Design consequence:** decoders must accept any integral `Number` and range-check it, and any `Number` for
@@ -287,7 +287,7 @@ All are reproduced in `AdditionalFindingsTest`.
 
 | # | Severity | Issue | Evidence |
 |---|---|---|---|
-| X1 | **data loss** | **NBT binary write turns any string over 65535 modified-UTF-8 bytes into `""` without failing.** This includes 21846 three-byte characters. Keys are written with the same `writeUTF`, so in principle the same applies to keys. | `NBTDataFormat.java:61-75` → `NbtIo.write` → `NbtIo$StringFallbackDataOutput.writeUTF` (catches `UTFDataFormatException`, writes `""`) |
+| X1 | **data loss** | **NBT binary write turns any string over 65535 modified-UTF-8 bytes into `""`; the caller gets no exception, only an `ERROR` log line ("Failed to write NBT String").** This includes 21846 three-byte characters. `NbtIo.writeUnnamedTag`, which has no fallback, throws `UTFDataFormatException` for the same tag (`x1NoFallbackWriteThrows`). Keys are written with the same `writeUTF`, so in principle the same applies to keys. | `NBTDataFormat.java:61-75` → `NbtIo.write` → `NbtIo$StringFallbackDataOutput.writeUTF` (catches `UTFDataFormatException`, writes `""`) |
 | X2 | silent corruption | **NBT loses the sign of `-0.0`** for both Float and Double. | `FloatTag.valueOf` / `DoubleTag.valueOf` return `ZERO` for `-0.0` (bytecode) |
 | X3 | **silent corruption** | **NBT treats any key that *contains* `$Boolean` as a boolean marker.** A `Byte` at `flag$Boolean` comes back as `Boolean` at `flag`. A boolean `x` and a byte `x$Boolean` collide, and one of them is lost. | `NBTTranslator.java:83`, `:184-185` (`contains`, then `replace`) |
 | X4 | error path | **JSON input containing `null` throws an NPE** instead of skipping the key or reporting a format error. | `JsonDataFormat.java:119`, `:137-139` → `MemoryDataView.java:168` |
@@ -371,7 +371,7 @@ All commands were run from the repository root on branch `analysis/dataview-loss
 | `git checkout -b analysis/dataview-lossless upstream/api-12` (Sponge) / `… fb073c8` (SpongeAPI) | ok |
 | `git config submodule.SpongeAPI.url /home/user/SpongeAPI && git -c protocol.file.allow=always submodule update --init SpongeAPI` | submodule checked out at `fb073c8`. Local config only; the direct GitHub submodule clone had failed in this container. |
 | `./gradlew --no-daemon :SpongeVanilla:testClasses` | BUILD SUCCESSFUL in 4m 20s. First run; downloaded Minecraft 1.21.1 through VanillaGradle. |
-| `./gradlew --no-daemon :SpongeVanilla:test --tests 'org.spongepowered.common.data.lossless.*'` | **BUILD SUCCESSFUL**: 69 tests, 0 failures, 0 errors, 0 skipped |
+| `./gradlew --no-daemon :SpongeVanilla:test --tests 'org.spongepowered.common.data.lossless.*'` | **BUILD SUCCESSFUL**: 69 tests, 0 failures, 0 errors, 0 skipped; 70 tests after `x1NoFallbackWriteThrows` was added for the issue draft, also all passing |
 | `./gradlew --no-daemon :SpongeVanilla:test --tests 'org.spongepowered.common.data.*'` | **BUILD SUCCESSFUL**: 205 tests, 0 failures, 0 errors, 11 skipped. The skips are the existing `@Disabled` tests: 9 in `EntityDataTest`, 2 in `ItemStackDataTest`. |
 | Mutation check: flipped one pinned matrix cell and one H3 assertion, re-ran the lossless tests, then restored both | BUILD FAILED, `68 tests completed, 2 failed` (the two mutated tests). This shows the harness reports failures. |
 | `./gradlew --no-daemon :spotlessJavaCheck` (Sponge; covers test sources) | BUILD SUCCESSFUL |
@@ -410,15 +410,41 @@ Numbering follows the earlier open-questions list; the answers were given by top
 | 9 | Reserved keys | **Document `$Boolean` and `_arraytype` as reserved; codecs reject them** | No format change. |
 | 10 | Submodule bump | **Bumped** to `a0b15b7` in a separate Sponge commit | See the submodule caveat under "Versions and setup". |
 
-### Follow-ups raised by these decisions
+### Follow-ups raised by these decisions (answered 2026-10-21)
 
-- **F1, strict getter shape:** pick one of per-type methods (`getExactInt`, …), a single `get(path, Class)` /
-  `get(path, Type)`, or a `DataResult`-style return that carries the error and path, as Mojang's codecs do. The
-  third fits decisions 2 and 6 best, because the error can say "expected int at `a.b`, found String" or "`a` is not
-  a view".
-- **F2, when "throw on scalar intermediate" lands:** this changes `set` behavior for existing plugins. Options are
-  api-12 (a behavior change in a stable line) or a later API version, with a deprecation note in api-12 Javadoc.
-- **F3, lenient optional fields:** DFU offers both strict and lenient optional fields. Should DataCodec have a
-  lenient variant (treat malformed as absent), or strict only?
-- **F4, `src/main` fixes independent of the codec:** X1 (silent `""`), X7 (JSON can't read its own arrays) and X3/X12
-  (`contains("$Boolean")`) affect all `DataView` users, not just codecs. Should they be filed or fixed separately?
+| # | Topic | Answer |
+|---|---|---|
+| F1 | Shape of the strict getters | **No `Result`/`DataResult` type** unless it is built specifically for codecs. Use plain methods following SpongeAPI's no-`get` naming. The exact names are still open; see below. |
+| F2 | When "throw on scalar intermediate" lands | **A later API version**, not api-12. |
+| F3 | Lenient optional fields | **Strict only.** A field that is present but malformed is an error, like DFU's `optionalFieldOf`; there is no counterpart to `lenientOptionalFieldOf`. |
+| F4 | `src/main` bugs independent of the codec | **Fix separately.** Issue drafts are in [`issues/`](issues/README.md): X1, X7, and X3+X12. None is filed yet. |
+
+### F1: naming the strict getters
+
+`int()`, `long()`, `double()`, `boolean()`, `byte()`, `short()`, `float()` and `char()` cannot be method names,
+because they are Java reserved words.
+
+SpongeAPI api-12 keeps `get` for **keyed lookups** and drops it for **properties**:
+- Keyed lookups: `ValueContainer.getInt(Key)` returns `OptionalInt` (`ValueContainer.java:79`), and `DataView` has
+  `getInt(DataQuery)`.
+- Properties: `name()`, `id()`, `dataVersion()`.
+
+Candidates for the strict getters (`int` shown):
+
+| Option | Example | For | Against |
+|---|---|---|---|
+| a | `exactInt(DataQuery)` | "exact" matches the JDK's `Math.toIntExact` and `BigInteger.intValueExact`, which mean "convert if it fits, otherwise throw", exactly the decision-3 semantics; no `get` | Sits next to `getInt` in the same interface, which mixes the two styles |
+| b | `getExactInt(DataQuery)` | Consistent with the existing `DataView` getters and with `ValueContainer.getInt` | Keeps the `get` prefix |
+| c | `intValue(DataQuery)` | Short and close to `int()` | `Number.intValue()` *truncates*, so the name suggests the lenient behavior it is meant to replace |
+| d | `asInt(DataQuery)` | Short | "as" reads as "convert to", which also suggests leniency |
+
+**Proposed behavior, any name** (this needs no `Result` type):
+- **Return type:** `OptionalInt`/`OptionalLong`/`OptionalDouble` where they exist, as in `ValueContainer.getInt`,
+  and `Optional<Boolean|Byte|Short|Float|String>` otherwise.
+- **Missing key:** empty.
+- **Present but wrong** (wrong type, out of range, or a path through a non-view): throw `InvalidDataException`,
+  which already exists in `org.spongepowered.api.data.persistence`. The message names the path and what was found.
+  This keeps decision 2's "missing vs. malformed" distinction and F3's strictness without a result type.
+- **Integral getters:** accept any whole-number `Number` within range.
+- **Floating-point getters:** accept any `Number`.
+- **`String` and `Boolean` getters:** accept only `String` and `Boolean`.

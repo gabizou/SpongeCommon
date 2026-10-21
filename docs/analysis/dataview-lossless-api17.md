@@ -45,7 +45,17 @@ below:
 ## Decisions
 
 All decisions and follow-ups (1–10, F1–F4) from the api-12 report apply unchanged. Implementation work targets
-api-17.
+api-17. Decisions taken since (2026-10-21):
+
+| Topic | Decision |
+|---|---|
+| Compatibility | **Purely additive API.** Interfaces to be pruned get a deprecation notice rather than being removed; which ones is still open. |
+| Base branch | **api-17**, which merges up to api-18 through api-21. `api-17` is mirrored to both forks. |
+| Strict getter names | **`exact` prefix**: `exactBoolean`, `exactByte`, `exactShort`, `exactInt`, `exactLong`, `exactFloat`, `exactDouble`, `exactString`, `exactView`. Implemented on `feature/dataview-exact-getters` in both forks. |
+| `exactBoolean` | **Option (b), widened to every integral type:** accepts a `Boolean`, or a `Byte`/`Short`/`Integer`/`Long` that is exactly 0 or 1. Vanilla stores booleans as byte tags, and JSON reads those back as `Integer`. Every other value throws. |
+| Demonstration | **A gametest, not a test plugin.** `DataViewExactGameTests` reads a pig's `toContainer()` data and runs with `:SpongeVanilla:gameTest`. |
+| Mixed NBT lists | **Accepted as Minecraft 1.21.5+ writes them.** `ListTag` wraps each element of a mixed list in a compound whose only key is `""` and unwraps it on read (`ListTag.wrapElement`, `tryUnwrap`, `isWrapper` in 1.21.10). A user compound of exactly that shape inside a list is presumably unwrapped on read too; this was read from bytecode and not tested. |
+| Strict list getters | **Not added now.** DataCodec decodes list elements one at a time, so it resolves mixed or mis-typed lists itself. The lenient list getters still drop elements they can't convert (H9). |
 
 ## Commands run and results (api-17)
 

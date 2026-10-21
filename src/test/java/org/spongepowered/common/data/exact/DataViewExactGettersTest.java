@@ -121,13 +121,36 @@ class DataViewExactGettersTest {
     }
 
     @Test
-    @DisplayName("exactBoolean on CompoundTagDataContainer currently throws: booleans read back as Byte on api-17 (issue draft 04)")
-    void exactBooleanOnCompoundUntilIssue04IsFixed() {
+    @DisplayName("exactBoolean reads CompoundTagDataContainer booleans, which come back as Byte on api-17 (issue draft 04)")
+    void exactBooleanOnCompound() {
         final DataContainer c = new CompoundTagDataContainer(new CompoundTag()).set(V, true);
-        // The stored value comes back as Byte(1) (X20). The strict getter refuses it instead of guessing;
-        // the lenient getter hides it. Update this test when issue draft 04 is fixed.
-        assertThrows(InvalidDataException.class, () -> c.exactBoolean(V));
-        assertEquals(Optional.of(true), c.getBoolean(V));
+        // get() returns Byte(1) until issue draft 04 is fixed; exactBoolean accepts an integral 0 or 1 either way
+        assertEquals(Byte.class, c.get(V).get().getClass());
+        assertEquals(Optional.of(true), c.exactBoolean(V));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("views")
+    @DisplayName("exactBoolean accepts Boolean and integral 0 or 1, and rejects other values")
+    void exactBooleanValues(final String name, final Supplier<DataContainer> factory) {
+        final DataContainer c = factory.get()
+            .set(DataQuery.of("byteZero"), (byte) 0)
+            .set(DataQuery.of("intOne"), 1)
+            .set(DataQuery.of("longOne"), 1L)
+            .set(DataQuery.of("byteSeven"), (byte) 7)
+            .set(DataQuery.of("intMinusOne"), -1)
+            .set(DataQuery.of("doubleOne"), 1.0d)
+            .set(DataQuery.of("stringTrue"), "true");
+        assertEquals(Optional.of(false), c.exactBoolean(DataQuery.of("byteZero")));
+        assertEquals(Optional.of(true), c.exactBoolean(DataQuery.of("intOne")));
+        assertEquals(Optional.of(true), c.exactBoolean(DataQuery.of("longOne")));
+        assertThrows(InvalidDataException.class, () -> c.exactBoolean(DataQuery.of("byteSeven")));
+        assertThrows(InvalidDataException.class, () -> c.exactBoolean(DataQuery.of("intMinusOne")));
+        assertThrows(InvalidDataException.class, () -> c.exactBoolean(DataQuery.of("doubleOne")));
+        assertThrows(InvalidDataException.class, () -> c.exactBoolean(DataQuery.of("stringTrue")));
+        // the lenient getter takes any byte and nothing else
+        assertEquals(Optional.of(true), c.getBoolean(DataQuery.of("byteSeven")));
+        assertEquals(Optional.empty(), c.getBoolean(DataQuery.of("intOne")));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -159,14 +182,14 @@ class DataViewExactGettersTest {
             .set(DataQuery.of("emptyString"), "")
             .set(DataQuery.of("fraction"), 1.9d)
             .set(DataQuery.of("int"), 5)
-            .set(DataQuery.of("byteOne"), (byte) 1)
+            .set(DataQuery.of("byteSeven"), (byte) 7)
             .set(A_B, 1);
         assertThrows(InvalidDataException.class, () -> c.exactInt(DataQuery.of("numericString")));
         assertThrows(InvalidDataException.class, () -> c.exactLong(DataQuery.of("emptyString")));
         assertThrows(InvalidDataException.class, () -> c.exactDouble(DataQuery.of("numericString")));
         assertThrows(InvalidDataException.class, () -> c.exactInt(DataQuery.of("fraction")));
         assertThrows(InvalidDataException.class, () -> c.exactString(DataQuery.of("int")));
-        assertThrows(InvalidDataException.class, () -> c.exactBoolean(DataQuery.of("byteOne")));
+        assertThrows(InvalidDataException.class, () -> c.exactBoolean(DataQuery.of("byteSeven")));
         assertThrows(InvalidDataException.class, () -> c.exactView(DataQuery.of("int")));
         assertThrows(InvalidDataException.class, () -> c.exactInt(A));
         // what the lenient getters return for the same data
@@ -174,7 +197,7 @@ class DataViewExactGettersTest {
         assertEquals(Optional.of(0L), c.getLong(DataQuery.of("emptyString")));
         assertEquals(Optional.of(1), c.getInt(DataQuery.of("fraction")));
         assertEquals(Optional.of("5"), c.getString(DataQuery.of("int")));
-        assertEquals(Optional.of(true), c.getBoolean(DataQuery.of("byteOne")));
+        assertEquals(Optional.of(true), c.getBoolean(DataQuery.of("byteSeven")));
         assertEquals(Optional.empty(), c.getView(DataQuery.of("int")));
     }
 
@@ -239,6 +262,7 @@ class DataViewExactGettersTest {
             .set(DataQuery.of("short"), (short) -2)
             .set(DataQuery.of("long"), 1L)
             .set(DataQuery.of("float"), 0.1f)
+            .set(DataQuery.of("flag"), (byte) 1)
             .set(DataQuery.of("nested", "long"), 42L);
         final DataContainer read = DataFormats.JSON.get().read(DataFormats.JSON.get().write(original));
         // the stored types changed ...
@@ -251,6 +275,9 @@ class DataViewExactGettersTest {
         assertEquals(OptionalLong.of(1L), read.exactLong(DataQuery.of("long")));
         assertEquals(Optional.of(0.1f), read.exactFloat(DataQuery.of("float")));
         assertEquals(OptionalLong.of(42L), read.exactLong(DataQuery.of("nested", "long")));
+        // a byte-tag style boolean comes back from JSON as Integer 1
+        assertEquals(Integer.class, read.get(DataQuery.of("flag")).get().getClass());
+        assertEquals(Optional.of(true), read.exactBoolean(DataQuery.of("flag")));
     }
 
     @Test

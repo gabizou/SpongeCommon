@@ -43,7 +43,7 @@ import java.util.Optional;
 /**
  * The strict {@code exact*} DataView getters on real entity data: a pig's
  * {@code toContainer()}, whose {@code Data} view holds the entity's vanilla NBT
- * (Health is a float, Air a short, OnGround a byte, as vanilla writes them).
+ * (Health is a float, Air a short, OnGround a byte tag, as vanilla writes them).
  */
 @GameTestGroup("dataview_exact")
 public final class DataViewExactGameTests {
@@ -71,10 +71,10 @@ public final class DataViewExactGameTests {
         helper.assertTrue(container.getInt(DataViewExactGameTests.HEALTH).isPresent(), Component.literal("getInt(Health) should coerce"));
         DataViewExactGameTests.assertInvalid(helper, () -> container.exactInt(DataViewExactGameTests.HEALTH), "exactInt(Health)");
 
-        // vanilla writes booleans as byte tags, so the strict boolean getter refuses them and exactByte reads them
-        helper.assertTrue(container.getBoolean(DataViewExactGameTests.ON_GROUND).isPresent(), Component.literal("getBoolean(OnGround) should coerce the byte"));
-        DataViewExactGameTests.assertInvalid(helper, () -> container.exactBoolean(DataViewExactGameTests.ON_GROUND), "exactBoolean(OnGround)");
-        helper.assertTrue(container.exactByte(DataViewExactGameTests.ON_GROUND).isPresent(), Component.literal("exactByte(OnGround) should read the byte"));
+        // vanilla writes booleans as byte tags; exactBoolean accepts a byte of 0 or 1
+        helper.assertTrue(container.get(DataViewExactGameTests.ON_GROUND).orElseThrow() instanceof Byte, Component.literal("OnGround should be stored as a byte"));
+        helper.assertTrue(container.exactBoolean(DataViewExactGameTests.ON_GROUND).equals(Optional.of(pig.onGround())),
+            Component.literal("exactBoolean(OnGround) should be the pig's onGround"));
 
         // reading below a scalar is reported, where get() just says absent
         final DataQuery belowHealth = DataViewExactGameTests.HEALTH.then("value");
@@ -101,6 +101,10 @@ public final class DataViewExactGameTests {
             Component.literal("exactFloat(Health) should recover the pig's health after JSON"));
         helper.assertTrue(read.exactShort(DataViewExactGameTests.AIR).equals(Optional.of((short) pig.getAirSupply())),
             Component.literal("exactShort(Air) should recover the pig's air supply after JSON"));
+        // the byte-tag boolean comes back from JSON as an Integer
+        helper.assertTrue(read.get(DataViewExactGameTests.ON_GROUND).orElseThrow() instanceof Integer, Component.literal("JSON should read OnGround back as an Integer"));
+        helper.assertTrue(read.exactBoolean(DataViewExactGameTests.ON_GROUND).equals(Optional.of(pig.onGround())),
+            Component.literal("exactBoolean(OnGround) should recover the pig's onGround after JSON"));
 
         helper.succeed();
     }

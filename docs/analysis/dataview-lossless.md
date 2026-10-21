@@ -45,7 +45,8 @@ below.
 4. **Typed getters are not strict (H9).** `getInt`, `getLong` and so on narrow numbers, parse strings (`""` becomes
    `0`, `"1-2"` becomes `0`, `"(9, 10)"` becomes `9`) and turn anything into a `String`. List getters drop elements
    that fail to convert. A codec that needs to report type errors cannot use them; it must use `get()` plus
-   `instanceof` and its own range checks. Alternatively the API gains strict getters (open question 5).
+   `instanceof` and its own range checks. **Decided:** SpongeAPI gains new strict getters alongside the existing
+   ones (see Decisions).
 5. **Path shape errors are invisible or inconsistent (H3, H4, H5).**
    - `set` through a scalar intermediate silently replaces the scalar.
    - `createView` through it throws `ClassCastException` (MemoryDataView) or replaces it (CompoundTagDataView).
@@ -99,8 +100,19 @@ below.
 | JUnit | 5.10.2 (`SpongeAPI/gradle/libs.versions.toml:15`) |
 | Test harness | Root `test` is disabled (`build.gradle.kts:404-407`). Tests run through `:SpongeVanilla:test` (`vanilla/build.gradle.kts:505-531`), which boots a dedicated server through ModLauncher; `src/test/resources/META-INF/services/org.junit.jupiter.api.extension.Extension` wraps each test in a server tick phase. |
 
-The SpongeAPI Javadoc commit (`c0270fa`, SpongeAPI branch `analysis/dataview-lossless`) is documentation only.
-The Sponge branch's submodule pointer was **not** bumped to it, so every test ran against `fb073c8`.
+The SpongeAPI branch `analysis/dataview-lossless` adds two documentation-only commits on top of `fb073c8`:
+`c0270fa` and `a0b15b7`. All results in this report were first produced against `fb073c8`. After the decisions
+below, the Sponge branch's submodule was bumped to `a0b15b7` in a separate commit, and the data test suite was
+re-run against it with the same result (205 tests, 0 failures, 11 skipped).
+
+**Submodule caveat:** `.gitmodules` still points at `https://github.com/SpongePowered/SpongeAPI.git`, and `a0b15b7`
+exists only on `gabizou/SpongeAPI`. A fresh clone of this Sponge branch has to fetch the submodule commit from the
+fork:
+
+```
+git -C SpongeAPI fetch https://github.com/gabizou/SpongeAPI analysis/dataview-lossless
+git submodule update
+```
 
 ## Files read (step 1)
 
@@ -109,7 +121,7 @@ The Sponge branch's submodule pointer was **not** bumped to it, so every test ra
 | `MemoryDataView.java` | **Storage.** A `LinkedHashMap<String,Object>` (`:51`). `get` walks the path one part at a time (`:119-144`) and, under `ALL_DATA_CLONED`, clones arrays on read (`:146-163`). The primitive `set` overloads go through `setScalar` and store directly (`:179-230`, `:249-296`). `set(DataQuery|String, Object)` goes through `set0`, which stores String and Integer directly and sends everything else to `DataSerializer` (`:165-177`, `:239-247`, `:298-307`). Nested writes go through `setChild` (`:232-237`). `createView` is at `:328-356`, `copy` at `:384-406`, and `equals`/`hashCode` at `:413-430`. |
 | `MemoryDataContainer.java` | **Root `MemoryDataView`.** Default `ALL_DATA_CLONED` (`:46-48`), `parent()` is empty (`:62-64`), and the `set` overrides only narrow the return type (`:66-159`). |
 | `SpongeDataView.java` | **Shared base.** `values(deep)` (`:137-158`); typed getters through `Coerce` (`:164-202`); `createView(path, map)` splits keys on `.` (`:205-217`); `getMap` (`:220-234`); list getters through `getUnsafeList` and per-element `Coerce` with drops (`:262-404`); `equals` on `values(true)` and path, with no `hashCode` (`:500-507`). |
-| `CompoundTagDataView.java` / `CompoundTagDataContainer.java` | **A `DataView` backed directly by a Minecraft `CompoundTag`.** This is what DataHolder custom data persistence uses (`DataUtil.java:67,190`). Booleans are stored under `key + "$Boolean"` (`:150-157`, `:234-237`) and the suffix is stripped on read (`:63`, `:69`, `:113-123`). Other `set(Object)` values go through `DataSerializer`, then `NBTTranslator.getBaseFromObject` (`:240-243`). `copy(safety)` is at `:377-379`, and `equals`/`hashCode` on compound and path at `:386-402`. |
+| `CompoundTagDataView.java` / `CompoundTagDataContainer.java` | **A `DataView` backed directly by a Minecraft `CompoundTag`.** This is what DataHolder custom data persistence uses (`DataUtil.java:67,190`). Recent: added on api-12 in `e83bc72` ("Introduce CompoundTagDataView", aromaa, 2026-06-03), and switched into `DataUtil` in `08d894b` the same day. These were direct commits on api-12, not a merge, and they were carried forward to api-17. `SpongeDataView` itself was extracted from `MemoryDataView` just before, in `4ca0005` (2026-06-03). Before that series `MemoryDataView` was the only implementation, so the cross-implementation inconsistencies (H4's two behaviors, H7, H8, X11, X12) are about 4.5 months old. Booleans are stored under `key + "$Boolean"` (`:150-157`, `:234-237`) and the suffix is stripped on read (`:63`, `:69`, `:113-123`). Other `set(Object)` values go through `DataSerializer`, then `NBTTranslator.getBaseFromObject` (`:240-243`). `copy(safety)` is at `:377-379`, and `equals`/`hashCode` on compound and path at `:386-402`. |
 | `DataSerializer.java` | **Decides what an Object becomes.** `DataView` → copied into a child view (`:58-60`); `DataSerializable` → `toView` (`:61-62`); a translator registered for the exact class → view (`:64-70`); registry value → key string (`:72-81`); `ResourceKey` → string (`:82-83`); `Collection` → `ImmutableList` of recursively serialized elements (`:84-85`, `:103-109`); `Map` → child view, with keys through `serializeMapKey` (`:86-87`, `:96-101`, `:111-135`); arrays → cloned unless `NO_DATA_CLONED` (`:88-89`, `:137-168`); anything else stored raw (`:91`). |
 | `registry/provider/DataTranslatorProvider.java` | **Translator table** (UUID, vectors, `java.time` types, Month, Direction, CompoundTag, Component, ...), held in an `IdentityHashMap` keyed by exact class. |
 | `builder/Coerce.java` | **Lenient conversion.** `asString` = `toString()` (`:55-63`); `asBoolean` accepts only Boolean or Byte (`:71-78`); the number methods use `Number.xValue()` narrowing, then string parsing with `sanitiseNumber` (`:88-243`, `:275-297`); `asChar` takes the first character (`:251-264`). |
@@ -324,12 +336,19 @@ All are reproduced in `AdditionalFindingsTest`.
 
 ## SpongeAPI Javadoc commit
 
-Commit `c0270fa` on SpongeAPI branch `analysis/dataview-lossless` is documentation only:
-`src/main/java/org/spongepowered/api/data/persistence/DataView.java`, +117 / −59. After the commit:
+Two documentation-only commits on SpongeAPI branch `analysis/dataview-lossless`, both touching only
+`src/main/java/org/spongepowered/api/data/persistence/DataView.java`:
+
+- **`c0270fa`** (+117 / −59) corrects the getter contracts and documents current `set`/`get` behavior.
+- **`a0b15b7`** (−3) removes the paragraph that promised `set` replaces a scalar intermediate. You chose "throw" as
+  the intended behavior, so the Javadoc now leaves the case unspecified until the implementation changes.
+
+What the Javadoc says now (line numbers as of `c0270fa`; after `a0b15b7`, lines from 186 on move up by 3):
 
 - **`get(DataQuery)`** (`:161-172`): absent is also returned when an intermediate path part is not a view (H5).
 - **`set(DataQuery, Object)`** (`:174-197`): null is rejected, with an `@throws NullPointerException` (H2); the
-  stored value may be a converted form (H1); a non-view intermediate is replaced (H3).
+  stored value may be a converted form (H1). Intermediate replacement (H3) was documented in `c0270fa` and
+  removed again in `a0b15b7`.
 - **`getMap`** (`:466-478`): a `DataView` is returned as a `Map` with String keys.
 - **Typed getters** (`:480-598`): replaced "not an instance of X → absent" with "cannot be converted → absent;
   conversion may be lossy" (H9).
@@ -337,9 +356,8 @@ Commit `c0270fa` on SpongeAPI branch `analysis/dataview-lossless` is documentati
   (H9).
 - **`SafetyMode.CLONED_ON_SET`** (`:993-997`): now says data is cloned on set only (X19).
 
-The commit **records current behavior**; it does not choose what the behavior should be. In particular, the
-`set()` paragraph on intermediate replacement would make H3 part of the contract. Drop that paragraph if you would
-rather `set` throw (open question 6).
+These commits **record current behavior** and do not choose what the behavior should be. The one exception is that
+the H3 wording was removed to match decision 6.
 
 ## Commands run and results
 
@@ -358,7 +376,10 @@ All commands were run from the repository root on branch `analysis/dataview-loss
 | Mutation check: flipped one pinned matrix cell and one H3 assertion, re-ran the lossless tests, then restored both | BUILD FAILED, `68 tests completed, 2 failed` (the two mutated tests). This shows the harness reports failures. |
 | `./gradlew --no-daemon :spotlessJavaCheck` (Sponge; covers test sources) | BUILD SUCCESSFUL |
 | `javap -c -p -cp ~/.gradle/caches/VanillaGradle/v2/jars/net/minecraft/joined/1.21.1/joined-1.21.1.jar net.minecraft.nbt.{FloatTag,DoubleTag,StringTag,CompoundTag,NbtIo,NbtIo\$StringFallbackDataOutput}` | confirmed X1 and X2 in Minecraft bytecode |
-| `./gradlew --no-daemon javadoc checkstyleMain spotlessCheck` (SpongeAPI, after the Javadoc change) | BUILD SUCCESSFUL. No warnings in `DataView.java`; the warnings shown are pre-existing ones in other files. |
+| `./gradlew --no-daemon javadoc checkstyleMain spotlessCheck` (SpongeAPI, after `c0270fa`, and again after `a0b15b7`) | BUILD SUCCESSFUL both times. No warnings in `DataView.java`; the warnings shown are pre-existing ones in other files. |
+| `javap -c -p -cp ~/.gradle/caches/modules-2/files-2.1/com.mojang/datafixerupper/8.0.16/…/datafixerupper-8.0.16.jar com.mojang.serialization.codecs.OptionalFieldCodec` and `… com.mojang.serialization.Codec` | confirmed Mojang's optional-field behavior (decision 2) |
+| `git log --first-parent upstream/api-12 -- …/CompoundTagDataView.java`; `git log -1 e83bc72` (not a shallow boundary) | history of `CompoundTagDataView` (decision 8) |
+| Sponge submodule bumped to `a0b15b7`, then `./gradlew --no-daemon :SpongeVanilla:test --tests 'org.spongepowered.common.data.*'` | **BUILD SUCCESSFUL**: 205 tests, 0 failures, 0 errors, 11 skipped (unchanged) |
 
 ## INCONCLUSIVE or out of scope
 
@@ -372,26 +393,32 @@ All commands were run from the repository root on branch `analysis/dataview-loss
 - **X1 for very long keys** is inferred from `CompoundTag.writeNamedTag` calling the same `writeUTF`; it has no
   reproducer.
 
-## Open questions for you
+## Decisions (answered 2026-10-21)
 
-1. **Encoding subset:** should `DataCodec` encode only into the portable subset above and reject everything else at
-   encode time? Or should it keep delegating to `set(Object)` and `DataSerializer`, with their normalization and
-   late failures?
-2. **Null and absence:** "key omitted", an explicit marker, or no null support at all?
-3. **Numeric width:** should decoders accept any `Number` and range-check it (tolerating JSON width collapse), or do
-   you want `JsonDataFormat` to preserve widths, which changes the on-disk JSON format?
-4. **Non-finite numbers and long strings:** should JSON support NaN/±Infinity, or reject them clearly? For strings
-   over 65535 bytes in NBT, should Sponge throw instead of relying on Mojang's `""` fallback?
-5. **Strict getters:** should SpongeAPI gain strict typed getters for codecs (exact type, or range-checked
-   widening)? The alternative is narrowing `Coerce`, which would break existing callers.
-6. **Scalar intermediates:** should `set` and `createView` replace a scalar intermediate or throw? The Javadoc commit
-   currently documents "replace" for `set`.
-7. **Equality:** should `DataView` equality be specified in the API (structural, comparing array content, with or
-   without the path), so codec round-trip tests can use `equals`?
-8. **CompoundTagDataView scope:** is `CompoundTagDataView` in scope for the codec? It is what DataHolder custom data
-   goes through, and it differs from `MemoryDataView`: arrays compare by content, scalar intermediates are replaced
-   instead of throwing, and arrays are aliased.
-9. **Reserved keys:** should `$Boolean` and `_arraytype` be documented as reserved, or escaped by the
-   implementation?
-10. **Submodule pointer:** the Sponge branch still pins `fb073c8`, not `c0270fa`. Should it be bumped in a separate
-    commit once you've reviewed the Javadoc wording?
+Numbering follows the earlier open-questions list; the answers were given by topic.
+
+| # | Topic | Decision | What it means for the DataCodec design |
+|---|---|---|---|
+| 1 | Encoding subset | **Portable subset only** | Codecs write only the values that survive memory, NBT and JSON: `Boolean`, `Integer`, `Long`, finite `Double`, `String` ≤ 65535 UTF-8 bytes, `int[]`, `long[]`, lists of these, nested views. Other values fail **at encode time**. UUID, enum, map and similar types get explicit codecs instead of going through `DataSerializer`. |
+| 2 | Null / absence | **Omitted key, and no general null**; `Optional` fields are modelled by a codec | Matches Mojang DFU 8.0.16 (the version used by 1.21.1): `OptionalFieldCodec.encode` writes nothing for `Optional.empty()`; `decode` returns empty only when the key is **missing**; a key that is **present but invalid** is an error, unless `lenientOptionalFieldOf` is used. `optionalFieldOf(name, default)` also leaves the field out when the value equals the default, and decodes a missing field to the default (`Codec.lambda$optionalFieldOf$11/$12`). Because of H5, a DataCodec decoder has to check the parent's shape itself to tell "missing" apart from "wrong shape". |
+| 3 | Number widths | **Lenient decoding** | Integral fields accept any whole-number `Number` and range-check it; floating-point fields accept any `Number`. `JsonDataFormat` on-disk output stays as it is. |
+| 4 | NaN/±Infinity in JSON, strings > 65535 bytes in NBT | **Codec validates and rejects at encode time** | The error names the field. The formats are unchanged; the silent `""` fallback (X1) still affects code that doesn't use codecs. |
+| 5 | Strict getters | **Add new strict getters to SpongeAPI alongside the existing ones** | The existing `Coerce`-based getters stay as they are for compatibility. The API addition is not done here; its shape is follow-up F1. |
+| 6 | Scalar intermediates | **Throw** (for both `set` and `createView`, in both implementations) | Today's behavior differs: `set` replaces, `MemoryDataView.createView` throws `ClassCastException`, and `CompoundTagDataView` replaces. Implementing this is a behavior change in `src/main` and is not done here (follow-up F2). The Javadoc no longer promises replacement (`a0b15b7`). |
+| 7 | Equality | **No API change; ship a structural comparison helper for codec tests** | `LosslessSupport.difference` is the prototype. Fixing `equals`/`hashCode` (H7, H8) remains an implementation bug to fix separately. |
+| 8 | `CompoundTagDataView` in scope | **Yes** | Codec tests must run against both `MemoryDataContainer` and `CompoundTagDataContainer`. History: see the `CompoundTagDataView` row in "Files read". |
+| 9 | Reserved keys | **Document `$Boolean` and `_arraytype` as reserved; codecs reject them** | No format change. |
+| 10 | Submodule bump | **Bumped** to `a0b15b7` in a separate Sponge commit | See the submodule caveat under "Versions and setup". |
+
+### Follow-ups raised by these decisions
+
+- **F1, strict getter shape:** pick one of per-type methods (`getExactInt`, …), a single `get(path, Class)` /
+  `get(path, Type)`, or a `DataResult`-style return that carries the error and path, as Mojang's codecs do. The
+  third fits decisions 2 and 6 best, because the error can say "expected int at `a.b`, found String" or "`a` is not
+  a view".
+- **F2, when "throw on scalar intermediate" lands:** this changes `set` behavior for existing plugins. Options are
+  api-12 (a behavior change in a stable line) or a later API version, with a deprecation note in api-12 Javadoc.
+- **F3, lenient optional fields:** DFU offers both strict and lenient optional fields. Should DataCodec have a
+  lenient variant (treat malformed as absent), or strict only?
+- **F4, `src/main` fixes independent of the codec:** X1 (silent `""`), X7 (JSON can't read its own arrays) and X3/X12
+  (`contains("$Boolean")`) affect all `DataView` users, not just codecs. Should they be filed or fixed separately?

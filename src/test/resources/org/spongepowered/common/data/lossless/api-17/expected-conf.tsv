@@ -1,0 +1,139 @@
+corpus.conf	e000	matrix/00 Boolean true	PASS
+corpus.conf	e001	matrix/01 Boolean false	PASS
+corpus.conf	e002	matrix/02 Byte 0	LOSSY: Byte(0) -> Integer(0)
+corpus.conf	e003	matrix/03 Byte MIN	LOSSY: Byte(-128) -> Integer(-128)
+corpus.conf	e004	matrix/04 Byte MAX	LOSSY: Byte(127) -> Integer(127)
+corpus.conf	e005	matrix/05 Short MIN	LOSSY: Short(-32768) -> Integer(-32768)
+corpus.conf	e006	matrix/06 Short MAX	LOSSY: Short(32767) -> Integer(32767)
+corpus.conf	e007	matrix/07 Integer 0	PASS
+corpus.conf	e008	matrix/08 Integer MIN	PASS
+corpus.conf	e009	matrix/09 Integer MAX	PASS
+corpus.conf	e010	matrix/10 Long 1 (fits int)	LOSSY: Long(1) -> Integer(1)
+corpus.conf	e011	matrix/11 Long MIN	PASS
+corpus.conf	e012	matrix/12 Long MAX	PASS
+corpus.conf	e013	matrix/13 Float 0.1	LOSSY: Float(0.1) -> Double(0.10000000149011612)
+corpus.conf	e014	matrix/14 Float 1.0	LOSSY: Float(1.0) -> Integer(1)
+corpus.conf	e015	matrix/15 Float NaN	LOSSY: Float(NaN) -> String(NaN)
+corpus.conf	e016	matrix/16 Float +Inf	LOSSY: Float(Infinity) -> String(Infinity)
+corpus.conf	e017	matrix/17 Float -Inf	LOSSY: Float(-Infinity) -> String(-Infinity)
+corpus.conf	e018	matrix/18 Float -0.0	LOSSY: Float(-0.0) -> Integer(0)
+corpus.conf	e019	matrix/19 Float MIN_VALUE	LOSSY: Float(1.4E-45) -> Double(1.401298464324817E-45)
+corpus.conf	e020	matrix/20 Float MAX_VALUE	LOSSY: Float(3.4028235E38) -> Double(3.4028234663852886E38)
+corpus.conf	e021	matrix/21 Double 0.1	PASS
+corpus.conf	e022	matrix/22 Double 1.0	LOSSY: Double(1.0) -> Integer(1)
+corpus.conf	e023	matrix/23 Double 1e20	PASS
+corpus.conf	e024	matrix/24 Double NaN	LOSSY: Double(NaN) -> String(NaN)
+corpus.conf	e025	matrix/25 Double +Inf	LOSSY: Double(Infinity) -> String(Infinity)
+corpus.conf	e026	matrix/26 Double -Inf	LOSSY: Double(-Infinity) -> String(-Infinity)
+corpus.conf	e027	matrix/27 Double -0.0	LOSSY: Double(-0.0) -> Integer(0)
+corpus.conf	e028	matrix/28 Double MIN_VALUE	PASS
+corpus.conf	e029	matrix/29 Double MAX_VALUE	PASS
+corpus.conf	e030	matrix/30 String empty	PASS
+corpus.conf	e031	matrix/31 String ascii	PASS
+corpus.conf	e032	matrix/32 String unicode	PASS
+corpus.conf	e033	matrix/33 String with '.'	PASS
+corpus.conf	e034	matrix/34 String 70k chars	PASS
+corpus.conf	e035	matrix/35 byte[] empty	LOSSY: byte[]([]) -> List([])
+corpus.conf	e036	matrix/36 byte[]	LOSSY: byte[]([1,-1,-128,127]) -> List([Integer(1),...])
+corpus.conf	e037	matrix/37 int[]	LOSSY: int[]([1,-1,-2147483648,2147483647]) -> List([Integer(1),...])
+corpus.conf	e038	matrix/38 long[] small values	LOSSY: long[]([1,2]) -> List([Integer(1),...])
+corpus.conf	e039	matrix/39 long[] large values	LOSSY: long[]([-9223372036854775808,9223372036854775807]) -> List([Long(-9223372036854775808),...])
+corpus.conf	e040	matrix/40 short[] (extra)	LOSSY: short[]([1,2]) -> List([Integer(1),...])
+corpus.conf	e041	matrix/41 double[] (extra)	LOSSY: double[]([1.5,2.5]) -> List([Double(1.5),...])
+corpus.conf	e042	matrix/42 String[] (extra)	LOSSY: String[]([a,b]) -> List([String(a),...])
+corpus.conf	e043	matrix/43 List<Boolean>	PASS
+corpus.conf	e044	matrix/44 List<Byte>	LOSSY: [0] Byte(1) -> Integer(1)
+corpus.conf	e045	matrix/45 List<Short>	LOSSY: [0] Short(1) -> Integer(1)
+corpus.conf	e046	matrix/46 List<Integer>	PASS
+corpus.conf	e047	matrix/47 List<Long>	LOSSY: [0] Long(1) -> Integer(1)
+corpus.conf	e048	matrix/48 List<Float>	LOSSY: [0] Float(1.5) -> Double(1.5)
+corpus.conf	e049	matrix/49 List<Double>	PASS
+corpus.conf	e050	matrix/50 List<String>	PASS
+corpus.conf	e051	matrix/51 List empty	PASS
+corpus.conf	e052	matrix/52 List mixed [1, "a"] (extra)	PASS
+corpus.conf	e053	matrix/53 List<List<Integer>> (extra)	PASS
+corpus.conf	e054	matrix/54 Map<String,?>	PASS
+corpus.conf	e055	matrix/55 Map<String,?> key with '.'	PASS
+corpus.conf	e056	matrix/56 Map<Integer,?>	PASS
+corpus.conf	e057	matrix/58 Map<UUID,?>	PASS
+corpus.conf	e058	matrix/59 Map<Enum,?>	PASS
+corpus.conf	e059	matrix/60 UUID	PASS
+corpus.conf	e060	matrix/61 enum (plain, no translator)	LOSSY: Plain(BETA) -> String(BETA)
+corpus.conf	e061	matrix/62 enum DayOfWeek (no translator)	LOSSY: DayOfWeek(MONDAY) -> String(MONDAY)
+corpus.conf	e062	matrix/63 enum Month (has translator)	PASS
+corpus.conf	e063	matrix/64 nested DataView	LOSSY: deep: l: Long(5) -> Integer(5)
+corpus.conf	e064	matrix/65 nested DataView with boolean (extra)	PASS
+corpus.conf	e066	translators/UUID	PASS
+corpus.conf	e067	translators/Vector2d	PASS
+corpus.conf	e068	translators/Vector2f	PASS
+corpus.conf	e069	translators/Vector2i	PASS
+corpus.conf	e070	translators/Vector2l	PASS
+corpus.conf	e071	translators/Vector3d	PASS
+corpus.conf	e072	translators/Vector3d -0.0	LOSSY: (-0.0, 0.0, 0.0) -> (0.0, 0.0, 0.0)
+corpus.conf	e073	translators/Vector3f	PASS
+corpus.conf	e074	translators/Vector3i	PASS
+corpus.conf	e075	translators/Vector3l small values	PASS
+corpus.conf	e076	translators/Vector3l large values	PASS
+corpus.conf	e077	translators/Vector4d	PASS
+corpus.conf	e078	translators/Vector4f	PASS
+corpus.conf	e079	translators/Vector4i	PASS
+corpus.conf	e080	translators/Vector4l	PASS
+corpus.conf	e081	translators/Complexd	PASS
+corpus.conf	e082	translators/Complexf	PASS
+corpus.conf	e083	translators/Quaterniond	PASS
+corpus.conf	e084	translators/Quaternionf	PASS
+corpus.conf	e085	translators/LocalTime	PASS
+corpus.conf	e086	translators/LocalDate	PASS
+corpus.conf	e087	translators/LocalDateTime	PASS
+corpus.conf	e088	translators/Instant	PASS
+corpus.conf	e089	translators/ZonedDateTime offset	ERROR: InvalidDataException: Unrecognized ZoneId: +02:00
+corpus.conf	e090	translators/ZonedDateTime region	PASS
+corpus.conf	e091	translators/Month	PASS
+corpus.conf	e092	translators/Direction NORTH	PASS
+corpus.conf	e093	translators/Direction SOUTH_SOUTHWEST	PASS
+corpus.conf	e097	serializables/ItemStack simple	PASS
+corpus.conf	e098	serializables/ItemStack named, enchanted, damaged	PASS
+corpus.conf	e099	serializables/ItemStack with unbreakable flag	PASS
+corpus.conf	e100	serializables/ItemStackSnapshot	PASS
+corpus.conf	e101	serializables/BlockState default	PASS
+corpus.conf	e102	serializables/BlockState with properties	PASS
+corpus.conf	e103	serializables/GameProfile name only	PASS
+corpus.conf	e104	serializables/GameProfile with signed property	LOSSY: rebuilt keys [ContentVersion, UUID, Properties, Name] -> [ContentVersion, UUID, Name]
+corpus.conf	e105	serializables/ProfileProperty unsigned	PASS
+corpus.conf	e106	serializables/PotionEffect	PASS
+corpus.conf	e107	serializables/FireworkEffect	LOSSY: rebuilt Colors: size 1 -> 0
+corpus.conf	e108	serializables/Color	PASS
+corpus.conf	e109	serializables/EntityArchetype pig	PASS
+corpus.conf	e110	serializables/BlockEntityArchetype chest	PASS
+corpus.conf	e111	serializables/PluginRecord (test type, version 2)	PASS (container: B: Byte(-7) -> Integer(-7))
+corpus.conf	e112	serializables/PluginRecord version 1	PASS
+corpus.conf	e113	customData/Boolean	PASS
+corpus.conf	e114	customData/Byte	PASS
+corpus.conf	e115	customData/Short	PASS
+corpus.conf	e116	customData/Integer	PASS
+corpus.conf	e117	customData/Long (fits int)	PASS
+corpus.conf	e118	customData/Long MAX	PASS
+corpus.conf	e119	customData/Float	PASS
+corpus.conf	e120	customData/Double	PASS
+corpus.conf	e121	customData/Double -0.0	LOSSY: Double(-0.0) -> Double(0.0)
+corpus.conf	e122	customData/String	PASS
+corpus.conf	e123	customData/String 70k chars	PASS
+corpus.conf	e124	customData/UUID	PASS
+corpus.conf	e125	customData/Vector3d	PASS
+corpus.conf	e126	customData/Vector3i	PASS
+corpus.conf	e127	customData/Instant	PASS
+corpus.conf	e128	customData/Month (translated enum)	PASS
+corpus.conf	e129	customData/ResourceKey	PASS
+corpus.conf	e130	customData/registry value (ItemType)	PASS
+corpus.conf	e131	customData/ItemStackSnapshot	PASS
+corpus.conf	e132	customData/DataView	LOSSY: b: Boolean(true) -> Integer(1)
+corpus.conf	e133	customData/List<Boolean>	LOSSY: [0] Boolean(true) -> Integer(1)
+corpus.conf	e134	customData/List<Integer>	PASS
+corpus.conf	e135	customData/List<Long>	LOSSY: [0] Long(1) -> Integer(1)
+corpus.conf	e136	customData/List<Float>	LOSSY: [0] Float(1.5) -> Double(1.5)
+corpus.conf	e137	customData/List<String>	PASS
+corpus.conf	e138	customData/List<UUID>	PASS
+corpus.conf	e139	customData/Set<String>	PASS
+corpus.conf	e140	customData/Map<String,Integer>	PASS
+corpus.conf	e141	customData/Map<String,Boolean>	PASS
+corpus.conf	e142	customData/Map<UUID,String>	PASS

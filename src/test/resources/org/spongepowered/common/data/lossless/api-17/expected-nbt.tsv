@@ -1,0 +1,134 @@
+corpus.nbt	e000	matrix/00 Boolean true	PASS
+corpus.nbt	e001	matrix/01 Boolean false	PASS
+corpus.nbt	e002	matrix/02 Byte 0	PASS
+corpus.nbt	e003	matrix/03 Byte MIN	PASS
+corpus.nbt	e004	matrix/04 Byte MAX	PASS
+corpus.nbt	e005	matrix/05 Short MIN	PASS
+corpus.nbt	e006	matrix/06 Short MAX	PASS
+corpus.nbt	e007	matrix/07 Integer 0	PASS
+corpus.nbt	e008	matrix/08 Integer MIN	PASS
+corpus.nbt	e009	matrix/09 Integer MAX	PASS
+corpus.nbt	e010	matrix/10 Long 1 (fits int)	PASS
+corpus.nbt	e011	matrix/11 Long MIN	PASS
+corpus.nbt	e012	matrix/12 Long MAX	PASS
+corpus.nbt	e013	matrix/13 Float 0.1	PASS
+corpus.nbt	e014	matrix/14 Float 1.0	PASS
+corpus.nbt	e015	matrix/15 Float NaN	PASS
+corpus.nbt	e016	matrix/16 Float +Inf	PASS
+corpus.nbt	e017	matrix/17 Float -Inf	PASS
+corpus.nbt	e018	matrix/18 Float -0.0	LOSSY: Float(-0.0) -> Float(0.0)
+corpus.nbt	e019	matrix/19 Float MIN_VALUE	PASS
+corpus.nbt	e020	matrix/20 Float MAX_VALUE	PASS
+corpus.nbt	e021	matrix/21 Double 0.1	PASS
+corpus.nbt	e022	matrix/22 Double 1.0	PASS
+corpus.nbt	e023	matrix/23 Double 1e20	PASS
+corpus.nbt	e024	matrix/24 Double NaN	PASS
+corpus.nbt	e025	matrix/25 Double +Inf	PASS
+corpus.nbt	e026	matrix/26 Double -Inf	PASS
+corpus.nbt	e027	matrix/27 Double -0.0	LOSSY: Double(-0.0) -> Double(0.0)
+corpus.nbt	e028	matrix/28 Double MIN_VALUE	PASS
+corpus.nbt	e029	matrix/29 Double MAX_VALUE	PASS
+corpus.nbt	e030	matrix/30 String empty	PASS
+corpus.nbt	e031	matrix/31 String ascii	PASS
+corpus.nbt	e032	matrix/32 String unicode	PASS
+corpus.nbt	e033	matrix/33 String with '.'	PASS
+corpus.nbt	e034	matrix/34 String 70k chars	LOSSY: String(xxxxxxxxxxxxxxxxxxxxxxxx...(70000)) -> String()
+corpus.nbt	e035	matrix/35 byte[] empty	PASS
+corpus.nbt	e036	matrix/36 byte[]	PASS
+corpus.nbt	e037	matrix/37 int[]	PASS
+corpus.nbt	e038	matrix/38 long[] small values	PASS
+corpus.nbt	e039	matrix/39 long[] large values	PASS
+corpus.nbt	e043	matrix/43 List<Boolean>	LOSSY: [0] Boolean(true) -> Byte(1)
+corpus.nbt	e044	matrix/44 List<Byte>	PASS
+corpus.nbt	e045	matrix/45 List<Short>	PASS
+corpus.nbt	e046	matrix/46 List<Integer>	PASS
+corpus.nbt	e047	matrix/47 List<Long>	PASS
+corpus.nbt	e048	matrix/48 List<Float>	PASS
+corpus.nbt	e049	matrix/49 List<Double>	PASS
+corpus.nbt	e050	matrix/50 List<String>	PASS
+corpus.nbt	e051	matrix/51 List empty	PASS
+corpus.nbt	e052	matrix/52 List mixed [1, "a"] (extra)	PASS
+corpus.nbt	e053	matrix/53 List<List<Integer>> (extra)	PASS
+corpus.nbt	e054	matrix/54 Map<String,?>	PASS
+corpus.nbt	e055	matrix/55 Map<String,?> key with '.'	PASS
+corpus.nbt	e056	matrix/56 Map<Integer,?>	PASS
+corpus.nbt	e057	matrix/58 Map<UUID,?>	PASS
+corpus.nbt	e058	matrix/59 Map<Enum,?>	PASS
+corpus.nbt	e059	matrix/60 UUID	PASS
+corpus.nbt	e062	matrix/63 enum Month (has translator)	PASS
+corpus.nbt	e063	matrix/64 nested DataView	PASS
+corpus.nbt	e064	matrix/65 nested DataView with boolean (extra)	PASS
+corpus.nbt	e066	translators/UUID	PASS
+corpus.nbt	e067	translators/Vector2d	PASS
+corpus.nbt	e068	translators/Vector2f	PASS
+corpus.nbt	e069	translators/Vector2i	PASS
+corpus.nbt	e070	translators/Vector2l	PASS
+corpus.nbt	e071	translators/Vector3d	PASS
+corpus.nbt	e072	translators/Vector3d -0.0	LOSSY: (-0.0, 0.0, 0.0) -> (0.0, 0.0, 0.0)
+corpus.nbt	e073	translators/Vector3f	PASS
+corpus.nbt	e074	translators/Vector3i	PASS
+corpus.nbt	e075	translators/Vector3l small values	PASS
+corpus.nbt	e076	translators/Vector3l large values	PASS
+corpus.nbt	e077	translators/Vector4d	PASS
+corpus.nbt	e078	translators/Vector4f	PASS
+corpus.nbt	e079	translators/Vector4i	PASS
+corpus.nbt	e080	translators/Vector4l	PASS
+corpus.nbt	e081	translators/Complexd	PASS
+corpus.nbt	e082	translators/Complexf	PASS
+corpus.nbt	e083	translators/Quaterniond	PASS
+corpus.nbt	e084	translators/Quaternionf	PASS
+corpus.nbt	e085	translators/LocalTime	PASS
+corpus.nbt	e086	translators/LocalDate	PASS
+corpus.nbt	e087	translators/LocalDateTime	PASS
+corpus.nbt	e088	translators/Instant	PASS
+corpus.nbt	e089	translators/ZonedDateTime offset	ERROR: InvalidDataException: Unrecognized ZoneId: +02:00
+corpus.nbt	e090	translators/ZonedDateTime region	PASS
+corpus.nbt	e091	translators/Month	PASS
+corpus.nbt	e092	translators/Direction NORTH	PASS
+corpus.nbt	e093	translators/Direction SOUTH_SOUTHWEST	PASS
+corpus.nbt	e097	serializables/ItemStack simple	PASS
+corpus.nbt	e098	serializables/ItemStack named, enchanted, damaged	PASS
+corpus.nbt	e099	serializables/ItemStack with unbreakable flag	PASS
+corpus.nbt	e100	serializables/ItemStackSnapshot	PASS
+corpus.nbt	e101	serializables/BlockState default	PASS
+corpus.nbt	e102	serializables/BlockState with properties	PASS
+corpus.nbt	e103	serializables/GameProfile name only	PASS
+corpus.nbt	e104	serializables/GameProfile with signed property	LOSSY: rebuilt keys [ContentVersion, UUID, Properties, Name] -> [ContentVersion, UUID, Name]
+corpus.nbt	e105	serializables/ProfileProperty unsigned	PASS
+corpus.nbt	e106	serializables/PotionEffect	PASS
+corpus.nbt	e107	serializables/FireworkEffect	LOSSY: rebuilt Colors: size 1 -> 0
+corpus.nbt	e108	serializables/Color	PASS
+corpus.nbt	e109	serializables/EntityArchetype pig	PASS
+corpus.nbt	e110	serializables/BlockEntityArchetype chest	PASS
+corpus.nbt	e111	serializables/PluginRecord (test type, version 2)	PASS (container: Flags: [0] Boolean(true) -> Byte(1))
+corpus.nbt	e112	serializables/PluginRecord version 1	PASS
+corpus.nbt	e113	customData/Boolean	PASS
+corpus.nbt	e114	customData/Byte	PASS
+corpus.nbt	e115	customData/Short	PASS
+corpus.nbt	e116	customData/Integer	PASS
+corpus.nbt	e117	customData/Long (fits int)	PASS
+corpus.nbt	e118	customData/Long MAX	PASS
+corpus.nbt	e119	customData/Float	PASS
+corpus.nbt	e120	customData/Double	PASS
+corpus.nbt	e121	customData/Double -0.0	LOSSY: Double(-0.0) -> Double(0.0)
+corpus.nbt	e122	customData/String	PASS
+corpus.nbt	e123	customData/String 70k chars	LOSSY: String(xxxxxxxxxxxxxxxxxxxxxxxx...(70000)) -> String()
+corpus.nbt	e124	customData/UUID	PASS
+corpus.nbt	e125	customData/Vector3d	PASS
+corpus.nbt	e126	customData/Vector3i	PASS
+corpus.nbt	e127	customData/Instant	PASS
+corpus.nbt	e128	customData/Month (translated enum)	PASS
+corpus.nbt	e129	customData/ResourceKey	PASS
+corpus.nbt	e130	customData/registry value (ItemType)	PASS
+corpus.nbt	e131	customData/ItemStackSnapshot	PASS
+corpus.nbt	e132	customData/DataView	LOSSY: b: Boolean(true) -> Byte(1)
+corpus.nbt	e133	customData/List<Boolean>	LOSSY: [0] Boolean(true) -> Byte(1)
+corpus.nbt	e134	customData/List<Integer>	PASS
+corpus.nbt	e135	customData/List<Long>	PASS
+corpus.nbt	e136	customData/List<Float>	PASS
+corpus.nbt	e137	customData/List<String>	PASS
+corpus.nbt	e138	customData/List<UUID>	PASS
+corpus.nbt	e139	customData/Set<String>	PASS
+corpus.nbt	e140	customData/Map<String,Integer>	PASS
+corpus.nbt	e141	customData/Map<String,Boolean>	PASS
+corpus.nbt	e142	customData/Map<UUID,String>	PASS

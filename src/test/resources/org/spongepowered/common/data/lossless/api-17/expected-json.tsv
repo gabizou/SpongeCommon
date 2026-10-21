@@ -1,0 +1,128 @@
+single-e036.json	e036	matrix/36 byte[]	ERROR: ClassCastException: class java.lang.Integer cannot be cast to class java.lang.Byte (java.l...
+single-e038.json	e038	matrix/38 long[] small values	ERROR: ClassCastException: class java.lang.Integer cannot be cast to class java.lang.Long (java.l...
+corpus.json	e000	matrix/00 Boolean true	PASS
+corpus.json	e001	matrix/01 Boolean false	PASS
+corpus.json	e002	matrix/02 Byte 0	LOSSY: Byte(0) -> Integer(0)
+corpus.json	e003	matrix/03 Byte MIN	LOSSY: Byte(-128) -> Integer(-128)
+corpus.json	e004	matrix/04 Byte MAX	LOSSY: Byte(127) -> Integer(127)
+corpus.json	e005	matrix/05 Short MIN	LOSSY: Short(-32768) -> Integer(-32768)
+corpus.json	e006	matrix/06 Short MAX	LOSSY: Short(32767) -> Integer(32767)
+corpus.json	e007	matrix/07 Integer 0	PASS
+corpus.json	e008	matrix/08 Integer MIN	PASS
+corpus.json	e009	matrix/09 Integer MAX	PASS
+corpus.json	e010	matrix/10 Long 1 (fits int)	LOSSY: Long(1) -> Integer(1)
+corpus.json	e011	matrix/11 Long MIN	PASS
+corpus.json	e012	matrix/12 Long MAX	PASS
+corpus.json	e013	matrix/13 Float 0.1	LOSSY: Float(0.1) -> Double(0.1)
+corpus.json	e014	matrix/14 Float 1.0	LOSSY: Float(1.0) -> Double(1.0)
+corpus.json	e018	matrix/18 Float -0.0	LOSSY: Float(-0.0) -> Double(-0.0)
+corpus.json	e019	matrix/19 Float MIN_VALUE	LOSSY: Float(1.4E-45) -> Double(1.4E-45)
+corpus.json	e020	matrix/20 Float MAX_VALUE	LOSSY: Float(3.4028235E38) -> Double(3.4028235E38)
+corpus.json	e021	matrix/21 Double 0.1	PASS
+corpus.json	e022	matrix/22 Double 1.0	PASS
+corpus.json	e023	matrix/23 Double 1e20	PASS
+corpus.json	e027	matrix/27 Double -0.0	PASS
+corpus.json	e028	matrix/28 Double MIN_VALUE	PASS
+corpus.json	e029	matrix/29 Double MAX_VALUE	PASS
+corpus.json	e030	matrix/30 String empty	PASS
+corpus.json	e031	matrix/31 String ascii	PASS
+corpus.json	e032	matrix/32 String unicode	PASS
+corpus.json	e033	matrix/33 String with '.'	PASS
+corpus.json	e034	matrix/34 String 70k chars	PASS
+corpus.json	e035	matrix/35 byte[] empty	PASS
+corpus.json	e037	matrix/37 int[]	PASS
+corpus.json	e039	matrix/39 long[] large values	PASS
+corpus.json	e043	matrix/43 List<Boolean>	PASS
+corpus.json	e044	matrix/44 List<Byte>	LOSSY: [0] Byte(1) -> Integer(1)
+corpus.json	e045	matrix/45 List<Short>	LOSSY: [0] Short(1) -> Integer(1)
+corpus.json	e046	matrix/46 List<Integer>	PASS
+corpus.json	e047	matrix/47 List<Long>	LOSSY: [0] Long(1) -> Integer(1)
+corpus.json	e048	matrix/48 List<Float>	LOSSY: [0] Float(1.5) -> Double(1.5)
+corpus.json	e049	matrix/49 List<Double>	PASS
+corpus.json	e050	matrix/50 List<String>	PASS
+corpus.json	e051	matrix/51 List empty	PASS
+corpus.json	e052	matrix/52 List mixed [1, "a"] (extra)	PASS
+corpus.json	e053	matrix/53 List<List<Integer>> (extra)	PASS
+corpus.json	e054	matrix/54 Map<String,?>	PASS
+corpus.json	e055	matrix/55 Map<String,?> key with '.'	PASS
+corpus.json	e056	matrix/56 Map<Integer,?>	PASS
+corpus.json	e057	matrix/58 Map<UUID,?>	PASS
+corpus.json	e058	matrix/59 Map<Enum,?>	PASS
+corpus.json	e059	matrix/60 UUID	PASS
+corpus.json	e062	matrix/63 enum Month (has translator)	PASS
+corpus.json	e063	matrix/64 nested DataView	LOSSY: deep: l: Long(5) -> Integer(5)
+corpus.json	e064	matrix/65 nested DataView with boolean (extra)	PASS
+corpus.json	e066	translators/UUID	PASS
+corpus.json	e067	translators/Vector2d	PASS
+corpus.json	e068	translators/Vector2f	PASS
+corpus.json	e069	translators/Vector2i	PASS
+corpus.json	e070	translators/Vector2l	PASS
+corpus.json	e071	translators/Vector3d	PASS
+corpus.json	e072	translators/Vector3d -0.0	PASS
+corpus.json	e073	translators/Vector3f	PASS
+corpus.json	e074	translators/Vector3i	PASS
+corpus.json	e075	translators/Vector3l small values	PASS
+corpus.json	e076	translators/Vector3l large values	PASS
+corpus.json	e077	translators/Vector4d	PASS
+corpus.json	e078	translators/Vector4f	PASS
+corpus.json	e079	translators/Vector4i	PASS
+corpus.json	e080	translators/Vector4l	PASS
+corpus.json	e081	translators/Complexd	PASS
+corpus.json	e082	translators/Complexf	PASS
+corpus.json	e083	translators/Quaterniond	PASS
+corpus.json	e084	translators/Quaternionf	PASS
+corpus.json	e085	translators/LocalTime	PASS
+corpus.json	e086	translators/LocalDate	PASS
+corpus.json	e087	translators/LocalDateTime	PASS
+corpus.json	e088	translators/Instant	PASS
+corpus.json	e089	translators/ZonedDateTime offset	ERROR: InvalidDataException: Unrecognized ZoneId: +02:00
+corpus.json	e090	translators/ZonedDateTime region	PASS
+corpus.json	e091	translators/Month	PASS
+corpus.json	e092	translators/Direction NORTH	PASS
+corpus.json	e093	translators/Direction SOUTH_SOUTHWEST	PASS
+corpus.json	e097	serializables/ItemStack simple	PASS
+corpus.json	e098	serializables/ItemStack named, enchanted, damaged	PASS
+corpus.json	e099	serializables/ItemStack with unbreakable flag	PASS
+corpus.json	e100	serializables/ItemStackSnapshot	PASS
+corpus.json	e101	serializables/BlockState default	PASS
+corpus.json	e102	serializables/BlockState with properties	PASS
+corpus.json	e103	serializables/GameProfile name only	PASS
+corpus.json	e104	serializables/GameProfile with signed property	LOSSY: rebuilt keys [ContentVersion, UUID, Properties, Name] -> [ContentVersion, UUID, Name]
+corpus.json	e105	serializables/ProfileProperty unsigned	PASS
+corpus.json	e106	serializables/PotionEffect	PASS
+corpus.json	e107	serializables/FireworkEffect	LOSSY: rebuilt Colors: size 1 -> 0
+corpus.json	e108	serializables/Color	PASS
+corpus.json	e109	serializables/EntityArchetype pig	PASS
+corpus.json	e110	serializables/BlockEntityArchetype chest	PASS
+corpus.json	e111	serializables/PluginRecord (test type, version 2)	PASS (container: B: Byte(-7) -> Integer(-7))
+corpus.json	e112	serializables/PluginRecord version 1	PASS
+corpus.json	e113	customData/Boolean	PASS
+corpus.json	e114	customData/Byte	PASS
+corpus.json	e115	customData/Short	PASS
+corpus.json	e116	customData/Integer	PASS
+corpus.json	e117	customData/Long (fits int)	PASS
+corpus.json	e118	customData/Long MAX	PASS
+corpus.json	e119	customData/Float	PASS
+corpus.json	e120	customData/Double	PASS
+corpus.json	e121	customData/Double -0.0	LOSSY: Double(-0.0) -> Double(0.0)
+corpus.json	e122	customData/String	PASS
+corpus.json	e123	customData/String 70k chars	PASS
+corpus.json	e124	customData/UUID	PASS
+corpus.json	e125	customData/Vector3d	PASS
+corpus.json	e126	customData/Vector3i	PASS
+corpus.json	e127	customData/Instant	PASS
+corpus.json	e128	customData/Month (translated enum)	PASS
+corpus.json	e129	customData/ResourceKey	PASS
+corpus.json	e130	customData/registry value (ItemType)	PASS
+corpus.json	e131	customData/ItemStackSnapshot	PASS
+corpus.json	e132	customData/DataView	LOSSY: b: Boolean(true) -> Integer(1)
+corpus.json	e133	customData/List<Boolean>	LOSSY: [0] Boolean(true) -> Integer(1)
+corpus.json	e134	customData/List<Integer>	PASS
+corpus.json	e135	customData/List<Long>	LOSSY: [0] Long(1) -> Integer(1)
+corpus.json	e136	customData/List<Float>	LOSSY: [0] Float(1.5) -> Double(1.5)
+corpus.json	e137	customData/List<String>	PASS
+corpus.json	e138	customData/List<UUID>	PASS
+corpus.json	e139	customData/Set<String>	PASS
+corpus.json	e140	customData/Map<String,Integer>	PASS
+corpus.json	e141	customData/Map<String,Boolean>	PASS
+corpus.json	e142	customData/Map<UUID,String>	PASS

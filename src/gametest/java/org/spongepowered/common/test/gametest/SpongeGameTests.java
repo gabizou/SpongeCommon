@@ -40,6 +40,7 @@ import org.spongepowered.common.launch.Launch;
 import org.spongepowered.common.test.gametest.block.ChangeBlockEventGameTests;
 import org.spongepowered.common.test.gametest.block.NeighborNotificationGameTests;
 import org.spongepowered.common.test.gametest.block.PistonGameTests;
+import org.spongepowered.common.test.gametest.data.DataViewExactGameTests;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -70,6 +71,7 @@ public final class SpongeGameTests {
 
     private static final List<Class<?>> COMMON = List.of(
         ChangeBlockEventGameTests.class,
+        DataViewExactGameTests.class,
         NeighborNotificationGameTests.class,
         PistonGameTests.class
     );

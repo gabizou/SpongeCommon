@@ -34,8 +34,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.spongepowered.common.data.lossless.LosslessSupport.KEY;
 
 import net.kyori.adventure.text.Component;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.NbtIo;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.spongepowered.api.data.persistence.DataContainer;
@@ -43,7 +45,10 @@ import org.spongepowered.api.data.persistence.DataFormats;
 import org.spongepowered.api.data.persistence.DataQuery;
 import org.spongepowered.api.data.persistence.DataView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UTFDataFormatException;
 import java.time.Month;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -70,6 +75,15 @@ class AdditionalFindingsTest {
         assertEquals("", read.getString(DataQuery.of("ascii")).get());
         assertEquals("", read.getString(DataQuery.of("threeByte")).get());
         assertEquals(65_535, read.getString(DataQuery.of("fits")).get().length());
+    }
+
+    @Test
+    @DisplayName("X1 fix path: NbtIo.writeUnnamedTag (no fallback) throws instead of writing \"\" for the same tag")
+    void x1NoFallbackWriteThrows() {
+        final CompoundTag tag = new CompoundTag();
+        tag.putString("ascii", "x".repeat(65_536));
+        final DataOutputStream out = new DataOutputStream(new ByteArrayOutputStream());
+        assertThrows(UTFDataFormatException.class, () -> NbtIo.writeUnnamedTag(tag, out));
     }
 
     @Test

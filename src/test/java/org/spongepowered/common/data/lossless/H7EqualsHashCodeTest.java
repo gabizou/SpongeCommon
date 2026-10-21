@@ -46,13 +46,13 @@ class H7EqualsHashCodeTest {
     @Test
     @DisplayName("MemoryDataContainer equals CompoundTagDataContainer with the same content, but hashCodes differ")
     void crossImplementationEqualsWithDifferentHashCode() {
-        final DataContainer memory = LosslessSupport.memory().set(KEY, true).set(DataQuery.of("a", "b"), 1);
-        final DataContainer compound = LosslessSupport.compound().set(KEY, true).set(DataQuery.of("a", "b"), 1);
+        final DataContainer memory = LosslessSupport.memory().set(DataQuery.of("a", "b"), 1);
+        final DataContainer compound = LosslessSupport.compound().set(DataQuery.of("a", "b"), 1);
         // MemoryDataView.java:423-424 -> SpongeDataView.java:500-507 compares values(true)
         assertEquals(memory, compound);
         assertEquals(compound, memory);
         // MemoryDataView.java:415 hashes the LinkedHashMap, CompoundTagDataView.java:388 the CompoundTag
-        // (boolean key is stored as "v$Boolean", nested view hashes include their path)
+        // nested MemoryDataView hashes include their path; nested CompoundTags do not
         assertNotEquals(memory.hashCode(), compound.hashCode());
     }
 
@@ -95,8 +95,8 @@ class H7EqualsHashCodeTest {
     @Test
     @DisplayName("a HashSet of views can hold two 'equal' views because their hashCodes differ")
     void hashSetHoldsEqualViewsTwice() {
-        final DataContainer memory = LosslessSupport.memory().set(KEY, true);
-        final DataContainer compound = LosslessSupport.compound().set(KEY, true);
+        final DataContainer memory = LosslessSupport.memory().set(DataQuery.of("a", "b"), 1);
+        final DataContainer compound = LosslessSupport.compound().set(DataQuery.of("a", "b"), 1);
         final java.util.Set<DataView> set = new java.util.HashSet<>();
         set.add(memory);
         set.add(compound);

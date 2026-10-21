@@ -92,12 +92,6 @@
             "description": "Testing data formats"
         },
         {
-            "id": "dataviewexacttest",
-            "name": "DataView Exact Getter Test",
-            "entrypoint": "org.spongepowered.test.data.DataViewExactTest",
-            "description": "Shows the difference between lenient and exact DataView getters"
-        },
-        {
             "id": "entitytest",
             "name": "Entity Test",
             "entrypoint": "org.spongepowered.test.entity.EntityTest",

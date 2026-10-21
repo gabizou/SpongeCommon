@@ -78,6 +78,26 @@ final class LosslessSupport {
         return DataFormats.JSON.get().read(DataFormats.JSON.get().write(view));
     }
 
+    /** Writes the view with {@link DataFormats#HOCON} to a string and reads it back. */
+    static DataContainer hoconRoundTrip(final DataView view) throws IOException {
+        return DataFormats.HOCON.get().read(DataFormats.HOCON.get().write(view));
+    }
+
+    /** The data formats a plugin can save through, in report column order. */
+    enum Format {
+        NBT,
+        JSON,
+        HOCON;
+
+        DataContainer roundTrip(final DataView view) throws IOException {
+            return switch (this) {
+                case NBT -> LosslessSupport.nbtRoundTrip(view);
+                case JSON -> LosslessSupport.jsonRoundTrip(view);
+                case HOCON -> LosslessSupport.hoconRoundTrip(view);
+            };
+        }
+    }
+
     static String json(final DataView view) throws IOException {
         return DataFormats.JSON.get().write(view);
     }

@@ -24,7 +24,6 @@
  */
 package org.spongepowered.common.data.lossless;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.spongepowered.common.data.lossless.LosslessSupport.KEY;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -35,9 +34,6 @@ import org.spongepowered.api.data.persistence.DataQuery;
 import org.spongepowered.api.data.persistence.DataView;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.DayOfWeek;
 import java.time.Month;
 import java.util.ArrayList;
@@ -57,6 +53,7 @@ import java.util.UUID;
  *     <li>nbt: the Object-overload container written and read with {@code DataFormats.NBT} (binary),
  *         compared to what the container held before writing</li>
  *     <li>json: same with {@code DataFormats.JSON}</li>
+ *     <li>hocon: same with {@code DataFormats.HOCON}</li>
  *     <li>compound: {@code set(DataQuery, Object)} on a {@code CompoundTagDataContainer}
  *         (the view Sponge uses for custom data), compared to the input</li>
  * </ul>
@@ -77,7 +74,7 @@ class LosslessMatrixTest {
 
     record Row(String name, @Nullable Object value) {}
 
-    static final String[] COLUMNS = {"primitive overload", "Object overload", "NBT round trip", "JSON round trip", "CompoundTagDataView (extra)"};
+    static final String[] COLUMNS = {"primitive overload", "Object overload", "NBT round trip", "JSON round trip", "HOCON round trip", "CompoundTagDataView (extra)"};
 
     static List<Row> rows() {
         final List<Row> rows = new ArrayList<>();
@@ -161,74 +158,74 @@ class LosslessMatrixTest {
     static final Map<String, String> EXPECTED = new LinkedHashMap<>();
 
     static {
-        EXPECTED.put("Boolean true", "PPPPL");
-        EXPECTED.put("Boolean false", "PPPPL");
-        EXPECTED.put("Byte 0", "PPPLP");
-        EXPECTED.put("Byte MIN", "PPPLP");
-        EXPECTED.put("Byte MAX", "PPPLP");
-        EXPECTED.put("Short MIN", "PPPLP");
-        EXPECTED.put("Short MAX", "PPPLP");
-        EXPECTED.put("Integer 0", "PPPPP");
-        EXPECTED.put("Integer MIN", "PPPPP");
-        EXPECTED.put("Integer MAX", "PPPPP");
-        EXPECTED.put("Long 1 (fits int)", "PPPLP");
-        EXPECTED.put("Long MIN", "PPPPP");
-        EXPECTED.put("Long MAX", "PPPPP");
-        EXPECTED.put("Float 0.1", "PPPLP");
-        EXPECTED.put("Float 1.0", "PPPLP");
-        EXPECTED.put("Float NaN", "PPPEP");
-        EXPECTED.put("Float +Inf", "PPPEP");
-        EXPECTED.put("Float -Inf", "PPPEP");
-        EXPECTED.put("Float -0.0", "PPLLL");
-        EXPECTED.put("Float MIN_VALUE", "PPPLP");
-        EXPECTED.put("Float MAX_VALUE", "PPPLP");
-        EXPECTED.put("Double 0.1", "PPPPP");
-        EXPECTED.put("Double 1.0", "PPPPP");
-        EXPECTED.put("Double 1e20", "PPPPP");
-        EXPECTED.put("Double NaN", "PPPEP");
-        EXPECTED.put("Double +Inf", "PPPEP");
-        EXPECTED.put("Double -Inf", "PPPEP");
-        EXPECTED.put("Double -0.0", "PPLPL");
-        EXPECTED.put("Double MIN_VALUE", "PPPPP");
-        EXPECTED.put("Double MAX_VALUE", "PPPPP");
-        EXPECTED.put("String empty", "PPPPP");
-        EXPECTED.put("String ascii", "PPPPP");
-        EXPECTED.put("String unicode", "PPPPP");
-        EXPECTED.put("String with '.'", "PPPPP");
-        EXPECTED.put("String 70k chars", "PPLPP");
-        EXPECTED.put("byte[] empty", "-PPPP");
-        EXPECTED.put("byte[]", "-PPEP");
-        EXPECTED.put("int[]", "-PPPP");
-        EXPECTED.put("long[] small values", "-PPEP");
-        EXPECTED.put("long[] large values", "-PPPP");
-        EXPECTED.put("short[] (extra)", "-PEEE");
-        EXPECTED.put("double[] (extra)", "-PEEE");
-        EXPECTED.put("String[] (extra)", "-PEEE");
-        EXPECTED.put("List<Boolean>", "-PLPL");
-        EXPECTED.put("List<Byte>", "-PPLP");
-        EXPECTED.put("List<Short>", "-PPLP");
-        EXPECTED.put("List<Integer>", "-PPPP");
-        EXPECTED.put("List<Long>", "-PPLP");
-        EXPECTED.put("List<Float>", "-PPLP");
-        EXPECTED.put("List<Double>", "-PPPP");
-        EXPECTED.put("List<String>", "-PPPP");
-        EXPECTED.put("List empty", "-PPPP");
-        EXPECTED.put("List mixed [1, \"a\"] (extra)", "-PPPP");
-        EXPECTED.put("List<List<Integer>> (extra)", "-PPPP");
-        EXPECTED.put("Map<String,?>", "-LPPL");
-        EXPECTED.put("Map<String,?> key with '.'", "-LPPL");
-        EXPECTED.put("Map<Integer,?>", "-LPPL");
-        EXPECTED.put("Map<Long,?>", "-E--E");
-        EXPECTED.put("Map<UUID,?>", "-LPPL");
-        EXPECTED.put("Map<Enum,?>", "-LPPL");
-        EXPECTED.put("UUID", "-LPPL");
-        EXPECTED.put("enum (plain, no translator)", "-PEEE");
-        EXPECTED.put("enum DayOfWeek (no translator)", "-PEEE");
-        EXPECTED.put("enum Month (has translator)", "-LPPL");
-        EXPECTED.put("nested DataView", "-PPLP");
-        EXPECTED.put("nested DataView with boolean (extra)", "-PPPL");
-        EXPECTED.put("Optional.empty() (extra)", "-PEEE");
-        EXPECTED.put("null", "EE--E");
+        EXPECTED.put("Boolean true", "PPPPPL");
+        EXPECTED.put("Boolean false", "PPPPPL");
+        EXPECTED.put("Byte 0", "PPPLLP");
+        EXPECTED.put("Byte MIN", "PPPLLP");
+        EXPECTED.put("Byte MAX", "PPPLLP");
+        EXPECTED.put("Short MIN", "PPPLLP");
+        EXPECTED.put("Short MAX", "PPPLLP");
+        EXPECTED.put("Integer 0", "PPPPPP");
+        EXPECTED.put("Integer MIN", "PPPPPP");
+        EXPECTED.put("Integer MAX", "PPPPPP");
+        EXPECTED.put("Long 1 (fits int)", "PPPLLP");
+        EXPECTED.put("Long MIN", "PPPPPP");
+        EXPECTED.put("Long MAX", "PPPPPP");
+        EXPECTED.put("Float 0.1", "PPPLLP");
+        EXPECTED.put("Float 1.0", "PPPLLP");
+        EXPECTED.put("Float NaN", "PPPELP");
+        EXPECTED.put("Float +Inf", "PPPELP");
+        EXPECTED.put("Float -Inf", "PPPELP");
+        EXPECTED.put("Float -0.0", "PPLLLL");
+        EXPECTED.put("Float MIN_VALUE", "PPPLLP");
+        EXPECTED.put("Float MAX_VALUE", "PPPLLP");
+        EXPECTED.put("Double 0.1", "PPPPPP");
+        EXPECTED.put("Double 1.0", "PPPPLP");
+        EXPECTED.put("Double 1e20", "PPPPPP");
+        EXPECTED.put("Double NaN", "PPPELP");
+        EXPECTED.put("Double +Inf", "PPPELP");
+        EXPECTED.put("Double -Inf", "PPPELP");
+        EXPECTED.put("Double -0.0", "PPLPLL");
+        EXPECTED.put("Double MIN_VALUE", "PPPPPP");
+        EXPECTED.put("Double MAX_VALUE", "PPPPPP");
+        EXPECTED.put("String empty", "PPPPPP");
+        EXPECTED.put("String ascii", "PPPPPP");
+        EXPECTED.put("String unicode", "PPPPPP");
+        EXPECTED.put("String with '.'", "PPPPPP");
+        EXPECTED.put("String 70k chars", "PPLPPP");
+        EXPECTED.put("byte[] empty", "-PPPLP");
+        EXPECTED.put("byte[]", "-PPELP");
+        EXPECTED.put("int[]", "-PPPLP");
+        EXPECTED.put("long[] small values", "-PPELP");
+        EXPECTED.put("long[] large values", "-PPPLP");
+        EXPECTED.put("short[] (extra)", "-PEELE");
+        EXPECTED.put("double[] (extra)", "-PEELE");
+        EXPECTED.put("String[] (extra)", "-PEELE");
+        EXPECTED.put("List<Boolean>", "-PLPPL");
+        EXPECTED.put("List<Byte>", "-PPLLP");
+        EXPECTED.put("List<Short>", "-PPLLP");
+        EXPECTED.put("List<Integer>", "-PPPPP");
+        EXPECTED.put("List<Long>", "-PPLLP");
+        EXPECTED.put("List<Float>", "-PPLLP");
+        EXPECTED.put("List<Double>", "-PPPPP");
+        EXPECTED.put("List<String>", "-PPPPP");
+        EXPECTED.put("List empty", "-PPPPP");
+        EXPECTED.put("List mixed [1, \"a\"] (extra)", "-PPPPP");
+        EXPECTED.put("List<List<Integer>> (extra)", "-PPPPP");
+        EXPECTED.put("Map<String,?>", "-LPPPL");
+        EXPECTED.put("Map<String,?> key with '.'", "-LPPPL");
+        EXPECTED.put("Map<Integer,?>", "-LPPPL");
+        EXPECTED.put("Map<Long,?>", "-E---E");
+        EXPECTED.put("Map<UUID,?>", "-LPPPL");
+        EXPECTED.put("Map<Enum,?>", "-LPPPL");
+        EXPECTED.put("UUID", "-LPPPL");
+        EXPECTED.put("enum (plain, no translator)", "-PEELE");
+        EXPECTED.put("enum DayOfWeek (no translator)", "-PEELE");
+        EXPECTED.put("enum Month (has translator)", "-LPPPL");
+        EXPECTED.put("nested DataView", "-PPLLP");
+        EXPECTED.put("nested DataView with boolean (extra)", "-PPPPL");
+        EXPECTED.put("Optional.empty() (extra)", "-PEEEE");
+        EXPECTED.put("null", "EE---E");
     }
 
     static String status(final String cell) {
@@ -309,46 +306,32 @@ class LosslessMatrixTest {
         });
         final String nbt;
         final String json;
+        final String hocon;
         if (stored[0] == null) {
             nbt = "N/A (value cannot be stored)";
             json = "N/A (value cannot be stored)";
+            hocon = "N/A (value cannot be stored)";
         } else {
             final Object inView = objectContainer.get(KEY).get();
             nbt = LosslessMatrixTest.cell(() -> LosslessMatrixTest.compare(inView, LosslessSupport.nbtRoundTrip(objectContainer).get(KEY)));
             json = LosslessMatrixTest.cell(() -> LosslessMatrixTest.compare(inView, LosslessSupport.jsonRoundTrip(objectContainer).get(KEY)));
+            hocon = LosslessMatrixTest.cell(() -> LosslessMatrixTest.compare(inView, LosslessSupport.hoconRoundTrip(objectContainer).get(KEY)));
         }
         final String compound = LosslessMatrixTest.cell(() -> {
             final DataContainer c = LosslessSupport.compound();
             c.set(KEY, v);
             return LosslessMatrixTest.compare(v, c.get(KEY));
         });
-        return new String[] {primitive, object, nbt, json, compound};
-    }
-
-    static String escape(final String s) {
-        return s.replace("|", "\\|").replace("\u0000", "\\0");
+        return new String[] {primitive, object, nbt, json, hocon, compound};
     }
 
     @Test
     @DisplayName("matrix matches pinned statuses")
     void matrix() throws IOException {
-        final StringBuilder md = new StringBuilder("| Value | ").append(String.join(" | ", COLUMNS)).append(" |\n|---|");
-        md.append("---|".repeat(COLUMNS.length)).append('\n');
-        final Map<String, String> observed = new LinkedHashMap<>();
+        final PinnedTable table = new PinnedTable("lossless-matrix", LosslessMatrixTest.COLUMNS);
         for (final Row row : LosslessMatrixTest.rows()) {
-            final String[] cells = LosslessMatrixTest.evaluate(row);
-            md.append("| ").append(LosslessMatrixTest.escape(row.name()));
-            final StringBuilder codes = new StringBuilder();
-            for (final String cell : cells) {
-                md.append(" | ").append(LosslessMatrixTest.escape(cell));
-                codes.append(LosslessMatrixTest.status(cell));
-            }
-            md.append(" |\n");
-            observed.put(row.name(), codes.toString());
+            table.row(row.name(), LosslessMatrixTest.evaluate(row));
         }
-        final Path out = Path.of("lossless-matrix.md").toAbsolutePath();
-        Files.writeString(out, md.toString(), StandardCharsets.UTF_8);
-        System.out.println("Lossless matrix written to " + out + "\n" + md);
-        assertEquals(LosslessMatrixTest.EXPECTED, observed);
+        table.assertMatches(LosslessMatrixTest.EXPECTED);
     }
 }

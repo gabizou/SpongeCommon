@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:game_rules",
+  "bool_rules": [
+    {
+      "rule": "mobGriefing",
+      "value": false
+    }
+  ],
+  "int_rules": []
+}

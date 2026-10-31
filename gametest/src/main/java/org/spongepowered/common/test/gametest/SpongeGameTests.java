@@ -25,10 +25,12 @@
 package org.spongepowered.common.test.gametest;
 
 import io.leangen.geantyref.TypeToken;
-import net.minecraft.gametest.framework.GameTestEnvironments;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.GeneratedTest;
 import net.minecraft.gametest.framework.TestData;
+import net.minecraft.gametest.framework.TestEnvironmentDefinition;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Rotation;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -134,6 +136,10 @@ public final class SpongeGameTests {
         return Arrays.stream(type.getDeclaredMethods()).filter(SpongeGameTests::isTest).map(method -> SpongeGameTests.test(instance, method));
     }
 
+    private static ResourceKey<TestEnvironmentDefinition> environment(final Method method) {
+        return ResourceKey.create(Registries.TEST_ENVIRONMENT, ResourceLocation.parse(method.getDeclaringClass().getAnnotation(GameTestGroup.class).environment()));
+    }
+
     // Instance methods rather than static: IntelliJ only gives non-static methods a run icon
     private static GeneratedTest test(final Object instance, final Method method) {
         if (Modifier.isStatic(method.getModifiers()) || !Arrays.equals(method.getParameterTypes(), new Class<?>[] {GameTestHelper.class})) {
@@ -142,7 +148,7 @@ public final class SpongeGameTests {
         final GameTest test = method.getAnnotation(GameTest.class);
         return new GeneratedTest(
             SpongeGameTests.id(method),
-            new TestData<>(GameTestEnvironments.DEFAULT_KEY, ResourceLocation.parse(test.structure()), test.maxTicks(), test.setupTicks(), test.required(),
+            new TestData<>(SpongeGameTests.environment(method), ResourceLocation.parse(test.structure()), test.maxTicks(), test.setupTicks(), test.required(),
                 Rotation.NONE, false, 1, 1, test.skyAccess()),
             SpongeGameTests.function(instance, method)
         );

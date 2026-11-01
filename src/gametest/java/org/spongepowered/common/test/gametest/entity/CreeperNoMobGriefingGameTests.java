@@ -62,7 +62,7 @@ public final class CreeperNoMobGriefingGameTests {
     // A plugin can still have one explosion break blocks, by changing it before it happens
     @GameTest(structure = CreeperExplosions.STONE_RING, maxTicks = CreeperExplosions.MAX_TICKS)
     void eventCanBreakBlocks(final GameTestHelper helper) {
-        CreeperExplosions.detonate(CreeperExplosions.spawn(helper), CreeperExplosions::breakBlocks, event -> {})
+        CreeperExplosions.detonate(CreeperExplosions.spawn(helper), CreeperExplosions::breakBlocks)
             .succeedWhenExploded(helper, false, true);
     }
 }

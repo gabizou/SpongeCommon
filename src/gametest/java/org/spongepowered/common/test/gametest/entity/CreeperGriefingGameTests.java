@@ -34,7 +34,7 @@ import org.spongepowered.common.test.gametest.GameTestGroup;
 /**
  * Whether a creeper's explosion breaks blocks while the {@code mobGriefing} rule allows it, which is the rule's
  * default. A plugin can still keep blocks from one creeper with {@link Keys#CAN_GRIEF}, or from one explosion through
- * its {@link org.spongepowered.api.event.world.ExplosionEvent.Detonate}.
+ * its {@link org.spongepowered.api.event.entity.explosive.DetonateExplosiveEvent}.
  *
  * @see CreeperNoMobGriefingGameTests
  */
@@ -67,7 +67,7 @@ public final class CreeperGriefingGameTests {
 
     @GameTest(structure = CreeperExplosions.STONE_RING, maxTicks = CreeperExplosions.MAX_TICKS)
     void eventCanKeepBlocks(final GameTestHelper helper) {
-        CreeperExplosions.detonate(CreeperExplosions.spawn(helper), event -> {}, CreeperExplosions::keepBlocks)
+        CreeperExplosions.detonate(CreeperExplosions.spawn(helper), CreeperExplosions::keepBlocks)
             .succeedWhenExploded(helper, true, false);
     }
 }

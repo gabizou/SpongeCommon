@@ -33,7 +33,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.EventListener;
 import org.spongepowered.api.event.entity.explosive.DetonateExplosiveEvent;
-import org.spongepowered.api.event.world.ExplosionEvent;
 import org.spongepowered.common.test.gametest.GameTestAssertions;
 import org.spongepowered.common.test.gametest.SpongeGameTests;
 
@@ -59,42 +58,41 @@ final class CreeperExplosions {
         return helper.spawn(EntityType.CREEPER, CreeperExplosions.CREEPER);
     }
 
+    // How a plugin changes whether the explosion breaks blocks is the one thing that differs between Sponge API
+    // versions: api-14 replaced shouldBreakBlocks with blockInteraction
+
     /** Has the explosion break blocks, whatever it would have done, as a plugin can before the creeper detonates */
     static void breakBlocks(final DetonateExplosiveEvent event) {
-        // The one call that differs between Sponge API versions: api-14 replaced this with blockInteraction
         event.explosionBuilder().shouldBreakBlocks(true);
     }
 
-    /** Keeps every block out of the explosion, as a plugin can once the creeper has detonated */
-    static void keepBlocks(final ExplosionEvent.Detonate event) {
-        event.filterAffectedLocations(location -> false);
+    /** Has the explosion keep every block, whatever it would have done, as a plugin can before the creeper detonates */
+    static void keepBlocks(final DetonateExplosiveEvent event) {
+        event.explosionBuilder().shouldBreakBlocks(false);
     }
 
-    /** Lights the creeper, passing the events of its explosion to the listeners, which may change what it does */
-    static Detonation detonate(final Creeper creeper, final Consumer<DetonateExplosiveEvent> detonating, final Consumer<ExplosionEvent.Detonate> detonated) {
+    /**
+     * Lights the creeper, passing each {@link DetonateExplosiveEvent} it throws to the listener, which may change the
+     * explosion it is about to cause.
+     */
+    static Detonation detonate(final Creeper creeper, final Consumer<DetonateExplosiveEvent> listener) {
         final AtomicReference<@Nullable DetonateExplosiveEvent> seen = new AtomicReference<>();
-        final EventListener<DetonateExplosiveEvent> detonate = event -> {
+        final EventListener<DetonateExplosiveEvent> registered = event -> {
             if (event.explosive() == creeper) {
                 seen.set(event);
-                detonating.accept(event);
+                listener.accept(event);
             }
         };
-        final EventListener<ExplosionEvent.Detonate> explode = event -> {
-            if (event.explosion().sourceExplosive().filter(source -> source == creeper).isPresent()) {
-                detonated.accept(event);
-            }
-        };
-        SpongeGameTests.listen(DetonateExplosiveEvent.class, detonate);
-        SpongeGameTests.listen(ExplosionEvent.Detonate.class, explode);
+        SpongeGameTests.listen(DetonateExplosiveEvent.class, registered);
         creeper.ignite();
-        return new Detonation(creeper, seen, List.of(detonate, explode));
+        return new Detonation(creeper, seen, registered);
     }
 
     static Detonation detonate(final Creeper creeper) {
-        return CreeperExplosions.detonate(creeper, event -> {}, event -> {});
+        return CreeperExplosions.detonate(creeper, event -> {});
     }
 
-    record Detonation(Creeper creeper, AtomicReference<@Nullable DetonateExplosiveEvent> event, List<EventListener<?>> listeners) {
+    record Detonation(Creeper creeper, AtomicReference<@Nullable DetonateExplosiveEvent> event, EventListener<DetonateExplosiveEvent> listener) {
 
         /**
          * Waits for the creeper to explode, then checks whether the explosion it started with would break blocks, and
@@ -114,7 +112,7 @@ final class CreeperExplosions {
                         helper.assertBlockPresent(Blocks.STONE, stone);
                     }
                 }
-                this.listeners.forEach(Sponge.eventManager()::unregisterListeners);
+                Sponge.eventManager().unregisterListeners(this.listener);
             });
         }
     }

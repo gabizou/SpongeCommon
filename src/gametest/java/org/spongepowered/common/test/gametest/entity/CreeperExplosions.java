@@ -26,15 +26,17 @@ package org.spongepowered.common.test.gametest.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.block.Blocks;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.EntityTypes;
 import org.spongepowered.api.event.EventListener;
 import org.spongepowered.api.event.entity.explosive.DetonateExplosiveEvent;
+import org.spongepowered.api.world.server.ServerWorld;
 import org.spongepowered.common.test.gametest.GameTestAssertions;
 import org.spongepowered.common.test.gametest.SpongeGameTests;
+import org.spongepowered.math.vector.Vector3d;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -55,7 +57,13 @@ final class CreeperExplosions {
 
     /** A creeper in the middle of the stones, not yet lit */
     static Creeper spawn(final GameTestHelper helper) {
-        return helper.spawn(EntityType.CREEPER, CreeperExplosions.CREEPER);
+        // Spawned through the API rather than GameTestHelper#spawn, as vanilla's entity type constants moved in 26.2
+        final ServerWorld world = (ServerWorld) helper.getLevel();
+        final BlockPos position = helper.absolutePos(CreeperExplosions.CREEPER);
+        final org.spongepowered.api.entity.living.monster.Creeper creeper = world.createEntity(EntityTypes.CREEPER,
+            Vector3d.from(position.getX() + 0.5, position.getY(), position.getZ() + 0.5));
+        GameTestAssertions.assertTrue(helper, world.spawnEntity(creeper), "The creeper didn't spawn");
+        return (Creeper) creeper;
     }
 
     // How a plugin changes whether the explosion breaks blocks is the one thing that differs between Sponge API

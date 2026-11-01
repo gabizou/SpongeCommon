@@ -26,7 +26,6 @@ package org.spongepowered.common.test.gametest.entity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.block.Blocks;
@@ -34,6 +33,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.EventListener;
 import org.spongepowered.api.event.entity.explosive.DetonateExplosiveEvent;
+import org.spongepowered.api.world.explosion.ExplosionBlockInteractions;
+import org.spongepowered.common.test.gametest.GameTestAssertions;
 import org.spongepowered.common.test.gametest.SpongeGameTests;
 
 import java.util.List;
@@ -56,6 +57,19 @@ final class CreeperExplosions {
     /** A creeper in the middle of the stones, not yet lit */
     static Creeper spawn(final GameTestHelper helper) {
         return helper.spawn(EntityType.CREEPER, CreeperExplosions.CREEPER);
+    }
+
+    // How a plugin changes whether the explosion breaks blocks is the one thing that differs between Sponge API
+    // versions: api-14 replaced shouldBreakBlocks with blockInteraction
+
+    /** Has the explosion break blocks, whatever it would have done, as a plugin can before the creeper detonates */
+    static void breakBlocks(final DetonateExplosiveEvent event) {
+        event.explosionBuilder().blockInteraction(ExplosionBlockInteractions.DESTROY.get());
+    }
+
+    /** Has the explosion keep every block, whatever it would have done, as a plugin can before the creeper detonates */
+    static void keepBlocks(final DetonateExplosiveEvent event) {
+        event.explosionBuilder().blockInteraction(ExplosionBlockInteractions.KEEP.get());
     }
 
     /**
@@ -88,10 +102,10 @@ final class CreeperExplosions {
         void succeedWhenExploded(final GameTestHelper helper, final boolean originallyBreaks, final boolean breaks) {
             helper.succeedWhen(() -> {
                 final @Nullable DetonateExplosiveEvent event = this.event.get();
-                helper.assertTrue(event != null, Component.literal("The creeper threw no DetonateExplosiveEvent"));
-                helper.assertTrue(this.creeper.isRemoved(), Component.literal("The creeper hasn't exploded"));
-                helper.assertValueEqual(event.originalExplosion().shouldBreakBlocks(), originallyBreaks,
-                    Component.literal("whether the creeper's original explosion breaks blocks"));
+                GameTestAssertions.assertTrue(helper, event != null, "The creeper threw no DetonateExplosiveEvent");
+                GameTestAssertions.assertTrue(helper, this.creeper.isRemoved(), "The creeper hasn't exploded");
+                GameTestAssertions.assertValueEqual(helper, event.originalExplosion().shouldBreakBlocks(), originallyBreaks,
+                    "whether the creeper's original explosion breaks blocks");
                 for (final BlockPos stone : CreeperExplosions.STONES) {
                     if (breaks) {
                         helper.assertBlockNotPresent(Blocks.STONE, stone);

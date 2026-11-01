@@ -46,11 +46,6 @@ public @interface GameTestGroup {
      */
     String plugin() default "";
 
-    /**
-     * The test environment every test of the class runs in, a {@code data/<namespace>/test_environment/<path>.json}
-     * such as a {@code minecraft:game_rules} environment. Tests that share an environment run together as a batch, with
-     * it set up before and torn down after, so a change to the level they all need, such as a game rule, belongs here
-     * rather than in each test.
-     */
-    String environment() default "minecraft:default";
+    /** What the world is set up as while the tests run, see {@link GameTestEnvironment} */
+    Class<? extends GameTestEnvironment> environment() default GameTestEnvironment.None.class;
 }

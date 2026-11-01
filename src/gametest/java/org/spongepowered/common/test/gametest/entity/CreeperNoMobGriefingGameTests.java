@@ -25,28 +25,27 @@
 package org.spongepowered.common.test.gametest.entity;
 
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.monster.Creeper;
-import net.minecraft.world.level.GameRules;
 import org.spongepowered.api.data.Keys;
-import org.spongepowered.api.world.explosion.ExplosionBlockInteractions;
+import org.spongepowered.api.entity.living.monster.Creeper;
+import org.spongepowered.api.world.gamerule.GameRules;
+import org.spongepowered.api.world.server.ServerWorld;
 import org.spongepowered.common.test.gametest.GameTest;
+import org.spongepowered.common.test.gametest.GameTestAssertions;
 import org.spongepowered.common.test.gametest.GameTestGroup;
 
 /**
  * Whether a creeper's explosion keeps blocks once the {@code mobGriefing} rule is turned off, as it does without
- * Sponge (SpongePowered/Sponge#4320). The rule is the level's, so it is turned off by the
- * {@code sponge:no_mob_griefing} test environment, which the tests share as one batch and which resets the rule to
- * its default afterwards, rather than by each test.
+ * Sponge (SpongePowered/Sponge#4320). The tests run in {@link NoMobGriefing}, so the rule is already off when they
+ * start.
  *
  * @see CreeperGriefingGameTests
  */
-@GameTestGroup(value = "creeper_no_mob_griefing", environment = "sponge:no_mob_griefing")
+@GameTestGroup(value = "creeper_no_mob_griefing", environment = NoMobGriefing.class)
 public final class CreeperNoMobGriefingGameTests {
 
     @GameTest(structure = CreeperExplosions.STONE_RING, maxTicks = CreeperExplosions.MAX_TICKS)
     void keepsBlocks(final GameTestHelper helper) {
-        helper.assertFalse(helper.getLevel().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING), Component.literal("mobGriefing is still on"));
+        GameTestAssertions.assertFalse(helper, ((ServerWorld) helper.getLevel()).properties().gameRule(GameRules.MOB_GRIEFING.get()), "mobGriefing is still on");
 
         CreeperExplosions.detonate(CreeperExplosions.spawn(helper)).succeedWhenExploded(helper, false, false);
     }
@@ -54,8 +53,8 @@ public final class CreeperNoMobGriefingGameTests {
     // The rule decides for every creeper; a creeper allowed to grief doesn't get around it
     @GameTest(structure = CreeperExplosions.STONE_RING, maxTicks = CreeperExplosions.MAX_TICKS)
     void canGriefDoesNotOverrideRule(final GameTestHelper helper) {
-        final Creeper creeper = CreeperExplosions.spawn(helper);
-        ((org.spongepowered.api.entity.living.monster.Creeper) creeper).offer(Keys.CAN_GRIEF, true);
+        final net.minecraft.world.entity.monster.Creeper creeper = CreeperExplosions.spawn(helper);
+        ((Creeper) creeper).offer(Keys.CAN_GRIEF, true);
 
         CreeperExplosions.detonate(creeper).succeedWhenExploded(helper, false, false);
     }
@@ -63,7 +62,7 @@ public final class CreeperNoMobGriefingGameTests {
     // A plugin can still have one explosion break blocks, by changing it before it happens
     @GameTest(structure = CreeperExplosions.STONE_RING, maxTicks = CreeperExplosions.MAX_TICKS)
     void eventCanBreakBlocks(final GameTestHelper helper) {
-        CreeperExplosions.detonate(CreeperExplosions.spawn(helper), event -> event.explosionBuilder().blockInteraction(ExplosionBlockInteractions.DESTROY.get()))
+        CreeperExplosions.detonate(CreeperExplosions.spawn(helper), CreeperExplosions::breakBlocks)
             .succeedWhenExploded(helper, false, true);
     }
 }

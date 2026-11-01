@@ -24,19 +24,29 @@
  */
 package org.spongepowered.common.test.gametest;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.spongepowered.api.world.server.ServerWorld;
 
 /**
- * Runs before the tests of its class's group start: the group's tests are one batch, placed and run together, so
- * a change to the level that they all need, such as a game rule, is made here rather than by each test.
- * An instance method taking a {@link net.minecraft.server.level.ServerLevel}, the level the tests run in.
+ * What the world needs to be like while a group's tests run: set up before the first of them starts and torn down
+ * once the last is done, so the tests can take it as given. Named by {@link GameTestGroup#environment()}, any number
+ * of groups may share one, and it needs a no-argument constructor.
  *
- * @see AfterBatch
+ * <p>How it is applied depends on the Minecraft version, never on the tests: a {@link GameRulesEnvironment} is
+ * vanilla's own game rules environment where vanilla has test environments, and any other is run around the tests'
+ * batch.</p>
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface BeforeBatch {
+public interface GameTestEnvironment {
+
+    void setup(ServerWorld world);
+
+    default void teardown(final ServerWorld world) {
+    }
+
+    /** Leaves the world as it is: the environment of a group that names none */
+    final class None implements GameTestEnvironment {
+
+        @Override
+        public void setup(final ServerWorld world) {
+        }
+    }
 }

@@ -25,15 +25,16 @@
 package org.spongepowered.common.test.gametest.entity;
 
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.world.entity.monster.Creeper;
 import org.spongepowered.api.data.Keys;
+import org.spongepowered.api.entity.living.monster.Creeper;
 import org.spongepowered.common.test.gametest.GameTest;
+import org.spongepowered.common.test.gametest.GameTestAssertions;
 import org.spongepowered.common.test.gametest.GameTestGroup;
 
 /**
  * Whether a creeper's explosion breaks blocks while the {@code mobGriefing} rule allows it, which is the rule's
  * default. A plugin can still keep blocks from one creeper with {@link Keys#CAN_GRIEF}, or from one explosion through
- * its {@link org.spongepowered.api.event.entity.explosive.DetonateExplosiveEvent}.
+ * its {@link org.spongepowered.api.event.world.ExplosionEvent.Detonate}.
  *
  * @see CreeperNoMobGriefingGameTests
  */
@@ -47,9 +48,8 @@ public final class CreeperGriefingGameTests {
 
     @GameTest(structure = CreeperExplosions.STONE_RING, maxTicks = CreeperExplosions.MAX_TICKS)
     void cannotGriefKeepsBlocks(final GameTestHelper helper) {
-        final Creeper creeper = CreeperExplosions.spawn(helper);
-        helper.assertTrue(((org.spongepowered.api.entity.living.monster.Creeper) creeper).offer(Keys.CAN_GRIEF, false).isSuccessful(),
-            "Offering CAN_GRIEF to the creeper failed");
+        final net.minecraft.world.entity.monster.Creeper creeper = CreeperExplosions.spawn(helper);
+        GameTestAssertions.assertTrue(helper, ((Creeper) creeper).offer(Keys.CAN_GRIEF, false).isSuccessful(), "Offering CAN_GRIEF to the creeper failed");
 
         CreeperExplosions.detonate(creeper).succeedWhenExploded(helper, false, false);
     }
@@ -57,17 +57,17 @@ public final class CreeperGriefingGameTests {
     // Allowing it again, as a plugin undoing its own change would, leaves the creeper as it was spawned
     @GameTest(structure = CreeperExplosions.STONE_RING, maxTicks = CreeperExplosions.MAX_TICKS)
     void canGriefAgainBreaksBlocks(final GameTestHelper helper) {
-        final org.spongepowered.api.entity.living.monster.Creeper creeper = (org.spongepowered.api.entity.living.monster.Creeper) CreeperExplosions.spawn(helper);
-        creeper.offer(Keys.CAN_GRIEF, false);
-        creeper.offer(Keys.CAN_GRIEF, true);
-        helper.assertValueEqual(creeper.get(Keys.CAN_GRIEF).orElse(null), true, "the creeper's CAN_GRIEF");
+        final net.minecraft.world.entity.monster.Creeper creeper = CreeperExplosions.spawn(helper);
+        ((Creeper) creeper).offer(Keys.CAN_GRIEF, false);
+        ((Creeper) creeper).offer(Keys.CAN_GRIEF, true);
+        GameTestAssertions.assertValueEqual(helper, ((Creeper) creeper).get(Keys.CAN_GRIEF).orElse(null), true, "the creeper's CAN_GRIEF");
 
-        CreeperExplosions.detonate((Creeper) creeper).succeedWhenExploded(helper, true, true);
+        CreeperExplosions.detonate(creeper).succeedWhenExploded(helper, true, true);
     }
 
     @GameTest(structure = CreeperExplosions.STONE_RING, maxTicks = CreeperExplosions.MAX_TICKS)
     void eventCanKeepBlocks(final GameTestHelper helper) {
-        CreeperExplosions.detonate(CreeperExplosions.spawn(helper), event -> event.explosionBuilder().shouldBreakBlocks(false))
+        CreeperExplosions.detonate(CreeperExplosions.spawn(helper), event -> {}, CreeperExplosions::keepBlocks)
             .succeedWhenExploded(helper, true, false);
     }
 }

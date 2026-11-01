@@ -24,17 +24,27 @@
  */
 package org.spongepowered.common.test.gametest;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import net.minecraft.gametest.framework.GameTestHelper;
 
 /**
- * Runs once every test of its class's group is done, to undo what {@link BeforeBatch} changed. Batches run one
- * after another, so the next batch starts from the level as this left it.
- * An instance method taking a {@link net.minecraft.server.level.ServerLevel}, the level the tests ran in.
+ * {@link GameTestHelper}'s assertions with plain text messages. Which type vanilla takes for a message differs between
+ * Minecraft versions, so a test that asserts through these is written the same way on every version.
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface AfterBatch {
+public final class GameTestAssertions {
+
+    public static void assertTrue(final GameTestHelper helper, final boolean condition, final String message) {
+        helper.assertTrue(condition, message);
+    }
+
+    public static void assertFalse(final GameTestHelper helper, final boolean condition, final String message) {
+        helper.assertFalse(condition, message);
+    }
+
+    /** Fails unless {@code actual} equals {@code expected}; {@code name} says what the value is */
+    public static <N> void assertValueEqual(final GameTestHelper helper, final N actual, final N expected, final String name) {
+        helper.assertValueEqual(actual, expected, name);
+    }
+
+    private GameTestAssertions() {
+    }
 }

@@ -33,6 +33,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.event.EventListener;
 import org.spongepowered.api.event.entity.explosive.DetonateExplosiveEvent;
+import org.spongepowered.api.event.world.ExplosionEvent;
+import org.spongepowered.common.test.gametest.GameTestAssertions;
 import org.spongepowered.common.test.gametest.SpongeGameTests;
 
 import java.util.List;
@@ -57,28 +59,42 @@ final class CreeperExplosions {
         return helper.spawn(EntityType.CREEPER, CreeperExplosions.CREEPER);
     }
 
-    /**
-     * Lights the creeper, passing each {@link DetonateExplosiveEvent} it throws to the listener, which may change the
-     * explosion it is about to cause.
-     */
-    static Detonation detonate(final Creeper creeper, final Consumer<DetonateExplosiveEvent> listener) {
+    /** Has the explosion break blocks, whatever it would have done, as a plugin can before the creeper detonates */
+    static void breakBlocks(final DetonateExplosiveEvent event) {
+        // The one call that differs between Sponge API versions: api-14 replaced this with blockInteraction
+        event.explosionBuilder().shouldBreakBlocks(true);
+    }
+
+    /** Keeps every block out of the explosion, as a plugin can once the creeper has detonated */
+    static void keepBlocks(final ExplosionEvent.Detonate event) {
+        event.filterAffectedLocations(location -> false);
+    }
+
+    /** Lights the creeper, passing the events of its explosion to the listeners, which may change what it does */
+    static Detonation detonate(final Creeper creeper, final Consumer<DetonateExplosiveEvent> detonating, final Consumer<ExplosionEvent.Detonate> detonated) {
         final AtomicReference<@Nullable DetonateExplosiveEvent> seen = new AtomicReference<>();
-        final EventListener<DetonateExplosiveEvent> registered = event -> {
+        final EventListener<DetonateExplosiveEvent> detonate = event -> {
             if (event.explosive() == creeper) {
                 seen.set(event);
-                listener.accept(event);
+                detonating.accept(event);
             }
         };
-        SpongeGameTests.listen(DetonateExplosiveEvent.class, registered);
+        final EventListener<ExplosionEvent.Detonate> explode = event -> {
+            if (event.explosion().sourceExplosive().filter(source -> source == creeper).isPresent()) {
+                detonated.accept(event);
+            }
+        };
+        SpongeGameTests.listen(DetonateExplosiveEvent.class, detonate);
+        SpongeGameTests.listen(ExplosionEvent.Detonate.class, explode);
         creeper.ignite();
-        return new Detonation(creeper, seen, registered);
+        return new Detonation(creeper, seen, List.of(detonate, explode));
     }
 
     static Detonation detonate(final Creeper creeper) {
-        return CreeperExplosions.detonate(creeper, event -> {});
+        return CreeperExplosions.detonate(creeper, event -> {}, event -> {});
     }
 
-    record Detonation(Creeper creeper, AtomicReference<@Nullable DetonateExplosiveEvent> event, EventListener<DetonateExplosiveEvent> listener) {
+    record Detonation(Creeper creeper, AtomicReference<@Nullable DetonateExplosiveEvent> event, List<EventListener<?>> listeners) {
 
         /**
          * Waits for the creeper to explode, then checks whether the explosion it started with would break blocks, and
@@ -87,9 +103,9 @@ final class CreeperExplosions {
         void succeedWhenExploded(final GameTestHelper helper, final boolean originallyBreaks, final boolean breaks) {
             helper.succeedWhen(() -> {
                 final @Nullable DetonateExplosiveEvent event = this.event.get();
-                helper.assertTrue(event != null, "The creeper threw no DetonateExplosiveEvent");
-                helper.assertTrue(this.creeper.isRemoved(), "The creeper hasn't exploded");
-                helper.assertValueEqual(event.originalExplosion().shouldBreakBlocks(), originallyBreaks,
+                GameTestAssertions.assertTrue(helper, event != null, "The creeper threw no DetonateExplosiveEvent");
+                GameTestAssertions.assertTrue(helper, this.creeper.isRemoved(), "The creeper hasn't exploded");
+                GameTestAssertions.assertValueEqual(helper, event.originalExplosion().shouldBreakBlocks(), originallyBreaks,
                     "whether the creeper's original explosion breaks blocks");
                 for (final BlockPos stone : CreeperExplosions.STONES) {
                     if (breaks) {
@@ -98,7 +114,7 @@ final class CreeperExplosions {
                         helper.assertBlockPresent(Blocks.STONE, stone);
                     }
                 }
-                Sponge.eventManager().unregisterListeners(this.listener);
+                this.listeners.forEach(Sponge.eventManager()::unregisterListeners);
             });
         }
     }

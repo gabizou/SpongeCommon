@@ -40,27 +40,29 @@ import org.spongepowered.api.event.Event;
 import org.spongepowered.api.event.EventListener;
 import org.spongepowered.api.event.EventListenerRegistration;
 import org.spongepowered.api.event.Order;
+import org.spongepowered.api.world.server.ServerWorld;
 import org.spongepowered.common.launch.Launch;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -90,12 +92,15 @@ public final class SpongeGameTests {
         return Holder.ALL;
     }
 
-    /** Each group's {@link BeforeBatch} methods, by the batch name vanilla looks them up with */
+    /**
+     * What vanilla runs before each batch, by batch name. 1.21.1 has no test environments, but batches each group on
+     * its own, so a group's {@link GameTestGroup#environment()} is set up before its batch and torn down after it.
+     */
     public static Map<String, Consumer<ServerLevel>> beforeBatch() {
         return Holder.BEFORE_BATCH;
     }
 
-    /** Each group's {@link AfterBatch} methods, by the batch name vanilla looks them up with */
+    /** What vanilla runs after each batch, by batch name, see {@link #beforeBatch()} */
     public static Map<String, Consumer<ServerLevel>> afterBatch() {
         return Holder.AFTER_BATCH;
     }
@@ -140,35 +145,21 @@ public final class SpongeGameTests {
             .build());
     }
 
-    private static Object instance(final Class<?> type) {
-        try {
-            final Constructor<?> constructor = type.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            return constructor.newInstance();
-        } catch (final ReflectiveOperationException e) {
-            throw new IllegalStateException("Gametest class " + type.getName() + " needs a no-argument constructor", e);
-        }
-    }
-
-    private static Stream<TestFunction> tests(final Class<?> type, final Object instance) {
+    private static Stream<TestFunction> tests(final Class<?> type) {
+        final Object instance = SpongeGameTests.instantiate(type, "Gametest class");
         return Arrays.stream(type.getDeclaredMethods()).filter(SpongeGameTests::isTest).map(method -> SpongeGameTests.test(instance, method));
     }
 
-    /**
-     * The class's methods carrying the batch annotation, run in turn as the function vanilla runs around its group's
-     * batch, or none if it has no such methods.
-     */
-    private static @Nullable Consumer<ServerLevel> batchFunction(final Class<?> type, final Object instance, final Class<? extends Annotation> annotation) {
-        final List<Consumer<ServerLevel>> functions = Arrays.stream(type.getDeclaredMethods())
-            .filter(method -> method.isAnnotationPresent(annotation))
-            .map(method -> {
-                if (Modifier.isStatic(method.getModifiers()) || !Arrays.equals(method.getParameterTypes(), new Class<?>[] {ServerLevel.class})) {
-                    throw new IllegalStateException("@" + annotation.getSimpleName() + " " + method + " must not be static, and must take only a ServerLevel");
-                }
-                return SpongeGameTests.<ServerLevel>function(instance, method);
-            })
-            .toList();
-        return functions.isEmpty() ? null : level -> functions.forEach(function -> function.accept(level));
+    private static <T> T instantiate(final Class<T> type, final String what) {
+        try {
+            final Constructor<T> constructor = type.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+        } catch (final InvocationTargetException e) {
+            throw new IllegalStateException("Creating " + what.toLowerCase(Locale.ROOT) + " " + type.getName() + " failed", e.getCause());
+        } catch (final ReflectiveOperationException e) {
+            throw new IllegalStateException(what + " " + type.getName() + " needs a no-argument constructor", e);
+        }
     }
 
     // Instance methods rather than static: IntelliJ only gives non-static methods a run icon
@@ -179,10 +170,10 @@ public final class SpongeGameTests {
         final GameTest test = method.getAnnotation(GameTest.class);
         final String structure = SpongeGameTests.EMPTY.equals(test.structure()) ? SpongeGameTests.SPONGE_EMPTY : test.structure();
         return new TestFunction(SpongeGameTests.group(method), SpongeGameTests.name(method), structure, Rotation.NONE, test.maxTicks(),
-            test.setupTicks(), test.required(), false, 1, 1, test.skyAccess(), SpongeGameTests.<GameTestHelper>function(instance, method));
+            test.setupTicks(), test.required(), false, 1, 1, test.skyAccess(), SpongeGameTests.function(instance, method));
     }
 
-    private static <T> Consumer<T> function(final Object instance, final Method method) {
+    private static Consumer<GameTestHelper> function(final Object instance, final Method method) {
         final MethodHandle handle;
         try {
             method.setAccessible(true);
@@ -190,9 +181,9 @@ public final class SpongeGameTests {
         } catch (final IllegalAccessException e) {
             throw new IllegalStateException(e);
         }
-        return argument -> {
+        return helper -> {
             try {
-                handle.invoke(argument);
+                handle.invoke(helper);
             } catch (final RuntimeException | Error e) {
                 throw e;
             } catch (final Throwable t) {
@@ -203,29 +194,22 @@ public final class SpongeGameTests {
 
     // Resolved once, when GameTestRegistry is first loaded; every plugin is in the game layer by then
     private static final class Holder {
-        static final List<TestFunction> ALL;
+        static final List<Class<?>> CLASSES = SpongeGameTests.scan();
+        static final List<TestFunction> ALL = Holder.CLASSES.stream().flatMap(SpongeGameTests::tests).toList();
         static final Map<String, Consumer<ServerLevel>> BEFORE_BATCH = new HashMap<>();
         static final Map<String, Consumer<ServerLevel>> AFTER_BATCH = new HashMap<>();
 
         static {
-            final List<TestFunction> all = new ArrayList<>();
-            for (final Class<?> type : SpongeGameTests.scan()) {
-                final Object instance = SpongeGameTests.instance(type);
-                final List<TestFunction> tests = SpongeGameTests.tests(type, instance).toList();
-                all.addAll(tests);
-                if (!tests.isEmpty()) {
-                    // A group's tests share its batch name, so its functions are found under that
-                    final String batch = tests.getFirst().batchName();
-                    Holder.register(Holder.BEFORE_BATCH, batch, SpongeGameTests.batchFunction(type, instance, BeforeBatch.class));
-                    Holder.register(Holder.AFTER_BATCH, batch, SpongeGameTests.batchFunction(type, instance, AfterBatch.class));
+            for (final Class<?> type : Holder.CLASSES) {
+                final Class<? extends GameTestEnvironment> environment = type.getAnnotation(GameTestGroup.class).environment();
+                final Optional<Method> test = Arrays.stream(type.getDeclaredMethods()).filter(SpongeGameTests::isTest).findFirst();
+                if (environment != GameTestEnvironment.None.class && test.isPresent()) {
+                    // A group's tests share its batch name
+                    final String batch = SpongeGameTests.group(test.get());
+                    final GameTestEnvironment instance = SpongeGameTests.instantiate(environment, "Gametest environment");
+                    Holder.BEFORE_BATCH.put(batch, level -> instance.setup((ServerWorld) level));
+                    Holder.AFTER_BATCH.put(batch, level -> instance.teardown((ServerWorld) level));
                 }
-            }
-            ALL = List.copyOf(all);
-        }
-
-        private static void register(final Map<String, Consumer<ServerLevel>> functions, final String batch, final @Nullable Consumer<ServerLevel> function) {
-            if (function != null && functions.putIfAbsent(batch, function) != null) {
-                throw new IllegalStateException("More than one gametest class of batch " + batch + " has batch functions");
             }
         }
     }
